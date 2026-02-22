@@ -1,0 +1,19 @@
+[package]
+name = "vow"
+version = "0.1.0"
+edition = "2024"
+description = "A local-first AI output verification engine"
+authors = ["Warden <warden@getvow.dev>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/guanchuan1314/vow"
+homepage = "https://getvow.dev"
+keywords = ["verification", "ai", "security", "analysis", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+owo-colors = "4.0"
+indicatif = "0.17"

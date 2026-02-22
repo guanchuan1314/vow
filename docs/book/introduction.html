@@ -7,8 +7,35 @@
 
 
         <!-- Custom HTML head -->
-
-        <meta name="description" content="Local-first AI output verification engine">
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        
+        <!-- Favicon -->
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>🔒</text></svg>">
+        
+        <!-- Meta tags for social sharing -->
+        <meta property="og:title" content="Introduction - Vow Documentation - Vow Documentation">
+        <meta property="og:description" content="Local-first AI output verification engine. Trust, verified. Locally.">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://getvow.dev">
+        <meta property="og:image" content="https://getvow.dev/og-image.png">
+        <meta property="og:site_name" content="Vow Documentation">
+        
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Introduction - Vow Documentation - Vow Documentation">
+        <meta name="twitter:description" content="Local-first AI output verification engine. Trust, verified. Locally.">
+        <meta name="twitter:image" content="https://getvow.dev/og-image.png">
+        
+        <meta name="description" content="Local-first AI output verification engine. Trust, verified. Locally.">
+        <meta name="keywords" content="ai verification, code analysis, hallucination detection, security scanning, local-first, privacy">
+        <meta name="author" content="Vow Contributors">
+        
+        <!-- Theme color for mobile browsers -->
+        <meta name="theme-color" content="#0a0a0f">
+        <meta name="msapplication-TileColor" content="#0a0a0f">
+        <meta name="description" content="Local-first AI output verification engine. Trust, verified. Locally.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -28,6 +55,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/css/custom-92accf20.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -35,10 +63,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1cbbc2c0.js";
+            window.path_to_searchindex_js = "searchindex-cae3228e.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-ff63653e.js"></script>
+        <script src="toc-ef4885d1.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -181,9 +209,136 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>Welcome to <strong>Vow</strong>, a local-first AI output verification engine that helps you detect hallucinations, security issues, and quality problems in AI-generated code and text.</p>
+<div class="hero-section">
+  
+<h1 class="hero-title">Vow</h1>
+
+  
+<p class="hero-tagline">Trust, verified. Locally.</p>
+
+  
+<p style="font-size: 1.1rem; color: var(--text-primary); max-width: 600px; margin: 0 auto;">
+    A local-first AI output verification engine that helps you detect hallucinations, security issues, and quality problems in AI-generated code and text.
+  </p>
+
+</div>
+
 <h2 id="what-is-vow"><a class="header" href="#what-is-vow">What is Vow?</a></h2>
-<p>Vow is a command-line tool that analyzes files, directories, or stdin input to identify potential issues in AI-generated content. It uses a combination of:</p>
+<p>Vow is a command-line tool that analyzes files, directories, or stdin input to identify potential issues in AI-generated content. It uses a combination of advanced analysis techniques to ensure the reliability and security of AI outputs.</p>
+<div class="feature-grid">
+  
+<div class="feature-card">
+    
+<h3>🔒 Privacy-First</h3>
+
+    
+<p>All analysis runs locally - no data leaves your machine. Your code and content stay completely private.</p>
+
+  </div>
+
+  
+<div class="feature-card">
+    
+<h3>⚡ Lightning Fast</h3>
+
+    
+<p>Single binary, no dependencies, sub-second analysis. Optimized for real-world development workflows.</p>
+
+  </div>
+
+  
+<div class="feature-card">
+    
+<h3>🎯 Accurate Detection</h3>
+
+    
+<p>Specialized models trained on AI hallucination patterns with high precision and low false positives.</p>
+
+  </div>
+
+  
+<div class="feature-card">
+    
+<h3>🔧 Extensible</h3>
+
+    
+<p>YAML-based rules and WASM plugin system for custom domain-specific checks.</p>
+
+  </div>
+
+  
+<div class="feature-card">
+    
+<h3>🏗️ CI/CD Ready</h3>
+
+    
+<p>JSON, SARIF, and HTML output formats with seamless CI integration.</p>
+
+  </div>
+
+  
+<div class="feature-card">
+    
+<h3>📊 Trust Scoring</h3>
+
+    
+<p>Quantified confidence metrics to guide decision-making and review priorities.</p>
+
+  </div>
+
+</div>
+
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
+<p>Vow uses a sophisticated multi-stage analysis pipeline:</p>
+<ol>
+<li><strong>Input Processing</strong>: Reads files, directories, or stdin with intelligent content detection</li>
+<li><strong>AI Content Detection</strong>: Identifies likely AI-generated sections using advanced heuristics</li>
+<li><strong>Multi-Analyzer Pipeline</strong>:
+<ul>
+<li><strong>Code analyzer</strong> for syntax and API validation</li>
+<li><strong>Text analyzer</strong> for factual consistency and hallucination detection</li>
+<li><strong>Security scanner</strong> for dangerous patterns and vulnerabilities</li>
+</ul>
+</li>
+<li><strong>Rule Engine</strong>: Applies custom YAML rules for domain-specific requirements</li>
+<li><strong>Trust Scoring</strong>: Calculates confidence metrics using multiple signals</li>
+<li><strong>Output</strong>: Structured results in JSON, SARIF, or HTML formats</li>
+</ol>
+<h2 id="use-cases"><a class="header" href="#use-cases">Use Cases</a></h2>
+<h3 id="-software-development"><a class="header" href="#-software-development">🔍 Software Development</a></h3>
+<ul>
+<li>Validate AI-generated code before committing to version control</li>
+<li>Check for hallucinated function calls, imports, or API endpoints</li>
+<li>Detect security vulnerabilities in generated code</li>
+<li>Integrate into CI/CD pipelines for automated quality gates</li>
+</ul>
+<h3 id="-content-creation"><a class="header" href="#-content-creation">📝 Content Creation</a></h3>
+<ul>
+<li>Verify factual accuracy in AI-written documentation</li>
+<li>Check for fabricated references, citations, or sources</li>
+<li>Validate technical explanations and tutorials for correctness</li>
+</ul>
+<h3 id="-code-review"><a class="header" href="#-code-review">👥 Code Review</a></h3>
+<ul>
+<li>Augment human code review with automated AI output verification</li>
+<li>Flag potentially problematic AI-generated sections</li>
+<li>Provide trust scores to guide review priorities and focus areas</li>
+</ul>
+<div class="install-section">
+  
+<h3>Quick Install</h3>
+
+  
+<p>Get started with Vow in seconds:</p>
+
+  
+<pre><code>curl -sSL https://getvow.dev/install.sh | sh</code></pre>
+
+  <a href="getting-started/installation.html" class="cta-button">Get Started</a>
+</div>
+
+<h2 id="core-features"><a class="header" href="#core-features">Core Features</a></h2>
+<h3 id="-advanced-analysis"><a class="header" href="#-advanced-analysis">🧠 <strong>Advanced Analysis</strong></a></h3>
 <ul>
 <li><strong>Static code analysis</strong> to detect hallucinated APIs and imports</li>
 <li><strong>Text analysis</strong> to identify potential fabricated information</li>
@@ -191,54 +346,22 @@
 <li><strong>Custom rule engine</strong> for domain-specific checks</li>
 <li><strong>Machine learning models</strong> running locally via ONNX</li>
 </ul>
-<h2 id="key-features"><a class="header" href="#key-features">Key Features</a></h2>
+<h3 id="-security--privacy"><a class="header" href="#-security--privacy">🛡️ <strong>Security &amp; Privacy</strong></a></h3>
 <ul>
-<li><strong>🔒 Privacy-first</strong>: All analysis runs locally - no data leaves your machine</li>
-<li><strong>⚡ Fast</strong>: Single binary, no dependencies, sub-second analysis</li>
-<li><strong>🎯 Accurate</strong>: Specialized models trained on AI hallucination patterns</li>
-<li><strong>🔧 Extensible</strong>: YAML-based rules and WASM plugin system</li>
-<li><strong>🏗️ CI-ready</strong>: JSON, SARIF, and HTML output formats</li>
-<li><strong>📊 Trust scoring</strong>: Quantified confidence in AI outputs</li>
+<li><strong>100% local processing</strong> - no cloud dependencies</li>
+<li><strong>Open source</strong> with transparent algorithms</li>
+<li><strong>Minimal attack surface</strong> with single binary distribution</li>
+<li><strong>No telemetry</strong> or data collection</li>
 </ul>
-<h2 id="use-cases"><a class="header" href="#use-cases">Use Cases</a></h2>
-<h3 id="software-development"><a class="header" href="#software-development">Software Development</a></h3>
+<h3 id="-developer-experience"><a class="header" href="#-developer-experience">🚀 <strong>Developer Experience</strong></a></h3>
 <ul>
-<li>Validate AI-generated code before committing</li>
-<li>Check for hallucinated function calls or imports</li>
-<li>Detect security vulnerabilities in generated code</li>
-<li>Integrate into CI/CD pipelines for automated quality gates</li>
+<li><strong>Zero configuration</strong> to get started</li>
+<li><strong>Comprehensive documentation</strong> and examples</li>
+<li><strong>Multiple output formats</strong> for different workflows</li>
+<li><strong>Extensive CLI options</strong> for fine-tuning</li>
 </ul>
-<h3 id="content-creation"><a class="header" href="#content-creation">Content Creation</a></h3>
-<ul>
-<li>Verify factual accuracy in AI-written documentation</li>
-<li>Check for fabricated references or citations</li>
-<li>Validate technical explanations and tutorials</li>
-</ul>
-<h3 id="code-review"><a class="header" href="#code-review">Code Review</a></h3>
-<ul>
-<li>Augment human code review with automated AI output verification</li>
-<li>Flag potentially problematic AI-generated sections</li>
-<li>Provide trust scores to guide review priorities</li>
-</ul>
-<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
-<p>Vow uses a multi-stage analysis pipeline:</p>
-<ol>
-<li><strong>Input Processing</strong>: Reads files, directories, or stdin</li>
-<li><strong>Content Detection</strong>: Identifies likely AI-generated sections</li>
-<li><strong>Multi-analyzer Pipeline</strong>:
-<ul>
-<li>Code analyzer for syntax and API validation</li>
-<li>Text analyzer for factual consistency</li>
-<li>Security scanner for dangerous patterns</li>
-</ul>
-</li>
-<li><strong>Rule Engine</strong>: Applies custom YAML rules</li>
-<li><strong>Trust Scoring</strong>: Calculates confidence metrics</li>
-<li><strong>Output</strong>: Results in JSON, SARIF, or HTML formats</li>
-</ol>
-<h2 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h2>
-<p>Ready to start using Vow? Head over to the <a href="getting-started/installation.html">Installation</a> guide to get up and running in minutes.</p>
-<p>For a quick overview of basic usage, check out the <a href="getting-started/quick-start.html">Quick Start</a> guide.</p>
+<hr>
+<p><strong>Ready to verify your AI outputs?</strong> Head over to the <a href="getting-started/installation.html">Installation Guide</a> to get up and running in minutes, or check out the <a href="getting-started/quick-start.html">Quick Start</a> for a rapid overview of basic usage.</p>
 
                     </main>
 

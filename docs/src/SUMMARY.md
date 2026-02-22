@@ -20,6 +20,7 @@
 - [Code Analyzer](analyzers/code-analyzer.md)
 - [Text Analyzer](analyzers/text-analyzer.md)
 - [Hallucination Detection](analyzers/hallucination-detection.md)
+- [Injection & Exfiltration Detection](analyzers/injection-detection.md)
 
 # Rules
 

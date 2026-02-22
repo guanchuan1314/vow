@@ -19,6 +19,14 @@ Vow is a local-first AI output verification engine that analyzes code and text t
 - **Source Citation Validation**: Flags confident claims without apparent citations
 - **Markdown & Plain Text Support**
 
+### 🛡️ **Prompt Injection & Secret Exfiltration Detection**
+- **Prompt Injection Defense**: Detects attempts to manipulate AI systems via hidden instructions
+- **Secret Exfiltration Prevention**: Identifies code that steals API keys, passwords, and sensitive files
+- **Backdoor Detection**: Finds reverse shells, cron injection, and SSH key manipulation
+- **Data Exfiltration Analysis**: Catches suspicious HTTP requests and DNS tunneling patterns
+- **Base64 Decode Analysis**: Examines encoded content for hidden malicious instructions
+- **Multi-Language Support**: Python, JavaScript, TypeScript, Rust, Shell scripts
+
 ### ⚙️ **Flexible Rule System**
 - **YAML-Based Rules**: Define custom detection patterns
 - **Multiple Pattern Types**: Contains, regex, starts_with, ends_with

@@ -37,6 +37,22 @@ pub enum FileType {
     Text,
     YAML,
     JSON,
+    Java,
+    Go,
+    Ruby,
+    C,
+    Cpp,
+    CSharp,
+    PHP,
+    Swift,
+    Kotlin,
+    R,
+    MQL5,
+    Scala,
+    Perl,
+    Lua,
+    Dart,
+    Haskell,
     Unknown,
 }
 
@@ -240,9 +256,15 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
     
     // Run appropriate analyzers based on file type
     match file_type {
-        FileType::Python | FileType::JavaScript | FileType::TypeScript | FileType::Rust | FileType::Shell | FileType::YAML | FileType::JSON => {
-            // Run code analyzer for code files
-            if matches!(file_type, FileType::Python | FileType::JavaScript | FileType::TypeScript) {
+        FileType::Python | FileType::JavaScript | FileType::TypeScript | FileType::Rust | FileType::Shell | FileType::YAML | FileType::JSON | 
+        FileType::Java | FileType::Go | FileType::Ruby | FileType::C | FileType::Cpp | FileType::CSharp | FileType::PHP | 
+        FileType::Swift | FileType::Kotlin | FileType::R | FileType::MQL5 | FileType::Scala | FileType::Perl | FileType::Lua | 
+        FileType::Dart | FileType::Haskell => {
+            // Run code analyzer for code files with import detection
+            if matches!(file_type, FileType::Python | FileType::JavaScript | FileType::TypeScript | FileType::Java | 
+                       FileType::Go | FileType::Ruby | FileType::C | FileType::Cpp | FileType::CSharp | FileType::PHP | 
+                       FileType::Swift | FileType::Kotlin | FileType::R | FileType::MQL5 | FileType::Scala | 
+                       FileType::Perl | FileType::Lua | FileType::Dart | FileType::Haskell) {
                 let custom_allowlist = analyzers::code::CodeAnalyzer::load_custom_allowlist();
                 let code_analyzer = analyzers::code::CodeAnalyzer::with_custom_allowlist(custom_allowlist);
                 let mut result = code_analyzer.analyze(path, content);
@@ -446,6 +468,22 @@ pub fn detect_file_type(path: &Path) -> FileType {
             "txt" => FileType::Text,
             "yaml" | "yml" => FileType::YAML,
             "json" => FileType::JSON,
+            "java" => FileType::Java,
+            "go" => FileType::Go,
+            "rb" => FileType::Ruby,
+            "c" | "h" => FileType::C,
+            "cpp" | "cc" | "cxx" | "hpp" => FileType::Cpp,
+            "cs" => FileType::CSharp,
+            "php" => FileType::PHP,
+            "swift" => FileType::Swift,
+            "kt" | "kts" => FileType::Kotlin,
+            "r" => FileType::R,
+            "mq5" | "mqh" => FileType::MQL5,
+            "scala" => FileType::Scala,
+            "pl" | "pm" => FileType::Perl,
+            "lua" => FileType::Lua,
+            "dart" => FileType::Dart,
+            "hs" => FileType::Haskell,
             _ => FileType::Text,
         }
     } else {
@@ -466,6 +504,22 @@ fn is_supported_file(path: &Path) -> bool {
             | FileType::Text
             | FileType::YAML
             | FileType::JSON
+            | FileType::Java
+            | FileType::Go
+            | FileType::Ruby
+            | FileType::C
+            | FileType::Cpp
+            | FileType::CSharp
+            | FileType::PHP
+            | FileType::Swift
+            | FileType::Kotlin
+            | FileType::R
+            | FileType::MQL5
+            | FileType::Scala
+            | FileType::Perl
+            | FileType::Lua
+            | FileType::Dart
+            | FileType::Haskell
     )
 }
 
@@ -543,6 +597,29 @@ mod tests {
         assert_eq!(detect_file_type(&PathBuf::from("test.bash")), FileType::Shell);
         assert_eq!(detect_file_type(&PathBuf::from("test.zsh")), FileType::Shell);
         assert_eq!(detect_file_type(&PathBuf::from("test.md")), FileType::Markdown);
+        assert_eq!(detect_file_type(&PathBuf::from("test.java")), FileType::Java);
+        assert_eq!(detect_file_type(&PathBuf::from("test.go")), FileType::Go);
+        assert_eq!(detect_file_type(&PathBuf::from("test.rb")), FileType::Ruby);
+        assert_eq!(detect_file_type(&PathBuf::from("test.c")), FileType::C);
+        assert_eq!(detect_file_type(&PathBuf::from("test.h")), FileType::C);
+        assert_eq!(detect_file_type(&PathBuf::from("test.cpp")), FileType::Cpp);
+        assert_eq!(detect_file_type(&PathBuf::from("test.cc")), FileType::Cpp);
+        assert_eq!(detect_file_type(&PathBuf::from("test.cxx")), FileType::Cpp);
+        assert_eq!(detect_file_type(&PathBuf::from("test.hpp")), FileType::Cpp);
+        assert_eq!(detect_file_type(&PathBuf::from("test.cs")), FileType::CSharp);
+        assert_eq!(detect_file_type(&PathBuf::from("test.php")), FileType::PHP);
+        assert_eq!(detect_file_type(&PathBuf::from("test.swift")), FileType::Swift);
+        assert_eq!(detect_file_type(&PathBuf::from("test.kt")), FileType::Kotlin);
+        assert_eq!(detect_file_type(&PathBuf::from("test.kts")), FileType::Kotlin);
+        assert_eq!(detect_file_type(&PathBuf::from("test.r")), FileType::R);
+        assert_eq!(detect_file_type(&PathBuf::from("test.mq5")), FileType::MQL5);
+        assert_eq!(detect_file_type(&PathBuf::from("test.mqh")), FileType::MQL5);
+        assert_eq!(detect_file_type(&PathBuf::from("test.scala")), FileType::Scala);
+        assert_eq!(detect_file_type(&PathBuf::from("test.pl")), FileType::Perl);
+        assert_eq!(detect_file_type(&PathBuf::from("test.pm")), FileType::Perl);
+        assert_eq!(detect_file_type(&PathBuf::from("test.lua")), FileType::Lua);
+        assert_eq!(detect_file_type(&PathBuf::from("test.dart")), FileType::Dart);
+        assert_eq!(detect_file_type(&PathBuf::from("test.hs")), FileType::Haskell);
     }
     
     #[test]

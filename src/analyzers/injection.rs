@@ -135,7 +135,7 @@ impl InjectionAnalyzer {
         let backdoor_patterns = vec![
             SecurityPattern {
                 name: "reverse_shell",
-                regex: Regex::new(r"(?i)(bash\s+-i|/dev/tcp/|nc\s+-[^;]*e|python\s+-c.*?socket|ruby\s+-r.*?socket|perl\s+-e.*?socket|php\s+-r.*?fsockopen|socat\s+tcp|telnet\s+\d|/bin/sh\s+0<&1)").unwrap(),
+                regex: Regex::new(r"(?i)(bash\s+-i|/dev/tcp/|nc\s+-[^;]*e|python\s+-c.*?socket|ruby\s+-r.*?socket|perl\s+-e.*?socket|php\s+-r.*?fsockopen|java.*?Socket\(|new\s+Socket\(|golang.*?net\.Dial|Process\.Start.*?cmd|Runtime\.getRuntime|ProcessBuilder|swift.*?Socket|socat\s+tcp|telnet\s+\d|/bin/sh\s+0<&1)").unwrap(),
                 severity: Severity::Critical,
                 message: "Reverse shell pattern detected",
             },
@@ -153,15 +153,15 @@ impl InjectionAnalyzer {
             },
             SecurityPattern {
                 name: "socket_backdoor",
-                regex: Regex::new(r"(?i)(socket\.socket\(|new\s+Socket\(|ServerSocket\(|net\.createServer|http\.createServer).*?(bind|listen).*?(?:0\.0\.0\.0|::|\*|all|any)").unwrap(),
+                regex: Regex::new(r"(?i)(socket\.socket\(|new\s+Socket\(|ServerSocket\(|net\.createServer|http\.createServer|net\.Listen|Socket\(|TcpListener|UdpSocket|bind\(.*?INADDR_ANY|listen\(.*?0\.0\.0\.0).*?(?:bind|listen).*?(?:0\.0\.0\.0|::|\*|all|any)").unwrap(),
                 severity: Severity::High,
                 message: "Socket backdoor pattern - listening on all interfaces",
             },
             SecurityPattern {
                 name: "process_injection",
-                regex: Regex::new(r"(?i)(CreateRemoteThread|WriteProcessMemory|VirtualAllocEx|SetWindowsHookEx|DLL injection|process hollowing)").unwrap(),
+                regex: Regex::new(r"(?i)(CreateRemoteThread|WriteProcessMemory|VirtualAllocEx|SetWindowsHookEx|DLL injection|process hollowing|Runtime\.getRuntime\(\)\.exec|ProcessBuilder|exec\.Command|Process\.Start|system\(|shell_exec|passthru|eval\(|exec\()").unwrap(),
                 severity: Severity::Critical,
-                message: "Process injection technique detected",
+                message: "Process injection or dangerous execution technique detected",
             },
         ];
 
@@ -332,6 +332,22 @@ fn detect_code_type(path: &Path) -> FileType {
             "sh" | "bash" | "zsh" => FileType::Shell,
             "yaml" | "yml" => FileType::YAML,
             "json" => FileType::JSON,
+            "java" => FileType::Java,
+            "go" => FileType::Go,
+            "rb" => FileType::Ruby,
+            "c" | "h" => FileType::C,
+            "cpp" | "cc" | "cxx" | "hpp" => FileType::Cpp,
+            "cs" => FileType::CSharp,
+            "php" => FileType::PHP,
+            "swift" => FileType::Swift,
+            "kt" | "kts" => FileType::Kotlin,
+            "r" => FileType::R,
+            "mq5" | "mqh" => FileType::MQL5,
+            "scala" => FileType::Scala,
+            "pl" | "pm" => FileType::Perl,
+            "lua" => FileType::Lua,
+            "dart" => FileType::Dart,
+            "hs" => FileType::Haskell,
             _ => FileType::Unknown,
         }
     } else {

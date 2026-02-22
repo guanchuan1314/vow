@@ -10,9 +10,9 @@ Vow is a local-first AI output verification engine that analyzes code and text t
 ## Features
 
 ### 🔍 **Multi-Language Code Analysis**
-- **Python & JavaScript/TypeScript**: Comprehensive security scanning
-- **Hallucinated API Detection**: Validates imports against known package databases
-- **Security Pattern Detection**: Finds dangerous functions, hardcoded secrets, and vulnerabilities
+- **16 Programming Languages**: Python, JavaScript, TypeScript, Java, Go, Ruby, C, C++, C#, PHP, Swift, Kotlin, R, Scala, Perl, Lua, Dart, Haskell, and MQL5
+- **Hallucinated API Detection**: Validates imports against known package databases (PyPI, npm, Maven Central, Go modules, RubyGems, and more)
+- **Security Pattern Detection**: Finds dangerous functions, hardcoded secrets, and vulnerabilities across all supported languages
 - **Line-precise reporting**: Pinpoints exact locations of issues
 
 ### 📝 **AI-Generated Text Detection**
@@ -27,7 +27,7 @@ Vow is a local-first AI output verification engine that analyzes code and text t
 - **Backdoor Detection**: Finds reverse shells, cron injection, and SSH key manipulation
 - **Data Exfiltration Analysis**: Catches suspicious HTTP requests and DNS tunneling patterns
 - **Base64 Decode Analysis**: Examines encoded content for hidden malicious instructions
-- **Multi-Language Support**: Python, JavaScript, TypeScript, Rust, Shell scripts
+- **Multi-Language Support**: All 16 supported programming languages including Python, JavaScript, TypeScript, Java, Go, Ruby, C, C++, C#, PHP, Swift, Kotlin, R, Scala, Perl, Lua, Dart, Haskell, MQL5, Rust, and Shell scripts
 
 ### ⚙️ **Flexible Rule System**
 - **YAML-Based Rules**: Define custom detection patterns
@@ -182,7 +182,28 @@ file_types: ["py", "js", "ts"]
 
 ## Supported File Types
 
-- **Code**: `.py`, `.js`, `.jsx`, `.ts`, `.tsx`
+- **Code**: 
+  - Python: `.py`
+  - JavaScript: `.js`, `.jsx`
+  - TypeScript: `.ts`, `.tsx`
+  - Java: `.java`
+  - Go: `.go`
+  - Ruby: `.rb`
+  - C: `.c`, `.h`
+  - C++: `.cpp`, `.cc`, `.cxx`, `.hpp`
+  - C#: `.cs`
+  - PHP: `.php`
+  - Swift: `.swift`
+  - Kotlin: `.kt`, `.kts`
+  - R: `.r`
+  - Scala: `.scala`
+  - Perl: `.pl`, `.pm`
+  - Lua: `.lua`
+  - Dart: `.dart`
+  - Haskell: `.hs`
+  - MQL5: `.mq5`, `.mqh`
+  - Rust: `.rs`
+  - Shell: `.sh`, `.bash`, `.zsh`
 - **Text**: `.md`, `.txt`
 - **Config**: `.yaml`, `.yml`, `.json`
 

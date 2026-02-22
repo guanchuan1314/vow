@@ -1,15 +1,11 @@
-use serde::{Deserialize, Serialize};
+use std::path::Path;
 use std::fs;
-use std::path::PathBuf;
+use crate::{Issue, Severity};
+use regex::Regex;
+use serde::{Deserialize, Serialize};
 
-/// YAML-based rule engine for configurable verification rules
-pub struct RuleEngine {
-    rules: Vec<Rule>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Rule {
-    pub id: String,
     pub name: String,
     pub description: String,
     pub severity: String,
@@ -17,30 +13,55 @@ pub struct Rule {
     pub file_types: Option<Vec<String>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Pattern {
-    pub pattern_type: String, // "regex", "contains", "starts_with", etc.
-    pub value: String,
-    pub message: String,
+    #[serde(rename = "type")]
+    pub pattern_type: String,
+    pub pattern: String,
+}
+
+pub struct RuleEngine {
+    rules: Vec<CompiledRule>,
+}
+
+struct CompiledRule {
+    name: String,
+    description: String,
+    severity: Severity,
+    patterns: Vec<CompiledPattern>,
+    file_types: Option<Vec<String>>,
+}
+
+enum CompiledPattern {
+    Contains(String),
+    StartsWith(String),
+    EndsWith(String),
+    Regex(Regex),
+}
+
+impl Default for RuleEngine {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl RuleEngine {
     pub fn new() -> Self {
-        Self { rules: Vec::new() }
+        RuleEngine { rules: Vec::new() }
     }
     
-    /// Load rules from a YAML file or directory
-    pub fn load_rules(&mut self, rules_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        if rules_path.is_file() {
-            self.load_rule_file(rules_path)?;
-        } else if rules_path.is_dir() {
-            for entry in fs::read_dir(rules_path)? {
-                let entry = entry?;
-                let path = entry.path();
-                if path.extension().and_then(|s| s.to_str()) == Some("yaml") 
-                    || path.extension().and_then(|s| s.to_str()) == Some("yml") {
-                    self.load_rule_file(&path)?;
-                }
+    /// Load rules from a directory
+    pub fn load_rules_from_dir(&mut self, rules_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
+        if !rules_dir.exists() {
+            return Ok(());
+        }
+        
+        for entry in fs::read_dir(rules_dir)? {
+            let entry = entry?;
+            let path = entry.path();
+            
+            if path.is_file() && path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+                self.load_rules_from_file(&path)?;
             }
         }
         
@@ -48,60 +69,148 @@ impl RuleEngine {
     }
     
     /// Load rules from a single YAML file
-    fn load_rule_file(&mut self, file_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    fn load_rules_from_file(&mut self, file_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
         let content = fs::read_to_string(file_path)?;
-        let rules: Vec<Rule> = serde_yaml::from_str(&content)?;
-        self.rules.extend(rules);
+        let rule: Rule = serde_yaml::from_str(&content)?;
+        
+        let compiled_rule = self.compile_rule(rule)?;
+        self.rules.push(compiled_rule);
         
         Ok(())
     }
     
-    /// Apply loaded rules to content
-    pub fn apply_rules(&self, content: &str, file_type: &str) -> Vec<RuleMatch> {
-        let mut matches = Vec::new();
+    /// Compile a rule for efficient execution
+    fn compile_rule(&self, rule: Rule) -> Result<CompiledRule, Box<dyn std::error::Error>> {
+        let severity = match rule.severity.to_lowercase().as_str() {
+            "low" => Severity::Low,
+            "medium" => Severity::Medium,
+            "high" => Severity::High,
+            "critical" => Severity::Critical,
+            _ => Severity::Medium,
+        };
+        
+        let mut compiled_patterns = Vec::new();
+        
+        for pattern in rule.patterns {
+            let compiled_pattern = match pattern.pattern_type.as_str() {
+                "contains" => CompiledPattern::Contains(pattern.pattern),
+                "starts_with" => CompiledPattern::StartsWith(pattern.pattern),
+                "ends_with" => CompiledPattern::EndsWith(pattern.pattern),
+                "regex" => CompiledPattern::Regex(Regex::new(&pattern.pattern)?),
+                _ => return Err(format!("Unsupported pattern type: {}", pattern.pattern_type).into()),
+            };
+            compiled_patterns.push(compiled_pattern);
+        }
+        
+        Ok(CompiledRule {
+            name: rule.name,
+            description: rule.description,
+            severity,
+            patterns: compiled_patterns,
+            file_types: rule.file_types,
+        })
+    }
+    
+    /// Apply rules to content and return issues found
+    pub fn apply_rules(
+        &mut self,
+        rules_dir: &Path,
+        file_path: &Path,
+        content: &str,
+    ) -> Result<Vec<Issue>, Box<dyn std::error::Error>> {
+        // Load rules if not already loaded
+        if self.rules.is_empty() {
+            self.load_rules_from_dir(rules_dir)?;
+        }
+        
+        let mut issues = Vec::new();
+        let file_type = detect_file_type_for_rules(file_path);
         
         for rule in &self.rules {
             // Check if rule applies to this file type
-            if let Some(ref types) = rule.file_types {
-                if !types.contains(&file_type.to_string()) {
-                    continue;
-                }
+            if let Some(ref rule_file_types) = rule.file_types
+                && !rule_file_types.contains(&file_type) {
+                continue;
             }
             
-            // Apply patterns
+            // Apply each pattern in the rule
             for pattern in &rule.patterns {
-                if self.pattern_matches(&pattern, content) {
-                    matches.push(RuleMatch {
-                        rule_id: rule.id.clone(),
-                        rule_name: rule.name.clone(),
-                        message: pattern.message.clone(),
-                        severity: rule.severity.clone(),
-                        line: None, // TODO: implement line detection
-                    });
+                let mut pattern_issues = self.find_pattern_matches(pattern, content, rule)?;
+                issues.append(&mut pattern_issues);
+            }
+        }
+        
+        Ok(issues)
+    }
+    
+    /// Find matches for a specific pattern
+    fn find_pattern_matches(
+        &self,
+        pattern: &CompiledPattern,
+        content: &str,
+        rule: &CompiledRule,
+    ) -> Result<Vec<Issue>, Box<dyn std::error::Error>> {
+        let mut issues = Vec::new();
+        
+        match pattern {
+            CompiledPattern::Contains(text) => {
+                for (line_num, line) in content.lines().enumerate() {
+                    if line.contains(text) {
+                        issues.push(Issue {
+                            severity: rule.severity.clone(),
+                            message: format!("{}: Pattern '{}' found", rule.description, text),
+                            line: Some(line_num + 1),
+                            rule: Some(rule.name.clone()),
+                        });
+                    }
+                }
+            }
+            CompiledPattern::StartsWith(text) => {
+                for (line_num, line) in content.lines().enumerate() {
+                    if line.trim_start().starts_with(text) {
+                        issues.push(Issue {
+                            severity: rule.severity.clone(),
+                            message: format!("{}: Line starts with '{}'", rule.description, text),
+                            line: Some(line_num + 1),
+                            rule: Some(rule.name.clone()),
+                        });
+                    }
+                }
+            }
+            CompiledPattern::EndsWith(text) => {
+                for (line_num, line) in content.lines().enumerate() {
+                    if line.trim_end().ends_with(text) {
+                        issues.push(Issue {
+                            severity: rule.severity.clone(),
+                            message: format!("{}: Line ends with '{}'", rule.description, text),
+                            line: Some(line_num + 1),
+                            rule: Some(rule.name.clone()),
+                        });
+                    }
+                }
+            }
+            CompiledPattern::Regex(regex) => {
+                for (line_num, line) in content.lines().enumerate() {
+                    if regex.is_match(line) {
+                        issues.push(Issue {
+                            severity: rule.severity.clone(),
+                            message: format!("{}: Regex pattern matched", rule.description),
+                            line: Some(line_num + 1),
+                            rule: Some(rule.name.clone()),
+                        });
+                    }
                 }
             }
         }
         
-        matches
-    }
-    
-    /// Check if a pattern matches the content
-    fn pattern_matches(&self, pattern: &Pattern, content: &str) -> bool {
-        match pattern.pattern_type.as_str() {
-            "contains" => content.contains(&pattern.value),
-            "starts_with" => content.starts_with(&pattern.value),
-            "ends_with" => content.ends_with(&pattern.value),
-            // TODO: implement regex patterns
-            _ => false,
-        }
+        Ok(issues)
     }
 }
 
-#[derive(Debug)]
-pub struct RuleMatch {
-    pub rule_id: String,
-    pub rule_name: String,
-    pub message: String,
-    pub severity: String,
-    pub line: Option<usize>,
+fn detect_file_type_for_rules(path: &Path) -> String {
+    if let Some(extension) = path.extension().and_then(|s| s.to_str()) {
+        extension.to_lowercase()
+    } else {
+        "unknown".to_string()
+    }
 }

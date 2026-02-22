@@ -1,201 +1,245 @@
-# Vow 🛡️
+# Vow - AI Output Verification Engine
 
-> A local-first AI output verification engine
-
-Vow is a command-line tool designed to verify and analyze AI-generated outputs, source code, and text content for security vulnerabilities, hallucinations, and quality issues. Built with Rust for performance and reliability, Vow runs entirely on your local machine without sending your code to external services.
-
+[![Rust](https://img.shields.io/badge/rust-1.70+-blue.svg)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.93+-orange.svg)](https://www.rust-lang.org)
 
-## 🚀 Features
+Vow is a local-first AI output verification engine that analyzes code and text to detect patterns indicative of AI generation, security vulnerabilities, and potential hallucinations.
 
-- **Local-First**: No external API calls - everything runs on your machine
-- **Multi-Format Analysis**: Supports Python, JavaScript/TypeScript, Rust, Markdown, and more
-- **Configurable Rules**: YAML-based rule engine for custom verification patterns
-- **Multiple Output Formats**: Terminal (pretty), JSON, and SARIF support
-- **Security Focus**: Detects dangerous patterns, hardcoded secrets, and injection risks
-- **AI Hallucination Detection**: Identifies AI-generated content markers and limitations
-- **Fast & Lightweight**: Single binary, optimized for CI/CD integration
+## Features
 
-## 📦 Installation
+### 🔍 **Multi-Language Code Analysis**
+- **Python & JavaScript/TypeScript**: Comprehensive security scanning
+- **Hallucinated API Detection**: Validates imports against known package databases
+- **Security Pattern Detection**: Finds dangerous functions, hardcoded secrets, and vulnerabilities
+- **Line-precise reporting**: Pinpoints exact locations of issues
 
-### From Source
+### 📝 **AI-Generated Text Detection**
+- **Linguistic Pattern Analysis**: Detects AI-favored phrases and word choices
+- **Writing Style Analysis**: Identifies formal transitions overused by AI
+- **Source Citation Validation**: Flags confident claims without apparent citations
+- **Markdown & Plain Text Support**
+
+### ⚙️ **Flexible Rule System**
+- **YAML-Based Rules**: Define custom detection patterns
+- **Multiple Pattern Types**: Contains, regex, starts_with, ends_with
+- **File Type Filtering**: Apply rules to specific file extensions
+- **Severity Levels**: Critical, High, Medium, Low
+
+### 📊 **Multiple Output Formats**
+- **Terminal**: Colorized, human-readable reports
+- **JSON**: Machine-readable for integration
+- **SARIF 2.1.0**: GitHub/GitLab code scanning integration
+
+### 🔧 **CI/CD Integration**
+- **Exit Code Support**: Non-zero exit for failures
+- **Threshold Configuration**: Set minimum trust scores
+- **Pipe Support**: Read from stdin for shell pipelines
+
+## Quick Start
+
+### Installation
 
 ```bash
-# Clone the repository
+# Build from source
 git clone https://github.com/guanchuan1314/vow.git
 cd vow
-
-# Build with Cargo
 cargo build --release
-
-# Install globally
-cargo install --path .
 ```
 
-### Pre-built Binaries
+### Initialize a Project
 
-Download the latest release from [GitHub Releases](https://github.com/guanchuan1314/vow/releases).
-
-## 🔧 Usage
+```bash
+# Create .vow/ directory with default config and rules
+vow init
+```
 
 ### Basic Usage
 
 ```bash
-# Check a single file
-vow check example.py
+# Analyze a single file
+vow check suspicious_code.py
 
-# Check a directory
+# Analyze a directory
 vow check src/
 
-# Specify custom rules
-vow check --rules .sentinel/rules/ src/
+# Read from stdin
+echo "print('Hello AI world')" | vow check -
 
-# Output as JSON
-vow check --format json example.py
+# Set trust score threshold
+vow check code.py --threshold 80
 
-# Output as SARIF (for CI integration)
-vow check --format sarif src/ > results.sarif
+# JSON output for CI
+vow check . --ci
 ```
 
-### Example Output
+## Example Output
 
+### Terminal Report
 ```
-╭─────────────────────────────────────────────╮
-│ Vow Verification Report                     │
-├─────────────────────────────────────────────┤
-│ File: example.py                            │
-│ Trust Score: 85%                            │
-├─────────────────────────────────────────────┤
-│ Verification Checks:                        │
-│ ✓ Syntax Check               PASS          │
-│ ✓ Security Scan              PASS          │
-│ ✗ API Validation             FAIL          │
-├─────────────────────────────────────────────┤
-│ Total: 3  Passed: 2  Failed: 1             │
-╰─────────────────────────────────────────────╯
+Vow Analysis Report
+==================================================
 
-⚠️ Some issues found, but overall score is acceptable.
+Summary
+  Files analyzed: 1
+  Average trust score: 25%
+  Total issues: 8
+
+Issues by Severity
+  CRITICAL: 2
+  HIGH: 3
+  MEDIUM: 3
+
+File Details
+
+suspicious_code.py (25%)
+  🚨 CRITICAL Hardcoded API key or secret detected (line 12)
+  ⚠️  HIGH Potentially dangerous eval() usage detected (line 21)
+  ℹ️  MEDIUM Potentially hallucinated package import: 'unknown_package' (line 7)
+  ⚠️  HIGH Shell injection risk - subprocess with shell=True (line 17)
+  🚨 CRITICAL Dangerous rm -rf command detected (line 16)
+
+Overall Verdict
+❌ Code has significant signs of AI generation or security issues
 ```
 
-## ⚙️ Configuration
+### JSON Output
+```json
+{
+  "files": [
+    {
+      "path": "suspicious_code.py",
+      "file_type": "Python",
+      "issues": [
+        {
+          "severity": "Critical",
+          "message": "Hardcoded API key or secret detected",
+          "line": 12,
+          "rule": "api_keys"
+        }
+      ],
+      "trust_score": 25
+    }
+  ],
+  "summary": {
+    "total_files": 1,
+    "avg_score": 25,
+    "total_issues": 8,
+    "issues_by_severity": {
+      "critical": 2,
+      "high": 3,
+      "medium": 3
+    }
+  }
+}
+```
 
-### Rule Files
+## Configuration
 
-Vow uses YAML-based rule files for configurable verification. Create rules in `.sentinel/rules/`:
-
+### Project Config (`.vow/config.yaml`)
 ```yaml
-# .sentinel/rules/security.yaml
-- id: dangerous-eval
-  name: Dangerous eval() Usage
-  description: Detects potentially dangerous eval() function calls
-  severity: high
-  file_types:
-    - py
-    - js
-  patterns:
-    - pattern_type: contains
-      value: "eval("
-      message: "Use of eval() detected - this can lead to code injection vulnerabilities"
+threshold: 70
+enabled_analyzers:
+  - code
+  - text
+  - rules
+custom_rule_dirs:
+  - ./custom-rules
 ```
 
-### Supported Pattern Types
-
-- `contains`: Check if content contains a string
-- `starts_with`: Check if content starts with a string  
-- `ends_with`: Check if content ends with a string
-- `regex`: Regular expression matching (coming soon)
-
-## 🏗️ Architecture
-
-```
-┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│    Input    │───▶│   Analyzers  │───▶│    Rules    │
-│ Files/Stdin │    │ Code │ Text  │    │   Engine    │
-└─────────────┘    └──────────────┘    └─────────────┘
-                           │                    │
-                           ▼                    ▼
-┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│   Output    │◀───│   Reporting  │◀───│   Results   │
-│JSON│SARIF   │    │ Terminal│CI │    │ Aggregation │
-└─────────────┘    └──────────────┘    └─────────────┘
+### Custom Rules (`.vow/rules/security.yaml`)
+```yaml
+name: "hardcoded_passwords"
+description: "Detect hardcoded passwords in code"
+severity: "high"
+patterns:
+  - type: "regex"
+    pattern: 'password\s*=\s*["\'][^"\']+["\']'
+  - type: "contains"
+    pattern: "SECRET_KEY = "
+file_types: ["py", "js", "ts"]
 ```
 
-### Core Components
+## Supported File Types
 
-- **CLI**: Command-line interface built with `clap`
-- **Analyzers**: Pluggable analyzers for different content types
-  - Code Analyzer: Language-specific pattern detection
-  - Text Analyzer: Natural language analysis for AI markers
-- **Rules Engine**: YAML-based configurable rule system
-- **Reporting**: Multiple output formats for different use cases
+- **Code**: `.py`, `.js`, `.jsx`, `.ts`, `.tsx`
+- **Text**: `.md`, `.txt`
+- **Config**: `.yaml`, `.yml`, `.json`
 
-## 🚧 Roadmap
+## Detection Capabilities
 
-### Phase 1 (Current)
-- [x] Basic CLI scaffold
-- [x] Code and text analyzers (stubs)
-- [x] YAML rule engine
-- [x] Terminal and JSON output
-- [ ] SARIF output implementation
-- [ ] Regex pattern support
+### Code Analysis
+- **Security Vulnerabilities**: eval(), exec(), system calls, SQL injection
+- **Dangerous Operations**: rm -rf, chmod 777, SSL verification bypass
+- **Hardcoded Secrets**: API keys, passwords, tokens
+- **Hallucinated Imports**: Unknown packages not in PyPI/npm top lists
 
-### Phase 2 (Next)
-- [ ] ONNX Runtime integration for ML models
-- [ ] Advanced hallucination detection
-- [ ] WASM plugin system
-- [ ] HTML report generation
-- [ ] GitHub Actions integration
+### Text Analysis
+- **AI Identity Markers**: "As an AI", "I cannot"
+- **AI-Favored Language**: "delve", "comprehensive", "multifaceted"
+- **Formal Transitions**: Overuse of "furthermore", "moreover", "additionally"
+- **Unsourced Claims**: Confident statements without citations
 
-### Phase 3 (Future)
-- [ ] Web UI dashboard
-- [ ] Real-time monitoring
-- [ ] Custom model training
-- [ ] Enterprise integrations
+## Trust Score Algorithm
 
-## 🤝 Contributing
+Trust scores start at 100% and decrease based on issue severity:
+- **Critical Issues**: -25 points each
+- **High Issues**: -15 points each  
+- **Medium Issues**: -8 points each
+- **Low Issues**: -3 points each
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+Minimum score: 0%, Maximum score: 100%
 
-### Development Setup
+## CI Integration
 
-```bash
-# Clone and setup
-git clone https://github.com/guanchuan1314/vow.git
-cd vow
-
-# Install dependencies
-cargo build
-
-# Run tests
-cargo test
-
-# Run with sample file
-cargo run -- check .sentinel/rules/security.yaml
+### GitHub Actions
+```yaml
+- name: AI Code Analysis
+  run: |
+    vow check . --ci --threshold 70 > vow-results.json
+    vow check . --format sarif > vow.sarif
 ```
 
-### Code Standards
+### Exit Codes
+- `0`: Analysis passed (score ≥ threshold)
+- `1`: Analysis failed (score < threshold or errors)
 
-- Follow Rust community standards (`rustfmt`, `clippy`)
-- Add tests for new features
-- Update documentation for API changes
-- Ensure CI passes before submitting PRs
+## Command Line Reference
 
-## 📄 License
+```
+vow init [PATH]                 Initialize Vow project
+vow check <PATH|-> [OPTIONS]    Analyze files or stdin
 
-This project is dual-licensed under either:
+Options:
+  -f, --format <FORMAT>         Output format: terminal, json, sarif
+  -r, --rules <PATH>           Custom rules directory
+      --threshold <SCORE>       Minimum trust score (0-100)
+      --ci                     CI mode (JSON output, exit on failure)
+```
 
-- MIT License ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Run `cargo test` and `cargo clippy`
+5. Submit a pull request
+
+## License
+
+Licensed under either of:
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+- MIT license ([LICENSE-MIT](LICENSE-MIT))
 
 at your option.
 
-## 🙏 Acknowledgments
+## Roadmap
 
-- Built with [Rust](https://www.rust-lang.org/) and [clap](https://clap.rs/)
-- Inspired by static analysis tools like ESLint, Clippy, and security scanners
-- SARIF standard compliance for CI/CD integration
+- [ ] Machine learning models for advanced AI detection
+- [ ] Plugin system for custom analyzers
+- [ ] Web UI for result visualization
+- [ ] Integration with popular IDEs
+- [ ] Support for more programming languages
 
 ---
 
-**Website**: [getvow.dev](https://getvow.dev) | **Issues**: [GitHub Issues](https://github.com/guanchuan1314/vow/issues) | **Discussions**: [GitHub Discussions](https://github.com/guanchuan1314/vow/discussions)
+**Vow**: Because trust should be verified, not assumed.

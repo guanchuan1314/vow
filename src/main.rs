@@ -13,16 +13,28 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Initialize a new Vow project
+    Init {
+        /// Directory to initialize (default: current directory)
+        #[arg(default_value = ".")]
+        path: PathBuf,
+    },
     /// Check a file, directory, or stdin for verification
     Check {
-        /// Path to analyze (file or directory)
-        path: PathBuf,
+        /// Path to analyze (file or directory), or "-" for stdin
+        path: String,
         /// Output format
         #[arg(short, long, default_value = "terminal")]
         format: String,
         /// Rule file or directory
         #[arg(short, long)]
         rules: Option<PathBuf>,
+        /// Trust score threshold (exit code 1 if below)
+        #[arg(long)]
+        threshold: Option<u8>,
+        /// CI mode (JSON output, non-zero exit on failure)
+        #[arg(long)]
+        ci: bool,
     },
 }
 
@@ -30,8 +42,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Check { path, format, rules } => {
-            vow::check_path(path, format, rules)?;
+        Commands::Init { path } => {
+            vow::init_project(path)?;
+        }
+        Commands::Check { path, format, rules, threshold, ci } => {
+            let exit_code = vow::check_input(path, format, rules, threshold, ci)?;
+            std::process::exit(exit_code);
         }
     }
 

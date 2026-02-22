@@ -1,0 +1,9 @@
+name: "hardcoded_passwords"
+description: "Detect hardcoded passwords in code"
+severity: "high"
+patterns:
+  - type: "regex"
+    pattern: "password\\s*=\\s*[\"'][^\"']+[\"']"
+  - type: "contains"
+    pattern: "SECRET_KEY = "
+file_types: ["py", "js", "ts"]

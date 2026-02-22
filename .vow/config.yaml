@@ -1,0 +1,6 @@
+threshold: 70
+enabled_analyzers:
+- code
+- text
+- rules
+custom_rule_dirs: null

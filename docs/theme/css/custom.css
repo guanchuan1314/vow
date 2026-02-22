@@ -1,15 +1,21 @@
-/* Vow Documentation - Custom Modern Theme */
+/* Vow Documentation - Modern Consistent Theme */
 
 /* Import fonts in head.hbs, but set fallbacks here */
 :root {
-  /* Colors - Dark theme focused */
+  /* Colors - Dark theme focused with emerald accents */
   --bg-color: #0a0a0f;
   --content-bg: #111117;
   --sidebar-bg: #0a0a0f;
   --text-primary: #e2e8f0;
   --text-secondary: #94a3b8;
-  --accent-blue: #6366f1;
-  --accent-purple: #8b5cf6;
+  --text-muted: #64748b;
+  
+  /* NEW: Emerald/teal accent colors instead of purple */
+  --accent-primary: #10b981; /* emerald-500 */
+  --accent-secondary: #14b8a6; /* teal-500 */
+  --accent-light: #34d399; /* emerald-400 */
+  --accent-dark: #047857; /* emerald-700 */
+  
   --code-bg: #1e1e2e;
   --code-border: #313244;
   --border-color: #27272a;
@@ -31,12 +37,18 @@
 }
 
 /* Base styling overrides */
+html {
+  scroll-behavior: smooth;
+  font-size: 16px; /* Ensure base 16px for rem calculations */
+}
+
 body {
   font-family: var(--font-body) !important;
   background-color: var(--bg-color) !important;
   color: var(--text-primary) !important;
-  line-height: 1.7 !important;
+  line-height: 1.7 !important; /* Improved readability */
   letter-spacing: -0.01em;
+  font-size: 16px !important; /* Global minimum 16px body font */
 }
 
 /* Content area */
@@ -47,53 +59,63 @@ body {
   margin: 0 auto !important;
   min-height: 100vh;
   box-shadow: 0 0 0 1px var(--border-color);
+  font-size: 16px !important; /* Ensure content area respects minimum */
 }
 
-/* Typography improvements */
+/* Typography improvements - Clear hierarchy */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700 !important;
   line-height: 1.2 !important;
   margin-top: 2.5rem !important;
   margin-bottom: 1rem !important;
   letter-spacing: -0.025em;
+  color: var(--text-primary) !important;
 }
 
 h1 {
-  font-size: 2.5rem !important;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 2rem !important; /* 32px - clear hierarchy */
+  color: var(--accent-primary) !important; /* Single emerald color, no gradient */
   margin-top: 0 !important;
   margin-bottom: 1.5rem !important;
 }
 
 h2 {
-  font-size: 2rem !important;
+  font-size: 1.6rem !important; /* 25.6px */
   color: var(--text-primary) !important;
   border-bottom: 2px solid var(--border-color) !important;
   padding-bottom: 0.5rem !important;
 }
 
 h3 {
-  font-size: 1.5rem !important;
-  color: var(--accent-blue) !important;
+  font-size: 1.3rem !important; /* 20.8px */
+  color: var(--accent-secondary) !important;
+}
+
+h4 {
+  font-size: 1.1rem !important; /* 17.6px */
+  color: var(--text-primary) !important;
+}
+
+h5, h6 {
+  font-size: 1rem !important; /* 16px minimum */
+  color: var(--text-secondary) !important;
 }
 
 p {
   margin-bottom: 1.5rem !important;
   color: var(--text-primary) !important;
+  font-size: 16px !important; /* Explicit 16px minimum */
 }
 
 /* Links */
 a {
-  color: var(--accent-blue) !important;
+  color: var(--accent-primary) !important;
   text-decoration: none !important;
   transition: all 0.2s ease !important;
 }
 
 a:hover {
-  color: var(--accent-purple) !important;
+  color: var(--accent-light) !important;
   text-decoration: underline !important;
 }
 
@@ -101,7 +123,7 @@ a:hover {
 pre {
   background-color: var(--code-bg) !important;
   border: 1px solid var(--code-border) !important;
-  border-left: 4px solid var(--accent-blue) !important;
+  border-left: 4px solid var(--accent-primary) !important; /* Emerald accent */
   border-radius: 8px !important;
   padding: 1.5rem !important;
   margin: 1.5rem 0 !important;
@@ -112,18 +134,18 @@ pre {
 
 code {
   font-family: var(--font-mono) !important;
-  font-size: 0.875rem !important;
+  font-size: 14px !important; /* Minimum 14px for code blocks */
   background-color: var(--code-bg) !important;
   color: var(--text-primary) !important;
 }
 
 /* Inline code */
-p code, li code, td code {
+p code, li code, td code, h1 code, h2 code, h3 code, h4 code {
   background-color: var(--hover-bg) !important;
   border: 1px solid var(--border-color) !important;
   padding: 0.2rem 0.4rem !important;
   border-radius: 4px !important;
-  font-size: 0.85em !important;
+  font-size: 14px !important; /* Minimum 14px for inline code */
 }
 
 /* Sidebar styling */
@@ -147,21 +169,22 @@ p code, li code, td code {
   border-radius: 6px !important;
   display: block !important;
   transition: all 0.2s ease !important;
+  font-size: 14px !important; /* Minimum 14px for sidebar items */
 }
 
 .sidebar ol.chapter li a:hover {
   background-color: var(--hover-bg) !important;
-  color: var(--accent-blue) !important;
+  color: var(--accent-primary) !important;
   text-decoration: none !important;
 }
 
 .sidebar ol.chapter li.chapter-item.expanded.has-sub-chapter > a.toggle {
-  color: var(--accent-blue) !important;
+  color: var(--accent-primary) !important;
 }
 
 /* Active sidebar item */
 .sidebar ol.chapter li.chapter-item.current > a {
-  background-color: var(--accent-blue) !important;
+  background-color: var(--accent-primary) !important;
   color: white !important;
   font-weight: 600 !important;
 }
@@ -171,9 +194,14 @@ blockquote {
   margin: 1.5rem 0 !important;
   padding: 1rem 1.5rem !important;
   border-radius: 8px !important;
-  border-left: 4px solid var(--accent-blue) !important;
+  border-left: 4px solid var(--accent-primary) !important;
   background-color: var(--hover-bg) !important;
   position: relative !important;
+  font-size: 16px !important; /* Ensure readable font size */
+}
+
+blockquote p {
+  font-size: 16px !important; /* Override any smaller sizes */
 }
 
 /* Callout types based on emoji prefixes */
@@ -184,8 +212,8 @@ blockquote p:first-child:before {
 
 blockquote:has(p:first-child:contains("💡")),
 blockquote:has(p:first-child:contains("💡")) {
-  background-color: rgba(59, 130, 246, 0.1) !important;
-  border-left-color: var(--accent-blue) !important;
+  background-color: rgba(16, 185, 129, 0.1) !important; /* Emerald tint */
+  border-left-color: var(--accent-primary) !important;
 }
 
 blockquote:has(p:first-child:contains("⚠️")) {
@@ -198,7 +226,7 @@ blockquote:has(p:first-child:contains("🚨")) {
   border-left-color: #ef4444 !important;
 }
 
-/* Tables */
+/* Tables - proper styling */
 table {
   border-collapse: collapse !important;
   width: 100% !important;
@@ -207,12 +235,14 @@ table {
   border-radius: 8px !important;
   overflow: hidden !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  font-size: 15px !important; /* Readable table text */
 }
 
 table th, table td {
   padding: 1rem !important;
   text-align: left !important;
   border-bottom: 1px solid var(--border-color) !important;
+  font-size: 15px !important; /* Minimum readable size */
 }
 
 table th {
@@ -221,7 +251,16 @@ table th {
   color: var(--text-primary) !important;
 }
 
-/* Lists */
+/* Alternating table rows */
+table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+table tbody tr:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+/* Lists - proper spacing */
 ul, ol {
   margin-bottom: 1.5rem !important;
   padding-left: 1.5rem !important;
@@ -230,61 +269,88 @@ ul, ol {
 li {
   margin-bottom: 0.5rem !important;
   color: var(--text-primary) !important;
+  font-size: 16px !important; /* Ensure list items are readable */
+  line-height: 1.6 !important;
 }
 
-/* Special styling for landing page hero */
+/* Nested lists */
+li ul, li ol {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+li li {
+  font-size: 15px !important; /* Slightly smaller for nested items but still readable */
+}
+
+/* Images - responsive */
+img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 6px !important;
+  margin: 1rem 0 !important;
+}
+
+/* COHESIVE STYLING - Remove page-specific styling that creates inconsistency */
+/* Instead of special hero styling, make intro page consistent with others */
+
+/* Simple consistent styling for the intro page elements */
 .hero-section {
   text-align: center;
-  margin: 2rem 0 4rem 0;
-  padding: 3rem 2rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
-  border-radius: 12px;
+  margin: 2rem 0 3rem 0;
+  padding: 2rem;
+  background-color: var(--hover-bg);
   border: 1px solid var(--border-color);
+  border-radius: 8px;
 }
 
 .hero-title {
-  font-size: 3.5rem !important;
+  font-size: 2.5rem !important; /* Slightly larger than normal h1 but not overpowering */
   font-weight: 800 !important;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-primary) !important; /* Single emerald color, consistent with theme */
   margin-bottom: 1rem !important;
   line-height: 1.1 !important;
+  margin-top: 0 !important;
 }
 
 .hero-tagline {
-  font-size: 1.25rem;
+  font-size: 1.2rem !important; /* Readable but not too large */
   color: var(--text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   font-weight: 400;
 }
 
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  margin: 3rem 0;
+  gap: 1.5rem;
+  margin: 2rem 0;
 }
 
 .feature-card {
   background-color: var(--hover-bg);
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
 }
 
 .feature-card h3 {
-  color: var(--accent-blue) !important;
+  color: var(--accent-primary) !important;
   margin-top: 0 !important;
   margin-bottom: 1rem !important;
-  font-size: 1.25rem !important;
+  font-size: 1.1rem !important; /* Consistent with h4 sizing */
+}
+
+.feature-card p {
+  font-size: 15px !important; /* Minimum 15px as required */
+  color: var(--text-secondary) !important;
+  margin-bottom: 0 !important;
 }
 
 .install-section {
@@ -292,7 +358,7 @@ li {
   border: 1px solid var(--code-border);
   border-radius: 8px;
   padding: 2rem;
-  margin: 3rem 0;
+  margin: 2rem 0;
   text-align: center;
 }
 
@@ -303,19 +369,20 @@ li {
 
 .cta-button {
   display: inline-block;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background-color: var(--accent-primary) !important; /* Single emerald color */
   color: white !important;
   padding: 1rem 2rem;
   border-radius: 8px;
   text-decoration: none !important;
   font-weight: 600;
   margin-top: 1rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  font-size: 16px !important;
 }
 
 .cta-button:hover {
+  background-color: var(--accent-dark) !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
   color: white !important;
 }
 
@@ -325,24 +392,67 @@ li {
   border-bottom: 1px solid var(--border-color) !important;
 }
 
+/* Search box styling */
+.search-bar {
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--hover-bg) !important;
+  color: var(--text-primary) !important;
+  font-size: 14px !important;
+}
+
+.search-bar:focus {
+  border-color: var(--accent-primary) !important;
+  outline: none !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  html {
+    font-size: 14px; /* Slightly smaller base on mobile but still readable */
+  }
+  
+  body {
+    font-size: 14px !important; /* Adjust body font for mobile */
+  }
+  
   .content {
     padding: 2rem 1.5rem !important;
+    font-size: 14px !important;
   }
   
   .hero-title {
-    font-size: 2.5rem !important;
+    font-size: 2rem !important;
   }
   
   .feature-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  /* Ensure nothing goes below 13px on mobile */
+  .sidebar ol.chapter li a {
+    font-size: 13px !important;
+  }
+  
+  p code, li code, td code {
+    font-size: 13px !important;
   }
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+@media (max-width: 480px) {
+  /* On very small screens, allow minimum 13px but no smaller */
+  html {
+    font-size: 13px;
+  }
+  
+  body {
+    font-size: 13px !important;
+  }
+  
+  .content {
+    padding: 1.5rem 1rem !important;
+    font-size: 13px !important;
+  }
 }
 
 /* Loading animation for better perceived performance */
@@ -353,10 +463,61 @@ html {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Print styles */
+@media print {
+  .sidebar {
+    display: none !important;
+  }
+  
+  .content {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 1rem !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Dark theme consistency - ensure ALL pages look good */
+.page-wrapper {
+  background-color: var(--bg-color) !important;
+}
+
+.chapter {
+  background-color: var(--content-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Ensure consistent styling across all content */
+.chapter h1, .chapter h2, .chapter h3, .chapter h4, .chapter h5, .chapter h6 {
+  color: inherit !important; /* Use the colors defined above */
+}
+
+.chapter p, .chapter li {
+  color: var(--text-primary) !important;
+  font-size: inherit !important;
+}
+
+/* Accessibility improvements */
+*:focus {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
+}
+
+/* High contrast for better readability */
+strong, b {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+
+em, i {
+  color: var(--text-secondary) !important;
+  font-style: italic !important;
 }

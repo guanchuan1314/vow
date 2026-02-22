@@ -36,9 +36,30 @@ enum Commands {
         #[arg(long)]
         ci: bool,
     },
+    /// Scan network ports and evaluate security
+    Scan {
+        /// Target to scan (IP address, hostname, or CIDR range)
+        target: String,
+        /// Port range to scan (e.g., 1-1000, 22,80,443)
+        #[arg(short, long, default_value = "1-1000")]
+        ports: String,
+        /// Output format
+        #[arg(short, long, default_value = "terminal")]
+        format: String,
+        /// Timeout per port in milliseconds
+        #[arg(long, default_value = "1000")]
+        timeout: u64,
+        /// Number of concurrent scans
+        #[arg(short, long, default_value = "100")]
+        concurrency: usize,
+        /// Only report security issues (skip secure ports)
+        #[arg(long)]
+        issues_only: bool,
+    },
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
@@ -47,6 +68,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Commands::Check { path, format, rules, threshold, ci } => {
             let exit_code = vow::check_input(path, format, rules, threshold, ci)?;
+            std::process::exit(exit_code);
+        }
+        Commands::Scan { target, ports, format, timeout, concurrency, issues_only } => {
+            let exit_code = vow::scan_ports(target, ports, format, timeout, concurrency, issues_only).await?;
             std::process::exit(exit_code);
         }
     }

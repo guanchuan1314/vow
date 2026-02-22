@@ -35,6 +35,13 @@ Vow is a local-first AI output verification engine that analyzes code and text t
 - **Threshold Configuration**: Set minimum trust scores
 - **Pipe Support**: Read from stdin for shell pipelines
 
+### 🌐 **Port Scanning & Security Analysis**
+- **Fast Concurrent Scanning**: Configurable concurrency for efficient port scanning
+- **Security Evaluation**: Each open port evaluated against security baselines
+- **Risk Assessment**: Ports classified by risk level (Critical, High, Medium, Low)
+- **Comprehensive Reporting**: Detailed security recommendations for each service
+- **Network Support**: IP addresses, hostnames, and CIDR ranges
+
 ## Quick Start
 
 ### Installation
@@ -70,6 +77,10 @@ vow check code.py --threshold 80
 
 # JSON output for CI
 vow check . --ci
+
+# Port scanning and security analysis
+vow scan 192.168.1.1 --ports 22,80,443
+vow scan example.com --ports 1-1000 --issues-only
 ```
 
 ## Example Output
@@ -208,12 +219,20 @@ Minimum score: 0%, Maximum score: 100%
 ```
 vow init [PATH]                 Initialize Vow project
 vow check <PATH|-> [OPTIONS]    Analyze files or stdin
+vow scan <TARGET> [OPTIONS]     Scan network ports for security issues
 
-Options:
+Check Options:
   -f, --format <FORMAT>         Output format: terminal, json, sarif
   -r, --rules <PATH>           Custom rules directory
       --threshold <SCORE>       Minimum trust score (0-100)
       --ci                     CI mode (JSON output, exit on failure)
+
+Scan Options:
+  -p, --ports <PORTS>          Port range (e.g., 1-1000, 22,80,443)
+  -f, --format <FORMAT>        Output format: terminal, json
+      --timeout <MS>           Connection timeout in milliseconds
+  -c, --concurrency <NUM>      Number of concurrent scans
+      --issues-only           Only show security issues
 ```
 
 ## Contributing

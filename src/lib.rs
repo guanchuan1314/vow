@@ -1,12 +1,14 @@
 pub mod analyzers;
 pub mod rules;
 pub mod report;
+pub mod scanner;
 
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io::{self, Read};
 use ignore::WalkBuilder;
 use serde::{Deserialize, Serialize};
+use scanner::port_scanner::PortScanner;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalysisResult {
@@ -120,6 +122,51 @@ file_types: ["py", "js", "ts"]
     println!("  - Created .vow/rules/security.yaml");
     
     Ok(())
+}
+
+/// Main entry point for port scanning
+pub async fn scan_ports(
+    target: String,
+    ports: String,
+    format: String,
+    timeout: u64,
+    concurrency: usize,
+    issues_only: bool,
+) -> Result<i32, Box<dyn std::error::Error>> {
+    let scanner = PortScanner::new(timeout, concurrency);
+    
+    // Resolve targets
+    let targets = scanner.resolve_targets(&target).await
+        .map_err(|e| format!("Target resolution error: {}", e))?;
+    if targets.is_empty() {
+        return Err("No valid targets found".into());
+    }
+    
+    // Parse ports
+    let port_list = scanner.parse_ports(&ports)
+        .map_err(|e| format!("Port parsing error: {}", e))?;
+    if port_list.is_empty() {
+        return Err("No valid ports specified".into());
+    }
+    
+    println!("Starting port scan of {} target(s) across {} port(s)...", targets.len(), port_list.len());
+    
+    // Perform scan
+    let results = scanner.scan(targets, port_list).await
+        .map_err(|e| format!("Scan error: {}", e))?;
+    
+    // Generate report
+    generate_scan_report(&results, &format, issues_only)?;
+    
+    // Calculate exit code based on security issues
+    let critical_issues = results.summary.critical_issues;
+    let high_risk_issues = results.summary.high_risk_issues;
+    
+    if critical_issues > 0 || high_risk_issues > 2 {
+        Ok(1) // Exit code 1 for critical security issues
+    } else {
+        Ok(0) // Exit code 0 for acceptable security posture
+    }
 }
 
 /// Main entry point for checking input (file, directory, or stdin)
@@ -353,6 +400,21 @@ fn generate_report(
         "json" => report::json::print_json_report(results)?,
         "sarif" => report::sarif::print_sarif_report(results)?,
         _ => return Err(format!("Unsupported format: {}", format).into()),
+    }
+    
+    Ok(())
+}
+
+/// Generate scan report in specified format
+fn generate_scan_report(
+    results: &scanner::PortScanResults,
+    format: &str,
+    issues_only: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    match format {
+        "terminal" => report::terminal::print_scan_report(results, issues_only),
+        "json" => report::json::print_scan_json_report(results)?,
+        _ => return Err(format!("Unsupported format for scan reports: {}", format).into()),
     }
     
     Ok(())

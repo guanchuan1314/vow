@@ -1,0 +1,107 @@
+# Example port security rules for Vow
+# This demonstrates how port scanning could be integrated with the YAML rule system
+
+name: "port_security_audit"
+description: "Comprehensive port security evaluation"
+severity: "high"
+
+# Port scan configuration
+scan_config:
+  timeout_ms: 1000
+  concurrency: 100
+  default_ports: "1-1000"
+
+# Security baselines for common ports
+port_rules:
+  # Critical security issues - should never be exposed
+  critical_ports:
+    - port: 23
+      service: "Telnet"
+      severity: "critical"
+      message: "Telnet transmits credentials in plaintext - replace with SSH"
+      
+    - port: 21
+      service: "FTP"  
+      severity: "high"
+      message: "FTP often insecure - use SFTP/FTPS with proper TLS"
+      
+    - ports: [1433, 3306, 5432, 6379, 27017]
+      services: ["SQL Server", "MySQL", "PostgreSQL", "Redis", "MongoDB"]
+      severity: "critical"
+      message: "Database ports should not be directly exposed to internet"
+
+  # Ports requiring investigation
+  review_required:
+    - port: 22
+      service: "SSH"
+      severity: "medium"
+      message: "Ensure key-based auth, disable passwords, limit access"
+      checks:
+        - "Key-based authentication enabled"
+        - "Password authentication disabled"
+        - "Rate limiting configured"
+        - "Non-standard port considered"
+        
+    - port: 80
+      service: "HTTP"
+      severity: "medium" 
+      message: "HTTP should redirect to HTTPS"
+      checks:
+        - "All requests redirect to HTTPS"
+        - "No sensitive data transmitted over HTTP"
+
+  # Secure configurations
+  secure_ports:
+    - port: 443
+      service: "HTTPS"
+      severity: "low"
+      message: "HTTPS is secure - ensure certificate validity"
+      checks:
+        - "Valid TLS certificate"
+        - "Strong cipher suites"
+        - "HSTS headers enabled"
+        
+    - ports: [993, 995]
+      services: ["IMAPS", "POP3S"]
+      severity: "low"
+      message: "Encrypted email protocols - verify authentication"
+
+# Risk scoring
+risk_scoring:
+  critical: 30  # Points deducted for critical issues
+  high: 20      # Points deducted for high-risk issues  
+  medium: 10    # Points deducted for medium-risk issues
+  low: 5        # Points deducted for low-risk issues
+  
+  thresholds:
+    secure: 90        # 90+ points = secure
+    acceptable: 70    # 70-89 points = acceptable
+    needs_review: 50  # 50-69 points = needs review
+    insecure: 0       # <50 points = insecure
+
+# Recommendations by risk level
+recommendations:
+  critical:
+    - "Immediately block or secure critical ports"
+    - "Implement VPN for database access"
+    - "Review firewall rules"
+    
+  high:
+    - "Replace insecure protocols with secure alternatives"
+    - "Enable encryption for all services"
+    - "Implement access controls"
+    
+  medium:
+    - "Review service configurations"
+    - "Enable additional security features"
+    - "Consider security hardening"
+    
+  general:
+    - "Implement a firewall to block unnecessary ports"
+    - "Use strong, unique passwords for all services"
+    - "Enable two-factor authentication where possible"
+    - "Keep all services and software up to date"
+    - "Monitor logs for suspicious activity"
+    - "Use TLS/SSL encryption for all network communications"
+    - "Follow the principle of least privilege"
+    - "Regularly audit exposed services"

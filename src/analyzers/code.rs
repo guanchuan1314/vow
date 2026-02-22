@@ -1,8 +1,15 @@
 use std::path::Path;
 use crate::{AnalysisResult, Issue, Severity, FileType};
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 
-/// Top ~200 Python packages from PyPI + standard library
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CustomAllowlist {
+    pub python: Option<Vec<String>>,
+    pub javascript: Option<Vec<String>>,
+}
+
+/// Top ~500 Python packages from PyPI + standard library
 const KNOWN_PYTHON_PACKAGES: &[&str] = &[
     // Python standard library modules
     "os", "sys", "subprocess", "json", "urllib", "http", "re", "datetime", "collections", "itertools", 
@@ -11,7 +18,33 @@ const KNOWN_PYTHON_PACKAGES: &[&str] = &[
     "base64", "hashlib", "hmac", "secrets", "ssl", "socket", "select", "signal", "logging", "unittest",
     "doctest", "argparse", "configparser", "shutil", "tempfile", "glob", "fnmatch", "pickle", "sqlite3",
     "gzip", "zipfile", "tarfile", "io", "struct", "copy", "pprint", "enum", "dataclasses", "contextlib",
-    // Popular PyPI packages  
+    "inspect", "ast", "dis", "code", "importlib", "pkgutil", "modulefinder", "runpy", "types", "weakref",
+    "gc", "site", "platform", "warnings", "traceback", "linecache", "keyword", "builtins", "__future__",
+    "codecs", "encodings", "locale", "string", "textwrap", "unicodedata", "stringprep", "difflib",
+    "heapq", "bisect", "array", "bytes", "memoryview", "bytearray", "mmap", "ctypes", "ctypes.util",
+    // Popular PyPI packages from requirements
+    "prisma", "pydantic", "fastapi", "uvicorn", "starlette", "httpx", "aiohttp", "celery", "redis", "pymongo",
+    "sqlalchemy", "alembic", "pytest", "black", "ruff", "mypy", "poetry", "pdm", "hatch", "flit",
+    "tox", "nox", "sphinx", "mkdocs", "typer", "rich", "textual", "polars", "dask", "ray", "prefect", 
+    "airflow", "dagster", "mlflow", "wandb", "optuna", "lightgbm", "xgboost", "catboost", "transformers",
+    "tokenizers", "datasets", "accelerate", "diffusers", "langchain", "llama_index", "openai", "anthropic",
+    "cohere", "tiktoken", "chromadb", "pinecone", "weaviate", "qdrant", "milvus", "faiss", "annoy",
+    "sentence_transformers", "spacy", "nltk", "gensim", "huggingface_hub", "gradio", "streamlit", "dash",
+    "plotly", "bokeh", "altair", "seaborn", "pillow", "opencv", "imageio", "scikit_image", "torchvision",
+    "torchaudio", "jax", "flax", "haiku", "einops", "sympy", "networkx", "igraph", "pyyaml", "toml",
+    "tomli", "tomllib", "dotenv", "python_dotenv", "decouple", "dynaconf", "boto3", "botocore", "google_cloud",
+    "azure", "paramiko", "fabric", "invoke", "click", "fire", "docopt", "argparse", "configparser",
+    "dataclasses", "attrs", "pydantic_settings", "msgpack", "protobuf", "grpcio", "thrift", "avro",
+    "arrow", "pyarrow", "orjson", "ujson", "rapidjson", "lxml", "beautifulsoup4", "bs4", "scrapy",
+    "playwright", "selenium", "httptools", "uvloop", "gunicorn", "hypercorn", "daphne", "twisted",
+    "gevent", "greenlet", "trio", "anyio", "structlog", "loguru", "sentry_sdk", "prometheus_client",
+    "statsd", "psutil", "watchdog", "schedule", "apscheduler", "crontab", "pendulum", "arrow_dt",
+    "dateutil", "pytz", "zoneinfo", "babel", "gettext", "passlib", "bcrypt", "cryptography", "pyjwt",
+    "jwcrypto", "oauthlib", "authlib", "itsdangerous", "werkzeug", "jinja2", "mako", "chameleon",
+    "django", "flask", "bottle", "falcon", "sanic", "tornado", "aiofiles", "motor", "beanie", "tortoise",
+    "peewee", "pony", "mongoengine", "marshmallow", "cerberus", "voluptuous", "trafaret", "hypothesis",
+    "faker", "factory_boy", "mimesis", "coverage", "tox", "nox",
+    // More popular packages
     "requests", "urllib3", "setuptools", "certifi", "pip", "wheel", "six", "python-dateutil", "s3transfer", 
     "botocore", "jmespath", "pyasn1", "rsa", "boto3", "pyyaml", "awscli", "docutils", "colorama", "pyasn1-modules",
     "numpy", "charset-normalizer", "idna", "click", "blinker", "markupsafe", "jinja2", "flask", "werkzeug", "itsdangerous",
@@ -45,15 +78,85 @@ const KNOWN_PYTHON_PACKAGES: &[&str] = &[
     "fabric", "invoke", "pathlib2", "scandir", "pathspec", "watchdog", "argh", "pyyaml-include", "environs", "marshmallow",
     "webargs", "apispec", "apispec-webframeworks", "flasgger", "connexion", "clickclick", "inflection", "jsonschema",
     "fastapi", "starlette", "pydantic", "email-validator", "dnspython", "python-multipart", "aiofiles", "uvicorn",
-    "gunicorn", "waitress", "gevent", "eventlet", "greenlet", "locust", "pyquery", "geventhttpclient", "websocket-client"
+    "gunicorn", "waitress", "gevent", "eventlet", "greenlet", "locust", "pyquery", "geventhttpclient", "websocket-client",
+    // Additional packages for data science/ML
+    "sklearn", "sk-learn", "tensorflow", "tf", "torch", "pytorch", "keras", "theano", "caffe", "mxnet",
+    "cupy", "dask-ml", "joblib", "scikit-image", "skimage", "scikit-learn", "xarray", "h5py", "netcdf4", 
+    "pyhdf", "tables", "pytables", "hdf5", "zarr", "parquet", "pyparquet", "feather", "pyarrow",
+    // Web scraping & automation
+    "requests-html", "pyppeteer", "splinter", "mechanize", "robobrowser", "grab", "webbot", "dryscrape",
+    "ghost", "phantomjs", "chromedriver", "geckodriver", "webdriver-manager", "undetected-chromedriver",
+    // Database connectors
+    "cx-oracle", "oracledb", "pyodbc", "pymssql", "mysqlclient", "mysql-connector-python", "mariadb",
+    "cassandra-driver", "neo4j", "py2neo", "rethinkdb", "couchdb", "elasticsearch", "elasticsearch-dsl",
+    // GUI frameworks
+    "tkinter", "tk", "pyqt5", "pyqt6", "pyside2", "pyside6", "wxpython", "kivy", "pyglet", "arcade",
+    "pygame", "panda3d", "ursina", "moderngl", "vispy", "mayavi", "plotly-dash", "panel", "bokeh-server",
+    // Image processing
+    "pillow-simd", "wand", "pgmagick", "pymaging", "thumbor", "face_recognition", "opencv-contrib-python-headless",
+    "opencv-python-headless", "mahotas", "scikit-image", "imageio-ffmpeg", "moviepy", "av", "ffmpeg-python",
+    // API frameworks
+    "fastapi-users", "fastapi-auth", "fastapi-pagination", "fastapi-cache", "slowapi", "limits", "flask-restful",
+    "flask-restplus", "flask-api", "apiflask", "connexion", "falcon-cors", "hug", "eve", "sandman2",
+    // Testing & mocking
+    "pytest-xdist", "pytest-cov", "pytest-mock", "pytest-asyncio", "pytest-django", "pytest-flask",
+    "nose", "nose2", "testtools", "testfixtures", "responses", "httmock", "requests-mock", "vcrpy",
+    "betamax", "cassette", "mock", "unittest-mock", "flexmock", "doublex", "sure", "expects",
+    // Async & concurrency
+    "aioredis", "aiofiles", "aiopg", "aiomysql", "asyncpg", "databases", "encode-databases", "sqlalchemy-aio",
+    "uvloop", "trio", "curio", "asks", "httpcore", "h11", "h2", "wsproto", "hypercorn", "daphne",
+    // Configuration & environment
+    "python-decouple", "environs", "dynaconf", "hydra-core", "omegaconf", "configargparse", "click-config-file",
+    "pydantic-settings", "attrs", "cattrs", "desert", "marshmallow-dataclass", "dataclasses-json",
+    // Logging & monitoring
+    "loguru", "structlog", "python-json-logger", "colorlog", "sentry-sdk", "rollbar", "bugsnag", "airbrake",
+    "newrelic", "elastic-apm", "opencensus", "opentelemetry", "jaeger-client", "ddtrace", "datadog",
+    // Serialization
+    "msgpack", "cbor", "cbor2", "bson", "pycbor", "flatbuffers", "capnproto", "thrift", "avro-python3",
+    "fastavro", "snappy", "lz4", "zstd", "brotli", "lzma", "gzip", "zlib", "blosc",
+    // Cloud & deployment
+    "awscli", "aws-sam-cli", "chalice", "zappa", "serverless", "pulumi", "troposphere", "cloudformation-cli",
+    "docker", "docker-compose", "kubernetes", "kubectl", "helm", "terraform", "ansible", "fabric3",
+    // File processing
+    "openpyxl", "xlsxwriter", "xlrd", "xlwt", "xlutils", "pyexcel", "tablib", "csvkit", "petl",
+    "records", "dataset", "csvvalidator", "pandas-profiling", "sweetviz", "pandas-bokeh", "cufflinks",
 ];
 
-/// Top ~200 JavaScript/Node.js packages from npm + Node.js built-ins
+/// Top ~500 JavaScript/Node.js packages from npm + Node.js built-ins
 const KNOWN_JS_PACKAGES: &[&str] = &[
     // Node.js built-in modules
     "fs", "path", "os", "crypto", "http", "https", "url", "querystring", "util", "events", "stream",
     "buffer", "child_process", "cluster", "dgram", "dns", "domain", "net", "readline", "repl", "tls",
-    "tty", "vm", "zlib", "assert", "process", "console", "timers", "module", "worker_threads",
+    "tty", "vm", "zlib", "assert", "process", "console", "timers", "module", "worker_threads", "perf_hooks",
+    "async_hooks", "inspector", "trace_events", "v8", "string_decoder", "punycode", "constants",
+    // Required packages from specification  
+    "zod", "@prisma/client", "prisma", "@trpc/server", "@trpc/client", "drizzle-orm", "kysely", "knex", 
+    "sequelize", "typeorm", "mongoose", "@supabase/supabase-js", "firebase", "@firebase/app", "next", 
+    "nuxt", "svelte", "@sveltejs/kit", "solid-js", "qwik", "astro", "remix", "gatsby", "vite", "esbuild", 
+    "rollup", "parcel", "turbopack", "tsup", "unbuild", "vitest", "jest", "mocha", "chai", "playwright", 
+    "puppeteer", "cypress", "@testing-library/react", "@testing-library/jest-dom", "msw", "supertest", 
+    "nock", "sinon", "tailwindcss", "@tailwindcss/typography", "postcss", "autoprefixer", "sass", "less", 
+    "styled-components", "@emotion/react", "@emotion/styled", "@mui/material", "@chakra-ui/react", 
+    "@mantine/core", "@radix-ui/react-dialog", "@headlessui/react", "shadcn", "lucide-react", 
+    "@heroicons/react", "framer-motion", "gsap", "three", "@react-three/fiber", "d3", "chart.js", 
+    "recharts", "@nivo/core", "echarts", "mapbox-gl", "leaflet", "zustand", "jotai", "recoil", 
+    "@reduxjs/toolkit", "mobx", "valtio", "pinia", "vuex", "@tanstack/react-query", "swr", "apollo-client", 
+    "@apollo/client", "urql", "graphql", "graphql-tag", "trpc", "tRPC", "@hono/node-server", "hono", 
+    "fastify", "koa", "nest", "@nestjs/core", "@nestjs/common", "express", "cors", "helmet", "compression", 
+    "morgan", "winston", "pino", "bunyan", "loglevel", "debug", "dotenv", "cross-env", "env-cmd", "zx", 
+    "execa", "shelljs", "commander", "yargs", "inquirer", "prompts", "ora", "chalk", "picocolors", "clsx", 
+    "classnames", "date-fns", "dayjs", "luxon", "moment", "uuid", "nanoid", "cuid", "ulid", "bcrypt", 
+    "bcryptjs", "argon2", "jsonwebtoken", "jose", "passport", "next-auth", "@auth/core", "lucia", "oslo", 
+    "arctic", "@clerk/nextjs", "sharp", "jimp", "canvas", "pdf-lib", "pdfkit", "xlsx", "csv-parse", 
+    "papaparse", "cheerio", "jsdom", "linkedom", "turndown", "marked", "remark", "rehype", "unified", 
+    "mdx", "@mdx-js/react", "contentlayer", "sanity", "strapi", "payload", "directus", "keystone", 
+    "medusa", "@shopify/hydrogen", "stripe", "@stripe/stripe-js", "paypal", "lemon-squeezy", "resend", 
+    "nodemailer", "@sendgrid/mail", "twilio", "@aws-sdk/client-s3", "@aws-sdk/client-ses", 
+    "@google-cloud/storage", "@azure/storage-blob", "ioredis", "bullmq", "amqplib", "kafkajs", "socket.io", 
+    "ws", "@trpc/server", "superjson", "devalue", "ky", "got", "undici", "ofetch", "@upstash/redis", 
+    "@upstash/ratelimit", "@vercel/analytics", "@vercel/og", "@sentry/nextjs", "@sentry/node", "openai", 
+    "@anthropic-ai/sdk", "langchain", "llamaindex", "ai", "@ai-sdk/openai", "chromadb", "pinecone", 
+    "weaviate-ts-client",
     // Popular npm packages
     "lodash", "chalk", "request", "commander", "express", "debug", "ms", "mkdirp", "colors", "async", "underscore",
     "moment", "bluebird", "q", "uuid", "semver", "yargs", "glob", "minimatch", "inherits", "util-deprecate", "safe-buffer",
@@ -83,13 +186,74 @@ const KNOWN_JS_PACKAGES: &[&str] = &[
     "fs-extra", "graceful-fs", "rimraf", "del", "make-dir", "move-file", "copy-file", "cpy", "globby", "fast-glob",
     "chokidar", "gaze", "node-watch", "sane", "watchpack", "webpack-dev-middleware", "webpack-hot-middleware", "react-hot-loader",
     "pm2", "forever", "supervisor", "node-dev", "nodemon", "reload", "livereload", "browser-sync", "lite-server", "serve",
-    "http-server", "json-server", "mock-json-server", "nock", "superagent", "got", "bent", "needle", "phin", "cross-fetch"
+    "http-server", "json-server", "mock-json-server", "nock", "superagent", "got", "bent", "needle", "phin", "cross-fetch",
+    // Additional React ecosystem
+    "create-react-app", "react-scripts", "react-app-rewired", "customize-cra", "craco", "@craco/craco", "react-helmet",
+    "react-helmet-async", "react-loadable", "loadable-components", "@loadable/component", "react-window", "react-virtualized",
+    "react-select", "react-datepicker", "react-hook-form", "formik", "react-final-form", "react-use", "react-query",
+    "react-router-config", "connected-react-router", "react-transition-group", "react-spring", "react-pose", "lottie-react",
+    // Vue ecosystem  
+    "@vue/composition-api", "vue-property-decorator", "vue-class-component", "vue-meta", "vue-i18n", "vue-apollo",
+    "vue-lazyload", "vue-virtual-scroller", "vue-observe-visibility", "vue-infinite-loading", "vue-moment",
+    // Angular ecosystem
+    "@angular/material", "@angular/cdk", "@angular/flex-layout", "@angular/service-worker", "@angular/pwa",
+    "ng-bootstrap", "ngx-bootstrap", "prime-ng", "clarity-angular", "ng-zorro-antd", "ngx-toastr", "ngx-spinner",
+    // Build tools & bundlers
+    "rollup-plugin-node-resolve", "rollup-plugin-commonjs", "rollup-plugin-babel", "rollup-plugin-terser",
+    "parcel-bundler", "@parcel/transformer-sass", "@parcel/transformer-typescript", "snowpack", "wmr", "vitejs",
+    // Testing utilities
+    "ava", "tap", "tape", "@storybook/react", "@storybook/addon-essentials", "chromatic", "percy", "backstopjs",
+    "jest-environment-jsdom", "babel-jest", "ts-jest", "@types/jest", "jest-extended", "jest-date-mock",
+    // Database & ORM
+    "pg-pool", "pg-cursor", "mysql", "mariadb", "better-sqlite3", "node-sqlite3", "level", "leveldb", "nedb",
+    "tingodb", "lokijs", "lowdb", "node-json-db", "flat-file-db", "diskdb", "jsonfile", "fs-jetpack",
+    // HTTP clients & servers
+    "koa-router", "koa-bodyparser", "koa-cors", "koa-helmet", "koa-session", "koa-static", "koa-mount",
+    "fastify-cors", "fastify-helmet", "fastify-jwt", "fastify-cookie", "fastify-multipart", "fastify-static",
+    "hapi", "@hapi/hapi", "@hapi/joi", "@hapi/boom", "@hapi/inert", "@hapi/vision", "restify", "micro",
+    // WebSocket & real-time
+    "socket.io-client", "sockjs-client", "ws", "uws", "faye", "pusher", "pusher-js", "ably", "firebase-admin",
+    // Authentication & security
+    "passport-google-oauth20", "passport-facebook", "passport-twitter", "passport-github2", "passport-oauth2",
+    "oauth", "oauth2", "node-oauth2-server", "express-oauth-server", "jsonwebtoken", "node-jsonwebtoken",
+    "crypto-js", "bcryptjs", "argon2", "speakeasy", "otplib", "qrcode", "helmet", "csurf", "express-rate-limit",
+    // Utility libraries
+    "ramda", "immutable", "immer", "mori", "seamless-immutable", "highland", "most", "xstream", "bacon",
+    "kefir", "flyd", "callbag", "rxjs-compat", "zen-observable", "symbol-observable", "core-js-pure",
+    "tslib", "utility-types", "type-fest", "ts-essentials", "ts-toolbelt", "hotscript", "hkt-toolbelt",
+    // File processing
+    "csv-parser", "csv-writer", "fast-csv", "papaparse", "xml2js", "xmlbuilder", "yamljs", "js-yaml",
+    "toml", "ini", "properties", "properties-parser", "dotenv-expand", "dotenv-safe", "envfile",
+    // Image & media processing  
+    "sharp", "jimp", "gm", "imagemagick", "canvas", "fabric", "konva", "pixi.js", "p5", "processing-js",
+    "tone", "howler", "pizzicato", "web-audio-api", "node-ffmpeg", "fluent-ffmpeg", "videojs", "plyr",
+    // PDF & documents
+    "pdfkit", "jspdf", "pdf-lib", "pdf2pic", "pdf-parse", "hummus-recipe", "officegen", "docxtemplater",
+    "mammoth", "node-pandoc", "turndown", "showdown", "markdown-it", "marked", "commonmark", "remark",
+    // Validation & parsing
+    "validator", "is", "ow", "superstruct", "io-ts", "runtypes", "fastest-validator", "celebrate", "express-joi-validation",
+    "multer", "@hapi/joi", "node-input-validator", "indicative", "vest", "calidation", "computed-types",
+    // Caching & performance
+    "memory-cache", "node-cache", "lru-cache", "flat-cache", "file-system-cache", "keyv", "cache-manager",
+    "redis-cache", "memcached", "node-memcached", "compression", "express-compression", "shrink-ray-current",
+    // Scheduling & jobs
+    "node-cron", "cron", "agenda", "bull", "bee-queue", "kue", "resque", "node-resque", "later",
+    // API & documentation  
+    "swagger-jsdoc", "swagger-ui-express", "swagger-ui-dist", "redoc", "redoc-express", "apispec",
+    "express-openapi", "fastify-swagger", "hapi-swagger", "@apidevtools/swagger-jsdoc", "yamljs",
+    // Monitoring & logging
+    "pino-pretty", "pino-http", "morgan", "express-winston", "log4js", "tracer", "caterpillar", "intel",
+    "@google-cloud/logging", "@sentry/node", "rollbar", "bugsnag", "raygun", "airbrake-js", "honeybadger",
+    // Development tools
+    "lint-staged", "pretty-quick", "standard", "xo", "jshint", "jslint", "flow-bin", "@flow/cli",
+    "flow-coverage-report", "nyc", "c8", "codecov", "coveralls", "codeclimate-test-reporter",
 ];
 
 /// Code analyzer for detecting issues in source code
 pub struct CodeAnalyzer {
     security_patterns: Vec<SecurityPattern>,
     hallucination_patterns: Vec<HallucinationPattern>,
+    custom_allowlist: Option<CustomAllowlist>,
 }
 
 struct SecurityPattern {
@@ -113,6 +277,10 @@ impl Default for CodeAnalyzer {
 
 impl CodeAnalyzer {
     pub fn new() -> Self {
+        Self::with_custom_allowlist(None)
+    }
+
+    pub fn with_custom_allowlist(custom_allowlist: Option<CustomAllowlist>) -> Self {
         let security_patterns = vec![
             SecurityPattern {
                 name: "eval_usage",
@@ -218,9 +386,55 @@ impl CodeAnalyzer {
         CodeAnalyzer {
             security_patterns,
             hallucination_patterns,
+            custom_allowlist,
         }
     }
     
+    /// Load custom allowlist from .vow/known-packages.yaml
+    pub fn load_custom_allowlist() -> Option<CustomAllowlist> {
+        let custom_path = Path::new(".vow/known-packages.yaml");
+        if custom_path.exists() {
+            match std::fs::read_to_string(custom_path) {
+                Ok(content) => match serde_yaml::from_str::<CustomAllowlist>(&content) {
+                    Ok(allowlist) => Some(allowlist),
+                    Err(e) => {
+                        eprintln!("Warning: Failed to parse .vow/known-packages.yaml: {}", e);
+                        None
+                    }
+                },
+                Err(e) => {
+                    eprintln!("Warning: Failed to read .vow/known-packages.yaml: {}", e);
+                    None
+                }
+            }
+        } else {
+            None
+        }
+    }
+
+    /// Check if a package is in the custom allowlist
+    fn is_custom_allowed(&self, package: &str, file_type: &FileType) -> bool {
+        if let Some(ref allowlist) = self.custom_allowlist {
+            match file_type {
+                FileType::Python => {
+                    if let Some(ref python_packages) = allowlist.python {
+                        return python_packages.iter().any(|p| p == package);
+                    }
+                }
+                FileType::JavaScript | FileType::TypeScript => {
+                    if let Some(ref js_packages) = allowlist.javascript {
+                        return js_packages.iter().any(|p| {
+                            // Handle scoped packages - match either the full name or just the scope
+                            p == package || (package.starts_with('@') && p.starts_with(&package.split('/').next().unwrap_or("")))
+                        });
+                    }
+                }
+                _ => {}
+            }
+        }
+        false
+    }
+
     /// Analyze code file for potential issues
     pub fn analyze(&self, path: &Path, content: &str) -> AnalysisResult {
         let file_type = detect_code_type(path);
@@ -266,13 +480,20 @@ impl CodeAnalyzer {
                         .map(|m| m.as_str())
                         .unwrap_or("");
                     
-                    if !package.is_empty() && (pattern.check_imports)(package) {
-                        issues.push(Issue {
-                            severity: Severity::Medium,
-                            message: format!("Potentially hallucinated package import: '{}'", package),
-                            line: Some(line_num + 1),
-                            rule: Some("hallucinated_api".to_string()),
-                        });
+                    if !package.is_empty() {
+                        // Check built-in packages first
+                        let is_known = (pattern.check_imports)(package);
+                        // Then check custom allowlist
+                        let is_custom_allowed = self.is_custom_allowed(package, file_type);
+                        
+                        if is_known && !is_custom_allowed {
+                            issues.push(Issue {
+                                severity: Severity::Medium,
+                                message: format!("Potentially hallucinated package import: '{}'", package),
+                                line: Some(line_num + 1),
+                                rule: Some("hallucinated_api".to_string()),
+                            });
+                        }
                     }
                 }
             }

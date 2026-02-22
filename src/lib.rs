@@ -5,7 +5,7 @@ pub mod report;
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io::{self, Read};
-use walkdir::WalkDir;
+use ignore::WalkBuilder;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -193,7 +193,9 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
     // Run appropriate analyzers based on file type
     match file_type {
         FileType::Python | FileType::JavaScript | FileType::TypeScript => {
-            let code_analyzer = analyzers::code::CodeAnalyzer::new();
+            // Load custom allowlist if available
+            let custom_allowlist = analyzers::code::CodeAnalyzer::load_custom_allowlist();
+            let code_analyzer = analyzers::code::CodeAnalyzer::with_custom_allowlist(custom_allowlist);
             let mut result = code_analyzer.analyze(path, content);
             issues.append(&mut result.issues);
         }
@@ -220,15 +222,47 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
 pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std::error::Error>> {
     let mut results = Vec::new();
     
-    for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
-        if entry.file_type().is_file() {
-            let file_path = entry.path();
-            if is_supported_file(file_path) {
-                match analyze_file(file_path) {
-                    Ok(result) => results.push(result),
-                    Err(e) => eprintln!("Warning: Failed to analyze {}: {}", file_path.display(), e),
+    // Create walker with default exclusions and .vowignore support
+    let mut walker = WalkBuilder::new(path);
+    walker
+        .hidden(false) // Don't automatically skip hidden files
+        .git_ignore(true) // Respect .gitignore
+        .git_global(false) // Don't use global git config
+        .git_exclude(false); // Don't use .git/info/exclude
+    
+    // Add default directory exclusions
+    let default_excludes = [
+        "node_modules", ".git", "dist", "build", "target", ".vow", 
+        "__pycache__", ".next", ".nuxt", "vendor", "coverage", 
+        ".tox", ".venv", "venv", "env", ".env"
+    ];
+    
+    walker.filter_entry(move |entry| {
+        if entry.file_type().map_or(false, |ft| ft.is_dir()) {
+            let name = entry.file_name().to_string_lossy();
+            !default_excludes.contains(&name.as_ref())
+        } else {
+            true
+        }
+    });
+    
+    // Add .vowignore file support
+    walker.add_custom_ignore_filename(".vowignore");
+    
+    for result in walker.build() {
+        match result {
+            Ok(entry) => {
+                if entry.file_type().map_or(false, |ft| ft.is_file()) {
+                    let file_path = entry.path();
+                    if is_supported_file(file_path) {
+                        match analyze_file(file_path) {
+                            Ok(result) => results.push(result),
+                            Err(e) => eprintln!("Warning: Failed to analyze {}: {}", file_path.display(), e),
+                        }
+                    }
                 }
             }
+            Err(e) => eprintln!("Warning: Error walking directory: {}", e),
         }
     }
     
@@ -467,5 +501,117 @@ this comprehensive analysis delves into the multifaceted aspects.
         // Should detect AI patterns
         let has_ai_pattern = result.issues.iter().any(|i| i.message.contains("AI"));
         assert!(has_ai_pattern);
+    }
+
+    #[test]
+    fn test_expanded_packages_not_flagged() {
+        // Test Python packages
+        let python_content = r#"
+import fastapi
+import pydantic
+import uvicorn
+from starlette import applications
+import httpx
+import prisma
+"#;
+        let result = analyze_content(&PathBuf::from("test.py"), python_content).unwrap();
+        
+        // Should not flag these as hallucinated since they're in our expanded allowlist
+        let has_hallucination = result.issues.iter().any(|i| i.rule.as_ref().map_or(false, |r| r == "hallucinated_api"));
+        assert!(!has_hallucination);
+        
+        // Test JavaScript packages
+        let js_content = r#"
+import { z } from 'zod';
+import { PrismaClient } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
+import fastify from 'fastify';
+import next from 'next';
+"#;
+        let result = analyze_content(&PathBuf::from("test.js"), js_content).unwrap();
+        
+        // Should not flag these as hallucinated since they're in our expanded allowlist
+        let has_hallucination = result.issues.iter().any(|i| i.rule.as_ref().map_or(false, |r| r == "hallucinated_api"));
+        assert!(!has_hallucination);
+    }
+
+    #[test]
+    fn test_custom_allowlist() {
+        use std::fs;
+        use tempfile::TempDir;
+        use std::env;
+        
+        let temp_dir = TempDir::new().unwrap();
+        let vow_dir = temp_dir.path().join(".vow");
+        fs::create_dir_all(&vow_dir).unwrap();
+        
+        // Create custom allowlist
+        let custom_allowlist = r#"python:
+  - my_internal_lib
+  - company_utils
+javascript:
+  - "@company/ui-kit"
+  - internal-logger
+"#;
+        fs::write(vow_dir.join("known-packages.yaml"), custom_allowlist).unwrap();
+        
+        // Change to temp directory
+        let original_dir = env::current_dir().unwrap();
+        env::set_current_dir(temp_dir.path()).unwrap();
+        
+        // Test Python custom package
+        let python_content = "import my_internal_lib\nfrom company_utils import helper";
+        let result = analyze_content(&PathBuf::from("test.py"), python_content).unwrap();
+        
+        // Should not flag custom packages as hallucinated
+        let has_hallucination = result.issues.iter().any(|i| {
+            i.rule.as_ref().map_or(false, |r| r == "hallucinated_api") &&
+            (i.message.contains("my_internal_lib") || i.message.contains("company_utils"))
+        });
+        assert!(!has_hallucination);
+        
+        // Test JavaScript custom package
+        let js_content = r#"import { Button } from '@company/ui-kit';"#;
+        let result = analyze_content(&PathBuf::from("test.js"), js_content).unwrap();
+        
+        let has_hallucination = result.issues.iter().any(|i| {
+            i.rule.as_ref().map_or(false, |r| r == "hallucinated_api") &&
+            i.message.contains("@company/ui-kit")
+        });
+        assert!(!has_hallucination);
+        
+        // Restore original directory
+        env::set_current_dir(original_dir).unwrap();
+    }
+
+    #[test]
+    fn test_directory_exclusions() {
+        use std::fs;
+        use tempfile::TempDir;
+        
+        let temp_dir = TempDir::new().unwrap();
+        
+        // Create directories that should be excluded
+        let node_modules = temp_dir.path().join("node_modules");
+        fs::create_dir_all(&node_modules).unwrap();
+        fs::write(node_modules.join("test.js"), "console.log('should be excluded');").unwrap();
+        
+        let git_dir = temp_dir.path().join(".git");
+        fs::create_dir_all(&git_dir).unwrap();
+        fs::write(git_dir.join("config"), "# git config").unwrap();
+        
+        let target_dir = temp_dir.path().join("target");
+        fs::create_dir_all(&target_dir).unwrap();
+        fs::write(target_dir.join("debug.rs"), "// rust debug file").unwrap();
+        
+        // Create a file that should be included
+        fs::write(temp_dir.path().join("main.js"), "console.log('should be included');").unwrap();
+        
+        // Analyze the directory
+        let results = analyze_directory(temp_dir.path()).unwrap();
+        
+        // Should only find main.js, not the excluded files
+        assert_eq!(results.len(), 1);
+        assert!(results[0].path.file_name().unwrap() == "main.js");
     }
 }

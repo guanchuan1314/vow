@@ -1,0 +1,189 @@
+# Vow
+
+> Local-first AI output verification engine
+
+Vow is an open-source CLI tool that verifies AI-generated code and text. It runs entirely locally — no data leaves your machine.
+
+## Key Features
+- Hallucinated API detection (Python + JavaScript)
+- Security vulnerability scanning
+- Prompt injection & secret exfiltration detection
+- AI-generated text pattern detection
+- YAML-based custom rule engine
+- CI/CD integration (GitHub Actions, GitLab CI)
+- Multiple output formats (Terminal, JSON, SARIF)
+
+## Quick Start
+
+### Installation
+```bash
+# Build from source
+git clone https://github.com/guanchuan1314/vow.git
+cd vow
+cargo build --release
+
+# Or download pre-built binary
+curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
+chmod +x vow
+sudo mv vow /usr/local/bin/
+```
+
+### Basic Usage
+```bash
+# Initialize project
+vow init
+
+# Analyze a file
+vow check suspicious_code.py
+
+# Analyze directory
+vow check src/
+
+# Read from stdin
+echo "print('Hello AI world')" | vow check -
+
+# CI mode with threshold
+vow check . --ci --threshold 70
+```
+
+## CLI Reference
+
+### Commands
+- `vow init [PATH]` - Initialize Vow project
+- `vow check <PATH|-> [OPTIONS]` - Analyze files or stdin
+- `vow scan <TARGET> [OPTIONS]` - Scan network ports for security issues
+
+### Check Options
+- `-f, --format <FORMAT>` - Output format: terminal, json, sarif
+- `-r, --rules <PATH>` - Custom rules directory
+- `--threshold <SCORE>` - Minimum trust score (0-100)
+- `--ci` - CI mode (JSON output, exit on failure)
+
+### Scan Options
+- `-p, --ports <PORTS>` - Port range (e.g., 1-1000, 22,80,443)
+- `-f, --format <FORMAT>` - Output format: terminal, json
+- `--timeout <MS>` - Connection timeout in milliseconds
+- `-c, --concurrency <NUM>` - Number of concurrent scans
+- `--issues-only` - Only show security issues
+
+## Analyzers
+
+### Code Analyzer
+- **Hallucinated Imports**: Validates imports against PyPI/npm top packages
+- **Security Patterns**: Detects eval(), exec(), dangerous system calls
+- **Hardcoded Secrets**: Finds API keys, passwords, tokens
+- **Syntax Issues**: Identifies malformed code
+
+### Text Analyzer  
+- **AI Identity Markers**: "As an AI", "I cannot" patterns
+- **AI-Favored Language**: "delve", "comprehensive", "multifaceted"
+- **Formal Transitions**: Overuse of "furthermore", "moreover"
+- **Unsourced Claims**: Confident statements without citations
+
+### Security Analyzer
+- **Prompt Injection**: Hidden instructions to manipulate AI
+- **Secret Exfiltration**: Code that steals sensitive data
+- **Backdoor Detection**: Reverse shells, cron injection
+- **Data Exfiltration**: Suspicious HTTP requests, DNS tunneling
+
+### Port Scanner
+- **Concurrent Scanning**: Configurable concurrency levels
+- **Security Evaluation**: Risk assessment for open ports
+- **Network Support**: IP addresses, hostnames, CIDR ranges
+
+## Configuration
+
+### Project Config (`.vow.yaml`)
+```yaml
+analyzers:
+  enabled:
+    - code
+    - text
+    - security
+  strictness: medium
+
+output:
+  format: table
+  min_severity: medium
+  show_trust_score: true
+
+trust_score:
+  weights:
+    code: 0.4
+    text: 0.35
+    security: 0.25
+```
+
+### Custom Rules (`.vow/rules/custom.yaml`)
+```yaml
+name: "My Rules"
+version: "1.0.0"
+
+rules:
+  - id: "hardcoded-password"
+    name: "Hardcoded Password"
+    description: "Detect hardcoded passwords"
+    severity: "high"
+    patterns:
+      - regex: 'password\s*=\s*["\'][^"\']+["\']'
+        message: "Hardcoded password found"
+    file_types: ["py", "js", "ts"]
+```
+
+## Supported File Types
+- **Code**: `.py`, `.js`, `.jsx`, `.ts`, `.tsx`
+- **Text**: `.md`, `.txt`  
+- **Config**: `.yaml`, `.yml`, `.json`
+
+## Trust Score Algorithm
+Trust scores start at 100% and decrease based on issue severity:
+- **Critical Issues**: -25 points each
+- **High Issues**: -15 points each
+- **Medium Issues**: -8 points each
+- **Low Issues**: -3 points each
+
+## Output Formats
+
+### Terminal
+Colorized, human-readable reports with trust scores and issue details.
+
+### JSON
+```json
+{
+  "files": [{
+    "path": "file.py",
+    "trust_score": 75,
+    "issues": [{
+      "severity": "High",
+      "message": "Potential security issue",
+      "line": 12
+    }]
+  }],
+  "summary": {
+    "avg_score": 75,
+    "total_issues": 3
+  }
+}
+```
+
+### SARIF 2.1.0
+Standard format for GitHub/GitLab code scanning integration.
+
+## CI/CD Integration
+
+### GitHub Actions
+```yaml
+- name: AI Code Analysis
+  run: |
+    vow check . --ci --threshold 70 > vow-results.json
+    vow check . --format sarif > vow.sarif
+```
+
+### Exit Codes
+- `0`: Analysis passed (score ≥ threshold)
+- `1`: Analysis failed (score < threshold or errors)
+
+## Links
+- Docs: https://guanchuan1314.github.io/vow
+- GitHub: https://github.com/guanchuan1314/vow
+- License: MIT

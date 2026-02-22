@@ -3,6 +3,8 @@
 [![Rust](https://img.shields.io/badge/rust-1.70+-blue.svg)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
 
+📖 [llms.txt](./llms.txt) — AI-friendly documentation
+
 Vow is a local-first AI output verification engine that analyzes code and text to detect patterns indicative of AI generation, security vulnerabilities, and potential hallucinations.
 
 ## Features

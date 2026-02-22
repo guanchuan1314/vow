@@ -1,0 +1,8 @@
+python:
+  - my_internal_lib
+  - company_utils
+  - custom_ml_framework
+javascript:
+  - "@company/ui-kit"
+  - internal-logger
+  - "@internal/api-client"

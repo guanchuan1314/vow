@@ -1,0 +1,4 @@
+# Example .vowignore file
+*.log
+temp/
+secret_config.json

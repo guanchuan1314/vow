@@ -1,0 +1,11 @@
+[book]
+title = "Vow Documentation"
+description = "Local-first AI output verification engine"
+authors = ["Vow Contributors"]
+language = "en"
+src = "src"
+
+[output.html]
+default-theme = "navy"
+git-repository-url = "https://github.com/guanchuan1314/vow"
+edit-url-template = "https://github.com/guanchuan1314/vow/edit/main/docs/src/{path}"

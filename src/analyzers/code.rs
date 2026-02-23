@@ -101,6 +101,190 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Potentially unsafe deserialization method",
     },
+    // Issue #3: YAML/config files hardcoded secrets
+    SecurityPattern {
+        name: "yaml_config_secrets",
+        regex: Regex::new(r#"(?i)(password|secret|key|token|api_key|access_token|private_key|aws_secret|db_password):\s*['"]?[a-zA-Z0-9+/=]{8,}['"]?\s*$"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Hardcoded secret detected in YAML/JSON config file",
+    },
+    SecurityPattern {
+        name: "env_file_secrets",
+        regex: Regex::new(r#"(?i)^(PASSWORD|SECRET|KEY|TOKEN|API_KEY|ACCESS_TOKEN|PRIVATE_KEY|AWS_SECRET|DB_PASSWORD)\s*=\s*['"]?[a-zA-Z0-9+/=]{8,}['"]?\s*$"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Hardcoded secret detected in environment file",
+    },
+    // Issue #4: Enhanced SQL injection detection (multiple languages)
+    SecurityPattern {
+        name: "sql_injection_python",
+        regex: Regex::new(r#"(cursor\.execute|execute|query)\s*\(\s*['"][^'"]*['"]\s*\+[^,)]*\+[^,)]*['"][^'"]*['"]"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in Python - string concatenation in SQL query",
+    },
+    SecurityPattern {
+        name: "sql_injection_php",
+        regex: Regex::new(r#"(mysql_query|mysqli_query|query)\s*\(\s*['"][^'"]*['"]\s*\.\s*\$[^;)]*\s*\.\s*['"][^'"]*['"]"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in PHP - string concatenation in SQL query",
+    },
+    SecurityPattern {
+        name: "sql_injection_js",
+        regex: Regex::new(r#"(query|execute)\s*\(\s*['"][^'"]*['"]\s*\+[^,)]*\+[^,)]*['"][^'"]*['"]"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in JavaScript - string concatenation in SQL query",
+    },
+    SecurityPattern {
+        name: "sql_injection_java",
+        regex: Regex::new(r#"(executeQuery|executeUpdate|execute)\s*\(\s*['"][^'"]*['"]\s*\+[^,)]*\+[^,)]*['"][^'"]*['"]"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in Java - string concatenation in SQL query",
+    },
+    SecurityPattern {
+        name: "sql_injection_go",
+        regex: Regex::new(r#"(Query|Exec)\s*\(\s*['"][^'"]*['"]\s*\+[^,)]*\+[^,)]*['"][^'"]*['"]"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in Go - string concatenation in SQL query",
+    },
+    SecurityPattern {
+        name: "sql_injection_ruby",
+        regex: Regex::new(r#"(execute|query|find_by_sql)\s*\(\s*['"][^'"]*['"]\s*\+[^,)]*\+[^,)]*['"][^'"]*['"]"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in Ruby - string concatenation in SQL query",
+    },
+    // Issue #5: Shell script hardcoded secrets
+    SecurityPattern {
+        name: "shell_hardcoded_secrets",
+        regex: Regex::new(r#"(?i)^(PASSWORD|API_KEY|TOKEN|AWS_SECRET|DB_PASSWORD|SECRET_KEY|ACCESS_TOKEN|PRIVATE_KEY)\s*=\s*['"]?[a-zA-Z0-9+/=]{8,}['"]?\s*$"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Hardcoded secret detected in shell script",
+    },
+    // Issue #6: curl|bash and wget|sh pipe patterns
+    SecurityPattern {
+        name: "remote_script_pipe",
+        regex: Regex::new(r"(curl|wget)\s+[^|]*\|\s*(bash|sh|zsh|fish)").unwrap(),
+        severity: Severity::Critical,
+        message: "Dangerous remote script piping to shell (curl|bash or wget|sh)",
+    },
+    SecurityPattern {
+        name: "curl_bash_oneliner",
+        regex: Regex::new(r"curl\s+[^|]*https?://[^|]*\s*\|\s*bash").unwrap(),
+        severity: Severity::Critical,
+        message: "Dangerous curl | bash pattern detected - executing remote script",
+    },
+    SecurityPattern {
+        name: "wget_sh_oneliner",
+        regex: Regex::new(r"wget\s+[^|]*https?://[^|]*\s*\|\s*sh").unwrap(),
+        severity: Severity::Critical,
+        message: "Dangerous wget | sh pattern detected - executing remote script",
+    },
+    // Issue #7: Path traversal vulnerabilities
+    SecurityPattern {
+        name: "path_traversal_open",
+        regex: Regex::new(r#"(open|file_get_contents|include|require|readFile)\s*\(\s*[^,)]*\+[^,)]*\.\./[^,)]*"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential path traversal vulnerability - user input concatenated with ../ in file operation",
+    },
+    SecurityPattern {
+        name: "path_traversal_concatenation",
+        regex: Regex::new(r#"(open|sendFile|readFile|writeFile|include|require)\s*\([^)]*\+[^)]*\$\w+[^)]*\)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential path traversal - user input concatenated in file path",
+    },
+    // Issue #8: SSRF (Server-Side Request Forgery)
+    SecurityPattern {
+        name: "ssrf_fetch",
+        regex: Regex::new(r#"(fetch|axios\.get|http\.get|requests\.get|urllib\.request\.urlopen)\s*\([^)]*\+[^)]*\$\w+[^)]*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SSRF vulnerability - user-controlled URL in HTTP request",
+    },
+    SecurityPattern {
+        name: "ssrf_url_concat",
+        regex: Regex::new(r#"(fetch|axios|requests|urllib)\.[^(]*\(\s*['"][^'"]*['"]\s*\+[^,)]*\+[^,)]*['"][^'"]*['"]"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SSRF vulnerability - URL concatenation with user input",
+    },
+    // Issue #9: Open redirect vulnerabilities
+    SecurityPattern {
+        name: "open_redirect",
+        regex: Regex::new(r#"(redirect|sendRedirect|location\.href|window\.location)\s*\([^)]*\+[^)]*\$\w+[^)]*\)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential open redirect vulnerability - user input in redirect URL",
+    },
+    SecurityPattern {
+        name: "location_redirect",
+        regex: Regex::new(r#"(location\.href|window\.location)\s*=\s*[^;]*\+[^;]*\$\w+[^;]*"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential open redirect - user input in location assignment",
+    },
+    // Issue #10: Enhanced SSL/TLS bypass detection
+    SecurityPattern {
+        name: "node_tls_reject_disabled",
+        regex: Regex::new(r#"NODE_TLS_REJECT_UNAUTHORIZED\s*=\s*['"]?0['"]?"#).unwrap(),
+        severity: Severity::High,
+        message: "TLS certificate verification disabled via NODE_TLS_REJECT_UNAUTHORIZED=0",
+    },
+    SecurityPattern {
+        name: "python_ssl_unverified_context",
+        regex: Regex::new(r"ssl\._create_unverified_context").unwrap(),
+        severity: Severity::High,
+        message: "SSL certificate verification bypassed using _create_unverified_context",
+    },
+    SecurityPattern {
+        name: "requests_verify_false",
+        regex: Regex::new(r"requests\.[^(]*\([^)]*verify\s*=\s*False[^)]*\)").unwrap(),
+        severity: Severity::High,
+        message: "SSL certificate verification disabled in requests library",
+    },
+    SecurityPattern {
+        name: "curl_insecure_ssl",
+        regex: Regex::new(r"curl\s+[^-]*-k[^-]*|curl\s+[^-]*--insecure[^-]*").unwrap(),
+        severity: Severity::High,
+        message: "SSL certificate verification disabled in curl command",
+    },
+    // Issue #11: Prototype pollution vulnerabilities  
+    SecurityPattern {
+        name: "prototype_pollution_merge",
+        regex: Regex::new(r"(merge|assign|extend)\s*\([^)]*\)[^{]*\{[^}]*\}").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential prototype pollution - recursive merge/assign without __proto__ guards",
+    },
+    SecurityPattern {
+        name: "prototype_pollution_unsafe",
+        regex: Regex::new(r"(Object\.assign|_.merge|_.extend|Object\.setPrototypeOf)\s*\([^)]*\$\w+[^)]*\)").unwrap(),
+        severity: Severity::High,
+        message: "Potential prototype pollution - unsafe object merge with user input",
+    },
+    SecurityPattern {
+        name: "proto_assignment",
+        regex: Regex::new(r#"\[['"]__proto__['"]\]|\[['"]constructor['"]\]|\[['"]prototype['"]\]"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential prototype pollution - direct __proto__/constructor/prototype assignment",
+    },
+    // Issue #12: XXE (XML External Entity) vulnerabilities in Java
+    SecurityPattern {
+        name: "java_xxe_documentbuilder",
+        regex: Regex::new(r"DocumentBuilderFactory\.newInstance\(\)").unwrap(),
+        severity: Severity::High,
+        message: "Potential XXE vulnerability - DocumentBuilderFactory without secure processing features",
+    },
+    SecurityPattern {
+        name: "java_xxe_saxparser",
+        regex: Regex::new(r"SAXParserFactory\.newInstance\(\)").unwrap(),
+        severity: Severity::High,
+        message: "Potential XXE vulnerability - SAXParserFactory without secure processing features",
+    },
+    SecurityPattern {
+        name: "java_xxe_xmlreader",
+        regex: Regex::new(r"XMLReaderFactory\.createXMLReader\(\)").unwrap(),
+        severity: Severity::High,
+        message: "Potential XXE vulnerability - XMLReader without secure processing features",
+    },
+    SecurityPattern {
+        name: "java_xxe_transformer",
+        regex: Regex::new(r"TransformerFactory\.newInstance\(\)").unwrap(),
+        severity: Severity::High,
+        message: "Potential XXE vulnerability - TransformerFactory without secure processing features",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)
@@ -476,6 +660,17 @@ impl MethodAnalyzer {
         javascript_stdlib_methods.insert("JSON", vec!["parse", "stringify"]);
         javascript_stdlib_methods.insert("Math", vec!["abs", "ceil", "floor", "round", "max", "min", "random", "pow", "sqrt", "sin", "cos", "tan", "log", "exp"]);
         
+        // Node.js built-in modules
+        javascript_stdlib_methods.insert("path", vec!["join", "resolve", "normalize", "dirname", "basename", "extname", "parse", "format", "isAbsolute", "relative", "sep", "delimiter", "posix", "win32"]);
+        javascript_stdlib_methods.insert("fs", vec!["readFile", "readFileSync", "writeFile", "writeFileSync", "appendFile", "appendFileSync", "exists", "existsSync", "stat", "statSync", "readdir", "readdirSync", "mkdir", "mkdirSync", "rmdir", "rmdirSync", "unlink", "unlinkSync", "rename", "renameSync", "copyFile", "copyFileSync", "access", "accessSync", "watch", "watchFile", "unwatchFile", "createReadStream", "createWriteStream"]);
+        javascript_stdlib_methods.insert("os", vec!["arch", "cpus", "endianness", "freemem", "homedir", "hostname", "loadavg", "networkInterfaces", "platform", "release", "tmpdir", "totalmem", "type", "uptime", "userInfo", "version", "EOL"]);
+        javascript_stdlib_methods.insert("crypto", vec!["createHash", "createHmac", "createCipher", "createDecipher", "createSign", "createVerify", "pbkdf2", "pbkdf2Sync", "randomBytes", "randomFillSync", "randomFill", "scrypt", "scryptSync", "timingSafeEqual", "constants"]);
+        javascript_stdlib_methods.insert("url", vec!["parse", "format", "resolve", "pathToFileURL", "fileURLToPath", "URL", "URLSearchParams"]);
+        javascript_stdlib_methods.insert("http", vec!["createServer", "request", "get", "Agent", "Server", "IncomingMessage", "ServerResponse", "ClientRequest"]);
+        javascript_stdlib_methods.insert("https", vec!["createServer", "request", "get", "Agent", "Server"]);
+        javascript_stdlib_methods.insert("util", vec!["format", "inspect", "isArray", "isRegExp", "isDate", "isError", "inherits", "deprecate", "debuglog", "callbackify", "promisify", "types"]);
+        javascript_stdlib_methods.insert("events", vec!["EventEmitter", "once", "on", "addListener", "removeListener", "removeAllListeners", "emit", "listenerCount", "listeners", "eventNames", "setMaxListeners", "getMaxListeners"]);
+        
         MethodAnalyzer {
             python_stdlib_methods,
             javascript_stdlib_methods,
@@ -676,6 +871,54 @@ impl CodeAnalyzer {
         false
     }
 
+    /// Check if a security pattern should apply to a specific file type
+    fn should_apply_pattern(&self, pattern_name: &str, file_type: &FileType, path: &Path) -> bool {
+        match pattern_name {
+            // YAML/JSON/config patterns - only apply to config files
+            "yaml_config_secrets" => {
+                matches!(file_type, FileType::Unknown) && 
+                path.extension().map_or(false, |ext| {
+                    matches!(ext.to_str(), Some("yaml") | Some("yml") | Some("json"))
+                })
+            },
+            "env_file_secrets" => {
+                matches!(file_type, FileType::Unknown) && 
+                path.file_name().map_or(false, |name| {
+                    let name_str = name.to_str().unwrap_or("");
+                    name_str.starts_with(".env") || name_str.ends_with(".env")
+                })
+            },
+            // Shell script patterns - only apply to shell files
+            "shell_hardcoded_secrets" | "remote_script_pipe" | "curl_bash_oneliner" | "wget_sh_oneliner" => {
+                matches!(file_type, FileType::Unknown) && 
+                path.extension().map_or(false, |ext| {
+                    matches!(ext.to_str(), Some("sh") | Some("bash") | Some("zsh") | Some("fish"))
+                })
+            },
+            // Language-specific SQL injection patterns
+            "sql_injection_python" => matches!(file_type, FileType::Python),
+            "sql_injection_php" => matches!(file_type, FileType::PHP),
+            "sql_injection_js" => matches!(file_type, FileType::JavaScript | FileType::TypeScript),
+            "sql_injection_java" => matches!(file_type, FileType::Java),
+            "sql_injection_go" => matches!(file_type, FileType::Go),
+            "sql_injection_ruby" => matches!(file_type, FileType::Ruby),
+            // Node.js specific patterns
+            "node_tls_reject_disabled" => matches!(file_type, FileType::JavaScript | FileType::TypeScript),
+            // Python specific patterns
+            "python_ssl_unverified_context" | "requests_verify_false" => matches!(file_type, FileType::Python),
+            // JavaScript/TypeScript prototype pollution
+            "prototype_pollution_merge" | "prototype_pollution_unsafe" | "proto_assignment" => {
+                matches!(file_type, FileType::JavaScript | FileType::TypeScript)
+            },
+            // Java XXE patterns
+            "java_xxe_documentbuilder" | "java_xxe_saxparser" | "java_xxe_xmlreader" | "java_xxe_transformer" => {
+                matches!(file_type, FileType::Java)
+            },
+            // General patterns that apply to all code files
+            _ => !matches!(file_type, FileType::Unknown)
+        }
+    }
+
     /// Analyze code file for potential issues (optimized version)
     pub fn analyze(&self, path: &Path, content: &str) -> AnalysisResult {
         let file_type = detect_code_type(path);
@@ -684,7 +927,8 @@ impl CodeAnalyzer {
         // Run security pattern detection (optimized to process line by line only once)
         for (line_num, line) in content.lines().enumerate() {
             for pattern in SECURITY_PATTERNS.iter() {
-                if pattern.regex.is_match(line) {
+                // Apply file-type filtering for specific patterns
+                if self.should_apply_pattern(&pattern.name, &file_type, path) && pattern.regex.is_match(line) {
                     issues.push(Issue {
                         severity: pattern.severity.clone(),
                         message: pattern.message.to_string(),
@@ -833,6 +1077,9 @@ impl CodeAnalyzer {
     }
 
     fn analyze_javascript_method_signatures(&self, content: &str, issues: &mut Vec<Issue>) {
+        // First, extract all imports to understand module context
+        let imports = self.extract_javascript_imports(content);
+        
         for (line_num, line) in content.lines().enumerate() {
             // First, check for common wrong signature patterns
             for pattern in &self.method_analyzer.common_wrong_signatures {
@@ -853,7 +1100,7 @@ impl CodeAnalyzer {
             }
             
             // Check for nonexistent methods on known JavaScript stdlib objects
-            self.check_javascript_stdlib_methods(line, line_num, issues);
+            self.check_javascript_stdlib_methods_with_imports(line, line_num, &imports, issues);
         }
     }
 
@@ -962,6 +1209,95 @@ impl CodeAnalyzer {
         }
     }
 
+    fn extract_javascript_imports(&self, content: &str) -> std::collections::HashMap<String, String> {
+        let mut imports = std::collections::HashMap::new();
+        
+        // Pattern for require() statements: const/let/var name = require('module')
+        let require_pattern = Regex::new(r#"(?:const|let|var)\s+(\w+)\s*=\s*require\s*\(\s*['"]([^'"]+)['"]\s*\)"#).unwrap();
+        
+        // Pattern for ES6 imports: import name from 'module'  
+        let import_pattern = Regex::new(r#"import\s+(\w+)\s+from\s+['"]([^'"]+)['"]"#).unwrap();
+        
+        // Pattern for destructured imports: import { method } from 'module' or const { method } = require('module')
+        let destructured_require_pattern = Regex::new(r#"(?:const|let|var)\s*\{\s*([^}]+)\s*\}\s*=\s*require\s*\(\s*['"]([^'"]+)['"]\s*\)"#).unwrap();
+        let destructured_import_pattern = Regex::new(r#"import\s*\{\s*([^}]+)\s*\}\s*from\s*['"]([^'"]+)['"]"#).unwrap();
+        
+        for line in content.lines() {
+            // Handle standard require/import
+            if let Some(captures) = require_pattern.captures(line) {
+                if let (Some(var_name), Some(module_name)) = (captures.get(1), captures.get(2)) {
+                    imports.insert(var_name.as_str().to_string(), module_name.as_str().to_string());
+                }
+            }
+            
+            if let Some(captures) = import_pattern.captures(line) {
+                if let (Some(var_name), Some(module_name)) = (captures.get(1), captures.get(2)) {
+                    imports.insert(var_name.as_str().to_string(), module_name.as_str().to_string());
+                }
+            }
+            
+            // Handle destructured imports - for now, just track the module
+            if let Some(captures) = destructured_require_pattern.captures(line) {
+                if let Some(module_name) = captures.get(2) {
+                    let methods = captures.get(1).map_or("", |m| m.as_str());
+                    // Extract individual method names from destructuring
+                    for method in methods.split(',') {
+                        let method = method.trim();
+                        imports.insert(method.to_string(), module_name.as_str().to_string());
+                    }
+                }
+            }
+            
+            if let Some(captures) = destructured_import_pattern.captures(line) {
+                if let Some(module_name) = captures.get(2) {
+                    let methods = captures.get(1).map_or("", |m| m.as_str());
+                    for method in methods.split(',') {
+                        let method = method.trim();
+                        imports.insert(method.to_string(), module_name.as_str().to_string());
+                    }
+                }
+            }
+        }
+        
+        imports
+    }
+
+    fn check_javascript_stdlib_methods_with_imports(&self, line: &str, line_num: usize, imports: &std::collections::HashMap<String, String>, issues: &mut Vec<Issue>) {
+        // First check for module method calls like path.join()
+        if let Some((var_name, method_name)) = extract_module_method_call(line) {
+            if let Some(module_name) = imports.get(&var_name) {
+                if let Some(valid_methods) = self.method_analyzer.javascript_stdlib_methods.get(module_name.as_str()) {
+                    if !valid_methods.contains(&method_name.as_str()) {
+                        let suggestion = if module_name == "path" && method_name == "joinPath" {
+                            " (use 'join' method)"
+                        } else if module_name == "fs" && method_name == "exist" {
+                            " (use 'existsSync' or 'exists' method)"
+                        } else {
+                            ""
+                        };
+                        
+                        issues.push(Issue {
+                            severity: Severity::High,
+                            message: format!("Method '{}' does not exist on {} module{}", method_name, module_name, suggestion),
+                            line: Some(line_num + 1),
+                            rule: Some("nonexistent_method".to_string()),
+                        });
+                    }
+                    // Method is valid for this module, so we're done - don't run generic checks
+                    return;
+                } else {
+                    // Unknown module, continue with generic checks
+                }
+            } else {
+                // Variable not found in imports, it might be a generic method call
+                // Continue with generic checks
+            }
+        }
+        
+        // Only run generic checks if module-specific checks didn't handle it
+        self.check_javascript_stdlib_methods(line, line_num, issues);
+    }
+
     fn check_javascript_stdlib_methods(&self, line: &str, line_num: usize, issues: &mut Vec<Issue>) {
         // Check Array methods
         if line.contains(".map(") || line.contains(".filter(") || line.contains(".push(") || line.contains("[") {
@@ -1032,6 +1368,17 @@ impl CodeAnalyzer {
 }
 
 // Helper functions for method extraction
+fn extract_module_method_call(line: &str) -> Option<(String, String)> {
+    // Pattern to match variable.method() calls
+    let method_pattern = Regex::new(r"(\w+)\.([a-zA-Z_][a-zA-Z0-9_]*)\s*\(").unwrap();
+    if let Some(captures) = method_pattern.captures(line) {
+        if let (Some(var_match), Some(method_match)) = (captures.get(1), captures.get(2)) {
+            return Some((var_match.as_str().to_string(), method_match.as_str().to_string()));
+        }
+    }
+    None
+}
+
 fn extract_method_call(line: &str, prefix: &str) -> Option<String> {
     if let Some(start) = line.find(prefix) {
         let after_prefix = &line[start + prefix.len()..];

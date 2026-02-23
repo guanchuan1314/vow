@@ -227,6 +227,56 @@ const bad_result = data
     assert!(issue_messages.iter().any(|msg| msg.contains("append")));
 }
 
+#[test] 
+fn test_nodejs_path_module_not_flagged() {
+    // Test for Issue #13: path.join() from Node.js require('path') should not be flagged
+    let content = r#"
+const path = require('path');
+const fs = require('fs');
+
+// Valid Node.js path module methods - should not be flagged
+const fullPath = path.join(__dirname, 'config', 'settings.json');
+const normalized = path.normalize(fullPath);
+const dirName = path.dirname(fullPath);
+const baseName = path.basename(fullPath);
+const extName = path.extname(fullPath);
+
+// Valid fs module methods - should not be flagged  
+if (fs.existsSync(fullPath)) {
+    const content = fs.readFileSync(fullPath, 'utf8');
+    fs.writeFileSync('output.txt', content);
+}
+
+// ES6 import syntax should also work
+import path2 from 'path';
+const anotherPath = path2.resolve('./test');
+
+// Destructured imports should work too
+const { join, dirname } = require('path');
+const joined = join('a', 'b', 'c');
+const parent = dirname('/some/path');
+"#;
+
+    let analyzer = CodeAnalyzer::new();
+    let result = analyzer.analyze(&PathBuf::from("test.js"), content);
+    
+    // Should not flag any valid Node.js module method calls
+    let false_positives: Vec<_> = result.issues.iter()
+        .filter(|issue| {
+            let msg = &issue.message;
+            msg.contains("join") || msg.contains("normalize") || msg.contains("dirname") ||
+            msg.contains("basename") || msg.contains("extname") || msg.contains("existsSync") ||
+            msg.contains("readFileSync") || msg.contains("writeFileSync") || msg.contains("resolve")
+        }).collect();
+    
+    // Print any issues for debugging
+    for issue in &result.issues {
+        println!("Issue: {}", issue.message);
+    }
+    
+    assert_eq!(false_positives.len(), 0, "Node.js built-in module methods should not be flagged as hallucinated");
+}
+
 #[test]
 fn test_edge_cases_and_false_positives() {
     let content = r#"

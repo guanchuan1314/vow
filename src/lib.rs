@@ -373,7 +373,7 @@ pub fn analyze_content_verbose(path: &Path, content: &str, verbose: bool) -> Res
         FileType::Swift | FileType::Kotlin | FileType::R | FileType::MQL5 | FileType::Scala | FileType::Perl | FileType::Lua | 
         FileType::Dart | FileType::Haskell => {
             // Run code analyzer for code files with import detection
-            if matches!(file_type, FileType::Python | FileType::JavaScript | FileType::TypeScript | FileType::Java | 
+            if matches!(file_type, FileType::Python | FileType::JavaScript | FileType::TypeScript | FileType::Rust | FileType::Java | 
                        FileType::Go | FileType::Ruby | FileType::C | FileType::Cpp | FileType::CSharp | FileType::PHP | 
                        FileType::Swift | FileType::Kotlin | FileType::R | FileType::MQL5 | FileType::Scala | 
                        FileType::Perl | FileType::Lua | FileType::Dart | FileType::Haskell) {

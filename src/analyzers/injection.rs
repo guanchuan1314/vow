@@ -27,7 +27,7 @@ impl Default for InjectionAnalyzer {
 
 impl InjectionAnalyzer {
     pub fn new() -> Self {
-        let secret_exfiltration_patterns = vec![
+        let mut secret_exfiltration_patterns = vec![
             SecurityPattern {
                 name: "secret_file_access",
                 regex: Regex::new(r"(?i)(open\(|read\(|readFile\(|fs\.readFile|cat |head |tail ).*?(/etc/shadow|/etc/passwd|~?/?\.ssh/|~?/?\.aws/credentials|\.env|\.pem|\.key|id_rsa|id_dsa|id_ecdsa|id_ed25519)").unwrap(),
@@ -99,7 +99,7 @@ impl InjectionAnalyzer {
             },
         ];
 
-        let data_exfiltration_patterns = vec![
+        let mut data_exfiltration_patterns = vec![
             SecurityPattern {
                 name: "dns_exfiltration",
                 regex: Regex::new(r"(?i)(nslookup|dig|host)\s+[a-z0-9]{20,}\.[a-z0-9.-]+|[a-z0-9]{32,}\.(?:[a-z0-9-]+\.)*[a-z]{2,}").unwrap(),
@@ -126,7 +126,7 @@ impl InjectionAnalyzer {
             },
         ];
 
-        let backdoor_patterns = vec![
+        let mut backdoor_patterns = vec![
             SecurityPattern {
                 name: "reverse_shell",
                 regex: Regex::new(r"(?i)(bash\s+-i|/dev/tcp/|nc\s+-[^;]*e|python\s+-c.*?socket|ruby\s+-r.*?socket|perl\s+-e.*?socket|php\s+-r.*?fsockopen|java.*?Socket\(|new\s+Socket\(|golang.*?net\.Dial|Process\.Start.*?cmd|Runtime\.getRuntime|ProcessBuilder|swift.*?Socket|socat\s+tcp|telnet\s+\d|/bin/sh\s+0<&1)").unwrap(),
@@ -159,7 +159,115 @@ impl InjectionAnalyzer {
             },
         ];
 
-        // Known domains commonly used for data exfiltration testing/attacks
+        // Add Rust/Actix-specific patterns for all 24 vulnerability types
+        secret_exfiltration_patterns.extend([
+            // Rust environment variable access (#21)
+            SecurityPattern {
+                name: "rust_env_var_access",
+                regex: Regex::new(r#"(?i)(std::env::var|env::var|std::env::vars|env::vars)\s*\(\s*["']?(password|secret|key|token|api|credential|auth|private)"#).unwrap(),
+                severity: Severity::High,
+                message: "Rust accessing sensitive environment variables",
+            },
+            // Rust file operations on sensitive files (#17, #21)
+            SecurityPattern {
+                name: "rust_secret_file_access",
+                regex: Regex::new(r"(?i)(std::fs::read_to_string|fs::read_to_string|std::fs::File::open|File::open|std::fs::read|fs::read)\s*\([^)]*(/etc/shadow|/etc/passwd|\.ssh/|\.aws/credentials|\.env|\.pem|\.key|id_rsa)").unwrap(),
+                severity: Severity::Critical,
+                message: "Rust accessing sensitive secret files",
+            },
+            // Rust hardcoded secrets (#21)
+            SecurityPattern {
+                name: "rust_hardcoded_secrets",
+                regex: Regex::new(r#"(?i)(const\s+|static\s+|let\s+)[A-Z_]*(?:password|secret|key|token|api|credential|auth|private)[A-Z_]*\s*[=:]\s*["'][^"']{8,}["']"#).unwrap(),
+                severity: Severity::Critical,
+                message: "Hardcoded secrets in Rust constants/variables",
+            },
+        ]);
+
+        // Add Rust-specific patterns to other categories
+        data_exfiltration_patterns.extend([
+            // Rust HTTP/SSRF patterns (#18)
+            SecurityPattern {
+                name: "rust_ssrf_reqwest",
+                regex: Regex::new(r"(?i)(reqwest::get|reqwest::Client::new|client\.get|client\.post)\s*\([^)]*\+[^)]*\&[a-zA-Z_][a-zA-Z0-9_]*").unwrap(),
+                severity: Severity::High,
+                message: "Rust SSRF vulnerability - user input in HTTP request URL",
+            },
+            // Rust file path concatenation (#17)
+            SecurityPattern {
+                name: "rust_path_traversal_format",
+                regex: Regex::new(r#"(?i)format!\s*\(\s*["'][^"']*[/\\][^"']*["']\s*,"#).unwrap(),
+                severity: Severity::High,
+                message: "Rust path traversal - format! macro with user input in file path",
+            },
+            SecurityPattern {
+                name: "rust_path_traversal_concat",
+                regex: Regex::new(r"(?i)\.to_string\(\)\s*\+\s*&[a-zA-Z_][a-zA-Z0-9_]*.*?[/\\\\]").unwrap(),
+                severity: Severity::High,
+                message: "Rust path traversal - string concatenation with user input in file path",
+            },
+        ]);
+
+        backdoor_patterns.extend([
+            // Rust command injection (#16)
+            SecurityPattern {
+                name: "rust_command_injection",
+                regex: Regex::new(r#"(?i)Command::new\s*\(\s*["']sh["']\s*\)[^;]*\.arg\s*\(\s*&[a-zA-Z_][a-zA-Z0-9_]*"#).unwrap(),
+                severity: Severity::Critical,
+                message: "Rust command injection - executing shell with user input",
+            },
+            SecurityPattern {
+                name: "rust_command_format",
+                regex: Regex::new(r"(?i)Command::new[^;]*\.arg\s*\(\s*format!\s*\(").unwrap(),
+                severity: Severity::High,
+                message: "Rust command injection - format! macro with user input in command arguments",
+            },
+            SecurityPattern {
+                name: "rust_command_direct_arg",
+                regex: Regex::new(r"(?i)Command::new[^;]*\.arg\s*\(\s*&[a-zA-Z_][a-zA-Z0-9_]*\s*\)").unwrap(),
+                severity: Severity::Medium,
+                message: "Rust command with user input argument - verify input sanitization",
+            },
+            // Rust unsafe memory operations (#28, #31, #32, #33, #35, #36)
+            SecurityPattern {
+                name: "rust_unsafe_use_after_free",
+                regex: Regex::new(r"(?i)unsafe\s*\{[^}]*Box::from_raw[^}]*\*[a-zA-Z_][a-zA-Z0-9_]*").unwrap(),
+                severity: Severity::Critical,
+                message: "Rust unsafe block - potential use-after-free pattern",
+            },
+            SecurityPattern {
+                name: "rust_unsafe_buffer_overflow",
+                regex: Regex::new(r"(?i)unsafe\s*\{[^}]*\.offset\s*\([^)]*\)").unwrap(),
+                severity: Severity::High,
+                message: "Rust unsafe block - pointer offset operation, potential buffer overflow",
+            },
+            SecurityPattern {
+                name: "rust_unsafe_uninitialized",
+                regex: Regex::new(r"(?i)unsafe\s*\{[^}]*MaybeUninit.*?assume_init").unwrap(),
+                severity: Severity::High,
+                message: "Rust unsafe block - using uninitialized memory",
+            },
+            SecurityPattern {
+                name: "rust_unsafe_transmute",
+                regex: Regex::new(r"(?i)unsafe\s*\{[^}]*std::mem::transmute").unwrap(),
+                severity: Severity::High,
+                message: "Rust unsafe block - transmute operation, potential type confusion",
+            },
+            // Rust race conditions (#29, #30)
+            SecurityPattern {
+                name: "rust_global_mutable_static",
+                regex: Regex::new(r"(?i)static\s+mut\s+[A-Z_][A-Z0-9_]*").unwrap(),
+                severity: Severity::High,
+                message: "Rust global mutable static - potential race condition",
+            },
+            SecurityPattern {
+                name: "rust_refcell_thread_unsafe",
+                regex: Regex::new(r"(?i)(RefCell|Cell).*?thread::spawn").unwrap(),
+                severity: Severity::Medium,
+                message: "Rust RefCell/Cell with threading - not thread-safe, potential race condition",
+            },
+        ]);
+
         let suspicious_domains = vec![
             "webhook.site",
             "requestbin.com",

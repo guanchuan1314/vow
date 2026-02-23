@@ -60,6 +60,18 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Hardcoded API key or secret detected",
     },
     SecurityPattern {
+        name: "rust_const_secrets",
+        regex: Regex::new(r#"(?i)const\s+[A-Z_]*(?:PASSWORD|SECRET|KEY|TOKEN|API)[A-Z_]*\s*:\s*&str\s*=\s*["'][^"']{8,}["']"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Hardcoded secret in Rust const declaration",
+    },
+    SecurityPattern {
+        name: "rust_static_secrets",
+        regex: Regex::new(r#"(?i)static\s+[A-Z_]*(?:PASSWORD|SECRET|KEY|TOKEN|API)[A-Z_]*\s*:\s*&str\s*=\s*["'][^"']{8,}["']"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Hardcoded secret in Rust static declaration",
+    },
+    SecurityPattern {
         name: "sql_injection",
         regex: Regex::new(r#"(execute\(|query\(|sql\s*=)[^;]*\+[^;]*["']"#).unwrap(),
         severity: Severity::High,
@@ -284,6 +296,151 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         regex: Regex::new(r"TransformerFactory\.newInstance\(\)").unwrap(),
         severity: Severity::High,
         message: "Potential XXE vulnerability - TransformerFactory without secure processing features",
+    },
+    // Rust/Actix-specific vulnerability patterns (#14-#37)
+    
+    // Issue #14: SQL injection in Rust
+    SecurityPattern {
+        name: "rust_sql_injection_format",
+        regex: Regex::new(r#"(?i)(format!\s*\(\s*["'][^"']*SELECT[^"']*["']\s*,[^)]*\))"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in Rust - format! macro with user input in SQL query",
+    },
+    SecurityPattern {
+        name: "rust_sql_injection_concat",
+        regex: Regex::new(r#"(?i)(["'][^"']*SELECT[^"']*["'].*?\.to_string\(\).*?\+.*?&[a-zA-Z_][a-zA-Z0-9_]*)"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in Rust - string concatenation in SQL query",
+    },
+    
+    // Issue #15: XSS in Rust/Actix
+    SecurityPattern {
+        name: "rust_xss_format_html",
+        regex: Regex::new(r#"(?i)format!\s*\(\s*["'][^"']*<[^"']*["']\s*,[^)]*[a-zA-Z_][a-zA-Z0-9_]*"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential XSS in Rust - format! macro creating HTML with user input",
+    },
+    SecurityPattern {
+        name: "rust_xss_actix_html",
+        regex: Regex::new(r#"(?i)HttpResponse::Ok\(\)[^;]*content_type\s*\(\s*["']text/html["'][^;]*body\s*\([^)]*format!"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential XSS in Actix - serving HTML with unescaped user input",
+    },
+    SecurityPattern {
+        name: "rust_xss_script_injection",
+        regex: Regex::new(r#"(?i)format!\s*\(\s*["'][^"']*<script[^"']*["']\s*,"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Potential XSS in Rust - format! macro creating script tags with user input",
+    },
+    SecurityPattern {
+        name: "rust_xss_string_concat",
+        regex: Regex::new(r#"(?i)["'][^"']*<[^"']*["']\s*\.to_string\(\)\s*\+\s*&[a-zA-Z_][a-zA-Z0-9_]*"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential XSS in Rust - HTML string concatenation with user input",
+    },
+    
+    // Issue #19: XXE in Rust
+    SecurityPattern {
+        name: "rust_xxe_quick_xml",
+        regex: Regex::new(r"(?i)(quick_xml::Reader::from_str|quick_xml::Reader::from_file)").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential XXE vulnerability - XML parsing without external entity prevention",
+    },
+    SecurityPattern {
+        name: "rust_xxe_xml_rs",
+        regex: Regex::new(r"(?i)(xml::reader::EventReader|xml::ParserConfig)").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential XXE vulnerability - xml-rs parsing without external entity configuration",
+    },
+    
+    // Issue #20: Open redirect in Rust/Actix
+    SecurityPattern {
+        name: "rust_open_redirect_format",
+        regex: Regex::new(r#"(?i)(format!\s*\(\s*["'][^"']*https?://[^"']*["']\s*,[^)]*\))"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential open redirect in Rust - format! macro with user input in URL",
+    },
+    SecurityPattern {
+        name: "rust_actix_redirect",
+        regex: Regex::new(r#"(?i)(HttpResponse::Found\(\)\.header\s*\(\s*["']location["'].*?format!)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential open redirect in Actix - redirect header with user input",
+    },
+    
+    // Issue #22: Eval-like injection in Rust
+    SecurityPattern {
+        name: "rust_eval_injection",
+        regex: Regex::new(r"(?i)(std::process::Command::new\s*\([^)]*format!\s*\()").unwrap(),
+        severity: Severity::High,
+        message: "Potential eval injection in Rust - dynamic command execution with user input",
+    },
+    
+    // Issue #23: Unsafe deserialization in Rust  
+    SecurityPattern {
+        name: "rust_unsafe_deserialization",
+        regex: Regex::new(r"(?i)(serde_json::from_str|bincode::deserialize|ron::from_str)\s*\([^)]*&[a-zA-Z_][a-zA-Z0-9_]*").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential unsafe deserialization in Rust - deserializing untrusted data",
+    },
+    SecurityPattern {
+        name: "rust_pickle_equivalent",
+        regex: Regex::new(r"(?i)(postcard::from_bytes|rmp_serde::from_slice|bincode::deserialize)").unwrap(),
+        severity: Severity::High,
+        message: "Rust deserialization with binary formats - equivalent to pickle, verify data source",
+    },
+    
+    // Issue #24: Template injection in Rust
+    SecurityPattern {
+        name: "rust_template_injection_handlebars",
+        regex: Regex::new(r"(?i)(handlebars\.render_template\s*\([^)]*&[a-zA-Z_][a-zA-Z0-9_]*)").unwrap(),
+        severity: Severity::High,
+        message: "Potential template injection in Rust - Handlebars rendering user input",
+    },
+    SecurityPattern {
+        name: "rust_template_injection_tera",
+        regex: Regex::new(r"(?i)(tera\.render\s*\([^)]*&[a-zA-Z_][a-zA-Z0-9_]*)").unwrap(),
+        severity: Severity::High,
+        message: "Potential template injection in Rust - Tera rendering user input",
+    },
+    
+    // Issue #25: Mass assignment in Rust/Actix
+    SecurityPattern {
+        name: "rust_mass_assignment_serde",
+        regex: Regex::new(r"(?i)(#\[derive\([^)]*Deserialize[^)]*\)\][^{]*pub\s+struct[^{]*\{)").unwrap(),
+        severity: Severity::Low,
+        message: "Potential mass assignment in Rust - Serde Deserialize without field filtering",
+    },
+    
+    // Issue #26: CSRF in Actix 
+    SecurityPattern {
+        name: "rust_actix_csrf_missing",
+        regex: Regex::new(r"(?i)(pub\s+async\s+fn\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\([^)]*web::(Form|Json)[^)]*\)\s*->[^{]*\{[^}]*(?:delete|update|transfer|change))").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential CSRF vulnerability in Actix - state-changing endpoint without CSRF protection",
+    },
+    
+    // Issue #27: Insecure direct object reference in Rust/Actix
+    SecurityPattern {
+        name: "rust_idor_path_param",
+        regex: Regex::new(r"(?i)(web::Path<[^>]*>\s*\)\s*->[^{]*\{[^}]*(?:SELECT|DELETE|UPDATE)[^}]*\{)").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential IDOR in Rust - direct database access using path parameters",
+    },
+    
+    // Issue #34: Format string vulnerability in Rust
+    SecurityPattern {
+        name: "rust_format_string_vuln",
+        regex: Regex::new(r"(?i)(println!\s*\(\s*&[a-zA-Z_][a-zA-Z0-9_]*\s*\)|format!\s*\(\s*&[a-zA-Z_][a-zA-Z0-9_]*\s*\))").unwrap(),
+        severity: Severity::Low,
+        message: "Potential format string vulnerability in Rust - user input as format string",
+    },
+    
+    // Issue #37: Side channel attacks in Rust
+    SecurityPattern {
+        name: "rust_timing_side_channel",
+        regex: Regex::new(r"(?i)([a-zA-Z_][a-zA-Z0-9_]*\s*==\s*[a-zA-Z_][a-zA-Z0-9_]*.*?(password|secret|key|token|hash))").unwrap(),
+        severity: Severity::Low,
+        message: "Potential timing side-channel attack in Rust - non-constant time comparison of secrets",
     },
 ]);
 

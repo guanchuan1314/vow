@@ -239,12 +239,15 @@ pub fn check_input(
     max_depth: usize,
     max_issues: usize,
 ) -> Result<i32, Box<dyn std::error::Error>> {
-    let mut final_format = format;
+    let mut final_format = format.clone();
     
     // CI mode implies JSON output
     if ci {
         final_format = "json".to_string();
     }
+    
+    // SARIF format needs to be truly quiet (no performance summaries)
+    let truly_quiet = quiet || format == "sarif";
     
     let (results, metrics) = if path == "-" {
         // Read from stdin
@@ -269,7 +272,7 @@ pub fn check_input(
             };
             (result, metrics)
         } else if path_buf.is_dir() {
-            analyze_directory_parallel(&path_buf, verbose, quiet, max_file_size, max_depth, max_issues)?
+            analyze_directory_parallel(&path_buf, verbose, truly_quiet, max_file_size, max_depth, max_issues)?
         } else {
             return Err(format!("Path does not exist: {}", path).into());
         }
@@ -650,21 +653,8 @@ pub fn analyze_directory_parallel(
         }
     }
     
-    // Always show performance summary at the end (even in quiet mode)
-    if quiet && files_processed > 0 {
-        println!("Performance Summary:");
-        println!("  Total files analyzed: {}", files_processed);
-        println!("  Total time: {:.2}s", total_duration.as_secs_f32());
-        println!("  Files per second: {:.2}", files_processed as f32 / total_duration.as_secs_f32());
-        println!("  Files skipped: {}", skipped_files);
-        
-        if !skipped_reasons.is_empty() {
-            println!("  Skipped breakdown:");
-            for (reason, count) in &skipped_reasons {
-                println!("    {}: {}", reason, count);
-            }
-        }
-    }
+    // Only show performance summary if not quiet
+    // This ensures SARIF output remains clean JSON
     
     let metrics = AnalysisMetrics {
         total_time_seconds: total_duration.as_secs_f32(),

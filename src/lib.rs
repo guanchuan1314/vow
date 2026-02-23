@@ -275,11 +275,11 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
     })
 }
 
-/// Analyze all supported files in a directory with per-file timeout
+/// Analyze all supported files in a directory with optimized exclusions
 pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std::error::Error>> {
     let mut results = Vec::new();
     
-    // Create walker with default exclusions and .vowignore support
+    // Create walker with optimized exclusions and .vowignore support
     let mut walker = WalkBuilder::new(path);
     walker
         .hidden(false) // Don't automatically skip hidden files
@@ -287,27 +287,38 @@ pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std
         .git_global(false) // Don't use global git config
         .git_exclude(false); // Don't use .git/info/exclude
     
-    // Add default directory exclusions
-    let default_excludes = [
+    // Add comprehensive default directory exclusions (processed BEFORE walking into them)
+    let default_excludes = std::collections::HashSet::from([
         "node_modules", ".git", "dist", "build", "target", ".vow", 
         "__pycache__", ".next", ".nuxt", "vendor", "coverage", 
-        ".tox", ".venv", "venv", "env", ".env"
-    ];
+        ".venv", "venv", ".cache", "tmp", "temp", ".tox", "env", ".env",
+        ".pytest_cache", ".mypy_cache", ".ruff_cache", ".black_cache",
+        "logs", "log", "*.log", ".DS_Store", "Thumbs.db", ".sass-cache",
+        "bower_components", "jspm_packages", "web_modules", ".yarn",
+        ".pnp", ".pnp.js", "lerna-debug.log*", ".nyc_output", 
+        "lib-cov", ".grunt", ".lock-wscript", ".wafpickle-*", 
+        ".node_repl_history", ".npm", ".eslintcache", ".stylelintcache",
+        ".rpt2_cache/", ".rts2_cache_cjs/", ".rts2_cache_es/",
+        ".rts2_cache_umd/", ".optional", ".fusebox/", ".dynamodb/"
+    ]);
     
+    // Optimized filter that processes exclusions before directory traversal
     walker.filter_entry(move |entry| {
         if entry.file_type().map_or(false, |ft| ft.is_dir()) {
             let name = entry.file_name().to_string_lossy();
-            !default_excludes.contains(&name.as_ref())
+            // O(1) lookup instead of linear scan
+            !default_excludes.contains(name.as_ref())
         } else {
             true
         }
     });
     
-    // Add .vowignore file support
+    // Add .vowignore file support (gitignore-style patterns)
     walker.add_custom_ignore_filename(".vowignore");
     
     println!("Scanning directory: {}", path.display());
     let mut file_count = 0;
+    let start_time = std::time::Instant::now();
     
     for result in walker.build() {
         match result {
@@ -316,16 +327,19 @@ pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std
                     let file_path = entry.path();
                     if is_supported_file(file_path) {
                         file_count += 1;
-                        print!("Analyzing file {} ({}): ", file_count, file_path.display());
+                        let file_start = std::time::Instant::now();
                         
-                        // Analyze file directly (no timeout needed)
+                        // Analyze file directly with timing
                         match analyze_file_simple(file_path) {
                             Ok(result) => {
-                                println!("OK ({} issues)", result.issues.len());
+                                let duration = file_start.elapsed();
+                                if duration.as_secs() > 3 {
+                                    println!("WARNING: File {} took {:.1}s (target: <3s)", 
+                                           file_path.display(), duration.as_secs_f32());
+                                }
                                 results.push(result);
                             },
                             Err(e) => {
-                                println!("FAILED - {}", e);
                                 eprintln!("Warning: Failed to analyze {}: {}", file_path.display(), e);
                             },
                         }
@@ -336,7 +350,15 @@ pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std
         }
     }
     
-    println!("Completed analysis of {} files.", file_count);
+    let total_duration = start_time.elapsed();
+    println!("Completed analysis of {} files in {:.1}s ({:.2}s per file)", 
+             file_count, total_duration.as_secs_f32(), 
+             if file_count > 0 { total_duration.as_secs_f32() / file_count as f32 } else { 0.0 });
+    
+    if total_duration > std::time::Duration::from_secs(300) { // 5 minutes
+        println!("WARNING: Analysis took longer than 5 minute target!");
+    }
+    
     Ok(results)
 }
 

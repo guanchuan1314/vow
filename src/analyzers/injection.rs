@@ -54,7 +54,7 @@ impl InjectionAnalyzer {
             },
             SecurityPattern {
                 name: "http_with_secrets",
-                regex: Regex::new(r"(?i)(requests\.post|fetch\(|XMLHttpRequest|axios\.post|curl\s+-.*?-d|wget\s+--post-data).*?(password|secret|key|token|api|credential|auth|private|base64)").unwrap(),
+                regex: Regex::new(r"(?i)(requests\.post|fetch\(|XMLHttpRequest|axios\.post|curl\s+-.*?-d|wget\s+--post-data).*?(password\s*[=:]\s*[a-zA-Z0-9_]{8,}|secret\s*[=:]\s*[a-zA-Z0-9_]{10,}|api_key\s*[=:]\s*[a-zA-Z0-9_]{15,}|token\s*[=:]\s*[a-zA-Z0-9_]{20,})").unwrap(),
                 severity: Severity::Critical,
                 message: "HTTP request with potential secret data - possible exfiltration",
             },
@@ -119,10 +119,10 @@ impl InjectionAnalyzer {
                 message: "Steganographic patterns detected - hiding data in images",
             },
             SecurityPattern {
-                name: "external_connection",
-                regex: Regex::new(r"(?i)(socket\.connect|urllib\.request|requests\.|fetch\(|XMLHttpRequest|axios\.).*?((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)").unwrap(),
-                severity: Severity::Medium,
-                message: "Direct IP address connection detected - potential data exfiltration",
+                name: "external_connection_with_secrets",
+                regex: Regex::new(r"(?i)(requests\.post|fetch\(.*?method.*?post|axios\.post).*?((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).*?(password|secret|key|token|api|credential|auth|private)").unwrap(),
+                severity: Severity::High,
+                message: "HTTP POST to IP address with potential secret data - possible exfiltration",
             },
         ];
 
@@ -264,25 +264,27 @@ impl InjectionAnalyzer {
     fn check_combined_patterns(&self, content: &str, issues: &mut Vec<Issue>) {
         let lines: Vec<&str> = content.lines().collect();
         
-        // Check for env var access + HTTP request combo (within 10 lines)
+        // Check for suspicious env var access + HTTP request combo (within 5 lines)
+        // Only flag if accessing sensitive env vars OR dumping all env vars
         for i in 0..lines.len() {
             let line = lines[i];
             
-            // Look for environment variable access
-            let env_access_regex = Regex::new(r"(?i)(os\.environ|process\.env|ENV\[|System\.getenv|getenv\(|env\.)").unwrap();
-            if env_access_regex.is_match(line) {
+            // Look for sensitive environment variable access or env var dumping
+            let sensitive_env_regex = Regex::new(r"(?i)(os\.environ\s*$|process\.env\s*$|ENV\s*$|Object\.keys\s*\(\s*process\.env|for\s+.*?\s+in\s+process\.env|JSON\.stringify\s*\(\s*process\.env|printenv\s*$|export\s+-p\s*$|os\.environ\.get\(.*?(password|secret|key|token|api|credential|auth|private)|process\.env\[.*?(PASSWORD|SECRET|KEY|TOKEN|API|CREDENTIAL|AUTH|PRIVATE))").unwrap();
+            if sensitive_env_regex.is_match(line) {
                 
-                // Check surrounding lines for HTTP requests
-                let start = if i >= 5 { i - 5 } else { 0 };
-                let end = std::cmp::min(i + 6, lines.len());
+                // Check surrounding lines for HTTP requests to external domains
+                let start = if i >= 3 { i - 3 } else { 0 };
+                let end = std::cmp::min(i + 4, lines.len());
                 
                 let context = lines[start..end].join(" ");
-                let http_regex = Regex::new(r"(?i)(requests\.|fetch\(|XMLHttpRequest|axios\.|curl|wget|http\.)").unwrap();
+                // Only flag requests to external domains, not localhost/internal APIs
+                let external_http_regex = Regex::new(r"(?i)(requests\.post|fetch\(.*?method.*?post|axios\.post|curl\s+-.*?-d|wget\s+--post-data).*?(?:http[s]?://(?!(?:localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)))").unwrap();
                 
-                if http_regex.is_match(&context) {
+                if external_http_regex.is_match(&context) {
                     issues.push(Issue {
                         severity: Severity::Critical,
-                        message: "Environment variable access followed by HTTP request - potential secret exfiltration".to_string(),
+                        message: "Sensitive environment variable access followed by external HTTP request - potential secret exfiltration".to_string(),
                         line: Some(i + 1),
                         rule: Some("env_var_exfiltration".to_string()),
                     });
@@ -290,24 +292,24 @@ impl InjectionAnalyzer {
             }
         }
 
-        // Check for file read + base64 encode + HTTP combo
+        // Check for file read + base64 encode + HTTP combo - only for sensitive files
         for i in 0..lines.len() {
             let line = lines[i];
             
-            let file_read_regex = Regex::new(r"(?i)(open\(|read\(|readFile\(|fs\.readFile)").unwrap();
-            if file_read_regex.is_match(line) {
+            let sensitive_file_regex = Regex::new(r"(?i)(open\(|read\(|readFile\(|fs\.readFile).*?(/etc/shadow|/etc/passwd|\.ssh/|\.aws/credentials|\.env|\.pem|\.key|id_rsa|private|secret)").unwrap();
+            if sensitive_file_regex.is_match(line) {
                 
-                let start = if i >= 10 { i - 10 } else { 0 };
-                let end = std::cmp::min(i + 11, lines.len());
+                let start = if i >= 8 { i - 8 } else { 0 };
+                let end = std::cmp::min(i + 9, lines.len());
                 let context = lines[start..end].join(" ");
                 
-                let base64_regex = Regex::new(r"(?i)(base64|encode|btoa)").unwrap();
-                let http_regex = Regex::new(r"(?i)(requests\.|fetch\(|curl|wget|axios\.)").unwrap();
+                let base64_regex = Regex::new(r"(?i)(base64\.encode|base64\.b64encode|btoa\(|Buffer\.from.*?base64)").unwrap();
+                let external_http_regex = Regex::new(r"(?i)(requests\.post|fetch\(.*?method.*?post|axios\.post|curl\s+-.*?-d).*?(?:http[s]?://(?!(?:localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)))").unwrap();
                 
-                if base64_regex.is_match(&context) && http_regex.is_match(&context) {
+                if base64_regex.is_match(&context) && external_http_regex.is_match(&context) {
                     issues.push(Issue {
                         severity: Severity::Critical,
-                        message: "File read + base64 encoding + HTTP request pattern - likely data exfiltration".to_string(),
+                        message: "Sensitive file read + base64 encoding + external HTTP request pattern - likely data exfiltration".to_string(),
                         line: Some(i + 1),
                         rule: Some("file_exfiltration_combo".to_string()),
                     });
@@ -320,12 +322,14 @@ impl InjectionAnalyzer {
         for (line_num, line) in content.lines().enumerate() {
             for &domain in &self.suspicious_domains {
                 if line.to_lowercase().contains(domain) {
-                    // Check if it's being used in a suspicious context (HTTP requests)
-                    let http_pattern = Regex::new(r"(?i)(fetch\(|requests\.|curl|wget|XMLHttpRequest|axios\.|http[s]?://|\.get\(|\.post\()").unwrap();
-                    if http_pattern.is_match(line) {
+                    // Only flag if HTTP request AND contains potential secret data
+                    let http_pattern = Regex::new(r"(?i)(fetch\(|requests\.post|curl\s+-.*?-d|wget\s+--post-data|XMLHttpRequest|axios\.post|\.post\()").unwrap();
+                    let secret_pattern = Regex::new(r"(?i)(password|secret|key|token|api|credential|auth|private|base64|env|process\.env|os\.environ)").unwrap();
+                    
+                    if http_pattern.is_match(line) && secret_pattern.is_match(line) {
                         issues.push(Issue {
                             severity: Severity::Critical,
-                            message: format!("Exfiltration to known malicious/testing domain detected: {}", domain),
+                            message: format!("HTTP request with potential secret data to testing/webhook domain: {}", domain),
                             line: Some(line_num + 1),
                             rule: Some("suspicious_domains".to_string()),
                         });

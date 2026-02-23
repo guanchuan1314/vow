@@ -58,8 +58,7 @@ enum Commands {
     },
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
@@ -67,11 +66,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             vow::init_project(path)?;
         }
         Commands::Check { path, format, rules, threshold, ci } => {
-            let exit_code = vow::check_input(path, format, rules, threshold, ci).await?;
+            let exit_code = vow::check_input(path, format, rules, threshold, ci)?;
             std::process::exit(exit_code);
         }
         Commands::Scan { target, ports, format, timeout, concurrency, issues_only } => {
-            let exit_code = vow::scan_ports(target, ports, format, timeout, concurrency, issues_only).await?;
+            let exit_code = vow::scan_ports(target, ports, format, timeout, concurrency, issues_only)?;
             std::process::exit(exit_code);
         }
     }

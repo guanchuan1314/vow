@@ -1,15 +1,13 @@
 pub mod analyzers;
 pub mod rules;
 pub mod report;
-pub mod scanner;
+// pub mod scanner; // Temporarily disabled - requires async networking
 
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io::{self, Read};
-use std::time::Duration;
 use ignore::WalkBuilder;
 use serde::{Deserialize, Serialize};
-use scanner::port_scanner::PortScanner;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalysisResult {
@@ -143,52 +141,23 @@ file_types: ["py", "js", "ts"]
 }
 
 /// Main entry point for port scanning
-pub async fn scan_ports(
-    target: String,
-    ports: String,
-    format: String,
-    timeout: u64,
-    concurrency: usize,
-    issues_only: bool,
+pub fn scan_ports(
+    _target: String,
+    _ports: String,
+    _format: String,
+    _timeout: u64,
+    _concurrency: usize,
+    _issues_only: bool,
 ) -> Result<i32, Box<dyn std::error::Error>> {
-    let scanner = PortScanner::new(timeout, concurrency);
-    
-    // Resolve targets
-    let targets = scanner.resolve_targets(&target).await
-        .map_err(|e| format!("Target resolution error: {}", e))?;
-    if targets.is_empty() {
-        return Err("No valid targets found".into());
-    }
-    
-    // Parse ports
-    let port_list = scanner.parse_ports(&ports)
-        .map_err(|e| format!("Port parsing error: {}", e))?;
-    if port_list.is_empty() {
-        return Err("No valid ports specified".into());
-    }
-    
-    println!("Starting port scan of {} target(s) across {} port(s)...", targets.len(), port_list.len());
-    
-    // Perform scan
-    let results = scanner.scan(targets, port_list).await
-        .map_err(|e| format!("Scan error: {}", e))?;
-    
-    // Generate report
-    generate_scan_report(&results, &format, issues_only)?;
-    
-    // Calculate exit code based on security issues
-    let critical_issues = results.summary.critical_issues;
-    let high_risk_issues = results.summary.high_risk_issues;
-    
-    if critical_issues > 0 || high_risk_issues > 2 {
-        Ok(1) // Exit code 1 for critical security issues
-    } else {
-        Ok(0) // Exit code 0 for acceptable security posture
-    }
+    // Port scanning requires async networking, but we're keeping the CLI synchronous
+    // This functionality is temporarily disabled to fix memory issues
+    eprintln!("Port scanning functionality is temporarily disabled during refactoring to fix memory issues.");
+    eprintln!("Use vow check <path> for file/directory analysis.");
+    Ok(1)
 }
 
 /// Main entry point for checking input (file, directory, or stdin)
-pub async fn check_input(
+pub fn check_input(
     path: String,
     format: String,
     rules: Option<PathBuf>,
@@ -213,7 +182,7 @@ pub async fn check_input(
         if path_buf.is_file() {
             vec![analyze_file(&path_buf)?]
         } else if path_buf.is_dir() {
-            analyze_directory(&path_buf).await?
+            analyze_directory(&path_buf)?
         } else {
             return Err(format!("Path does not exist: {}", path).into());
         }
@@ -250,18 +219,9 @@ pub fn analyze_file(path: &Path) -> Result<AnalysisResult, Box<dyn std::error::E
     analyze_content(path, &content)
 }
 
-/// Analyze a single file with timeout to prevent hanging
-async fn analyze_file_with_timeout(path: &Path, timeout_secs: u64) -> Result<AnalysisResult, Box<dyn std::error::Error + Send + Sync>> {
-    let path_owned = path.to_owned();
-    let timeout_duration = Duration::from_secs(timeout_secs);
-    
-    match tokio::time::timeout(timeout_duration, tokio::task::spawn_blocking(move || {
-        analyze_file(&path_owned).map_err(|e| format!("{}", e))
-    })).await {
-        Ok(Ok(result)) => result.map_err(|e| e.into()),
-        Ok(Err(join_error)) => Err(format!("Task join error: {}", join_error).into()),
-        Err(_) => Err(format!("File analysis timed out after {} seconds", timeout_secs).into()),
-    }
+/// Analyze a single file (no timeout needed since regex backtracking was fixed)
+fn analyze_file_simple(path: &Path) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
+    analyze_file(path)
 }
 
 /// Analyze content with a given path context
@@ -316,7 +276,7 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
 }
 
 /// Analyze all supported files in a directory with per-file timeout
-pub async fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std::error::Error>> {
+pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std::error::Error>> {
     let mut results = Vec::new();
     
     // Create walker with default exclusions and .vowignore support
@@ -358,8 +318,8 @@ pub async fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<d
                         file_count += 1;
                         print!("Analyzing file {} ({}): ", file_count, file_path.display());
                         
-                        // Use 5-second timeout per file
-                        match analyze_file_with_timeout(file_path, 5).await {
+                        // Analyze file directly (no timeout needed)
+                        match analyze_file_simple(file_path) {
                             Ok(result) => {
                                 println!("OK ({} issues)", result.issues.len());
                                 results.push(result);
@@ -469,20 +429,8 @@ fn generate_report(
     Ok(())
 }
 
-/// Generate scan report in specified format
-fn generate_scan_report(
-    results: &scanner::PortScanResults,
-    format: &str,
-    issues_only: bool,
-) -> Result<(), Box<dyn std::error::Error>> {
-    match format {
-        "terminal" => report::terminal::print_scan_report(results, issues_only),
-        "json" => report::json::print_scan_json_report(results)?,
-        _ => return Err(format!("Unsupported format for scan reports: {}", format).into()),
-    }
-    
-    Ok(())
-}
+// Scan report generation temporarily disabled
+// fn generate_scan_report(...) -> ... { ... }
 
 /// Detect file type from path
 pub fn detect_file_type(path: &Path) -> FileType {

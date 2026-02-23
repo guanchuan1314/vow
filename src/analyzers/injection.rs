@@ -35,10 +35,10 @@ impl InjectionAnalyzer {
                 message: "Access to sensitive secret files detected",
             },
             SecurityPattern {
-                name: "env_var_secrets",
-                regex: Regex::new(r"(?i)(os\.environ|process\.env|ENV\[|System\.getenv|getenv\(|env\.|environment).*?(password|secret|key|token|api|credential|auth|private)").unwrap(),
-                severity: Severity::Medium,
-                message: "Access to environment variables containing potential secrets",
+                name: "env_var_access_all",
+                regex: Regex::new(r"(?i)(process\.env\s*$|os\.environ\s*$|ENV\s*$|Object\.keys\s*\(\s*process\.env|for\s+.*?\s+in\s+process\.env|for\s+.*?\s+in\s+os\.environ|JSON\.stringify\s*\(\s*process\.env|\{.*?\.\.\.process\.env.*?\}|printenv\s*$|export\s+-p\s*$)").unwrap(),
+                severity: Severity::High,
+                message: "Accessing all environment variables - potential secret enumeration",
             },
             SecurityPattern {
                 name: "env_var_dump",

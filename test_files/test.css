@@ -1,0 +1,22 @@
+/* Test CSS with various issues */
+.example {
+    non-existent-property: value;
+    -webkit-transform: rotate(45deg);
+    color: placeholder-color;
+    background: lorem-ipsum-pattern;
+    fake-property: some-value;
+    display: flex;
+    /* TODO: Fix this later */
+    transition: all 0.3s ease;
+    box-shadow-direction: left; /* Made up property */
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    /* Missing standard border-radius */
+}
+
+.another-class {
+    display: flexbox; /* Invalid value */
+    color: red;
+    /* FIXME: This needs work */
+    width: 100%;
+}

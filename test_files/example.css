@@ -1,0 +1,26 @@
+/* TODO: implement responsive design */
+.container {
+    width: 300px;
+    margin: 20px;
+    background-color: #123456;
+    text-color: red;
+    fake-property: value;
+    border: 1px solid #ccc;
+    font-family: Arial;
+    z-index: 99999;
+}
+
+.example {
+    display: none;
+    visibility: visible;
+    font-size: 42px;
+    position: center;
+    -webkit-transform: scale(1.5);
+}
+
+.placeholder {
+    color: #f0f0f0;
+    background-horizontal: repeat;
+    width: 100px;
+    width: 200px;
+}

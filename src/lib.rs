@@ -55,6 +55,8 @@ pub enum FileType {
     Lua,
     Dart,
     Haskell,
+    HTML,
+    CSS,
     Unknown,
 }
 
@@ -93,7 +95,7 @@ impl FileType {
             FileType::R | FileType::MQL5 | FileType::Scala | FileType::Perl |
             FileType::Lua | FileType::Dart | FileType::Haskell | FileType::Shell => FilePriority::High,
             
-            FileType::YAML | FileType::JSON => FilePriority::Medium,
+            FileType::YAML | FileType::JSON | FileType::HTML | FileType::CSS => FilePriority::Medium,
             
             FileType::Markdown | FileType::Text | FileType::Unknown => FilePriority::Low,
         }
@@ -439,6 +441,30 @@ pub fn analyze_content_verbose(path: &Path, content: &str, verbose: bool) -> Res
             
             if let Some(start) = analyzer_start {
                 println!("  🛡️  Injection Analyzer: {:.2}ms ({} issues)", 
+                       start.elapsed().as_secs_f64() * 1000.0, issues_found);
+            }
+        }
+        FileType::HTML => {
+            let analyzer_start = if verbose { Some(Instant::now()) } else { None };
+            let html_analyzer = analyzers::html_analyzer::HtmlAnalyzer::new();
+            let mut result = html_analyzer.analyze(path, content);
+            let issues_found = result.issues.len();
+            issues.append(&mut result.issues);
+            
+            if let Some(start) = analyzer_start {
+                println!("  🌐 HTML Analyzer: {:.2}ms ({} issues)", 
+                       start.elapsed().as_secs_f64() * 1000.0, issues_found);
+            }
+        }
+        FileType::CSS => {
+            let analyzer_start = if verbose { Some(Instant::now()) } else { None };
+            let css_analyzer = analyzers::css_analyzer::CssAnalyzer::new();
+            let mut result = css_analyzer.analyze(path, content);
+            let issues_found = result.issues.len();
+            issues.append(&mut result.issues);
+            
+            if let Some(start) = analyzer_start {
+                println!("  🎨 CSS Analyzer: {:.2}ms ({} issues)", 
                        start.elapsed().as_secs_f64() * 1000.0, issues_found);
             }
         }
@@ -909,6 +935,8 @@ pub fn detect_file_type(path: &Path) -> FileType {
             "lua" => FileType::Lua,
             "dart" => FileType::Dart,
             "hs" => FileType::Haskell,
+            "html" | "htm" => FileType::HTML,
+            "css" | "scss" | "sass" => FileType::CSS,
             _ => FileType::Text,
         }
     } else {
@@ -945,6 +973,8 @@ fn is_supported_file(path: &Path) -> bool {
             | FileType::Lua
             | FileType::Dart
             | FileType::Haskell
+            | FileType::HTML
+            | FileType::CSS
     )
 }
 
@@ -1047,6 +1077,11 @@ mod tests {
         assert_eq!(detect_file_type(&PathBuf::from("test.lua")), FileType::Lua);
         assert_eq!(detect_file_type(&PathBuf::from("test.dart")), FileType::Dart);
         assert_eq!(detect_file_type(&PathBuf::from("test.hs")), FileType::Haskell);
+        assert_eq!(detect_file_type(&PathBuf::from("test.html")), FileType::HTML);
+        assert_eq!(detect_file_type(&PathBuf::from("test.htm")), FileType::HTML);
+        assert_eq!(detect_file_type(&PathBuf::from("test.css")), FileType::CSS);
+        assert_eq!(detect_file_type(&PathBuf::from("test.scss")), FileType::CSS);
+        assert_eq!(detect_file_type(&PathBuf::from("test.sass")), FileType::CSS);
     }
 
     #[test]
@@ -1055,6 +1090,8 @@ mod tests {
         assert_eq!(FileType::JavaScript.get_priority(), FilePriority::High);
         assert_eq!(FileType::YAML.get_priority(), FilePriority::Medium);
         assert_eq!(FileType::JSON.get_priority(), FilePriority::Medium);
+        assert_eq!(FileType::HTML.get_priority(), FilePriority::Medium);
+        assert_eq!(FileType::CSS.get_priority(), FilePriority::Medium);
         assert_eq!(FileType::Markdown.get_priority(), FilePriority::Low);
         assert_eq!(FileType::Text.get_priority(), FilePriority::Low);
     }

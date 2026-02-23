@@ -1,0 +1,73 @@
+{
+  "files": [
+    {
+      "path": "test.py",
+      "file_type": "Python",
+      "issues": [
+        {
+          "severity": "High",
+          "message": "Potentially dangerous eval() usage detected",
+          "line": 2,
+          "rule": "eval_usage"
+        },
+        {
+          "severity": "High",
+          "message": "Potentially unsafe deserialization method",
+          "line": 2,
+          "rule": "dangerous_deserialize"
+        },
+        {
+          "severity": "Critical",
+          "message": "Hardcoded API key or secret detected",
+          "line": 3,
+          "rule": "api_keys"
+        },
+        {
+          "severity": "High",
+          "message": "Potentially dangerous exec() usage detected",
+          "line": 4,
+          "rule": "exec_usage"
+        },
+        {
+          "severity": "Medium",
+          "message": "System call detected - verify input sanitization",
+          "line": 4,
+          "rule": "system_calls"
+        },
+        {
+          "severity": "High",
+          "message": "Potentially unsafe deserialization method",
+          "line": 4,
+          "rule": "dangerous_deserialize"
+        },
+        {
+          "severity": "Critical",
+          "message": "Process injection or dangerous execution technique detected",
+          "line": 2,
+          "rule": "process_injection"
+        },
+        {
+          "severity": "Critical",
+          "message": "Process injection or dangerous execution technique detected",
+          "line": 4,
+          "rule": "process_injection"
+        }
+      ],
+      "trust_score": 0
+    }
+  ],
+  "summary": {
+    "total_files": 1,
+    "avg_score": 0,
+    "total_issues": 8,
+    "issues_by_severity": {
+      "medium": 1,
+      "high": 4,
+      "critical": 3
+    },
+    "files_per_second": 0.0,
+    "total_time_seconds": 0.0,
+    "files_skipped": 0,
+    "skipped_reasons": {}
+  }
+}

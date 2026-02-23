@@ -91,6 +91,51 @@ vow check . --ci
 # Port scanning and security analysis
 vow scan 192.168.1.1 --ports 22,80,443
 vow scan example.com --ports 1-1000 --issues-only
+
+# Advanced usage examples
+vow check . --verbose --max-file-size 5 --max-depth 3
+vow check large-project/ --quiet --ci --threshold 90
+vow check . --format json --max-issues 10 > analysis.json
+```
+
+### Practical Examples
+
+#### CI/CD Pipeline Integration
+```bash
+# GitHub Actions / GitLab CI
+vow check . --ci --threshold 80 --quiet
+echo "Exit code: $?"  # 0 = pass, 1 = fail
+
+# Save structured results
+vow check . --format json > vow-results.json
+vow check . --format sarif > vow-results.sarif
+
+# Quick security scan of changed files
+git diff --name-only | grep -E '\.(py|js|ts)$' | xargs vow check --ci
+```
+
+#### Large Codebase Analysis
+```bash
+# Skip large files and limit depth for performance
+vow check /large/codebase --max-file-size 2 --max-depth 5 --quiet
+
+# Get detailed timing for performance optimization  
+vow check src/ --verbose --max-issues 5
+
+# Focus on high-priority files only
+vow check . --quiet | grep -E "(CRITICAL|HIGH)"
+```
+
+#### Development Workflow
+```bash
+# Quick check before commit
+vow check $(git diff --cached --name-only)
+
+# Analyze AI-generated code
+vow check ai-generated.py --verbose --threshold 90
+
+# Monitor specific directories with custom rules
+vow check src/ --rules .vow/custom-rules --threshold 85
 ```
 
 ## Example Output
@@ -123,7 +168,7 @@ Overall Verdict
 ❌ Code has significant signs of AI generation or security issues
 ```
 
-### JSON Output
+### JSON Output (Enhanced for CI/CD)
 ```json
 {
   "files": [
@@ -136,6 +181,12 @@ Overall Verdict
           "message": "Hardcoded API key or secret detected",
           "line": 12,
           "rule": "api_keys"
+        },
+        {
+          "severity": "High",
+          "message": "Potentially dangerous eval() usage detected",
+          "line": 21,
+          "rule": "eval_usage"
         }
       ],
       "trust_score": 25
@@ -149,9 +200,31 @@ Overall Verdict
       "critical": 2,
       "high": 3,
       "medium": 3
+    },
+    "files_per_second": 45.2,
+    "total_time_seconds": 1.3,
+    "files_skipped": 2,
+    "skipped_reasons": {
+      "too_large": 1,
+      "metadata_error": 1
     }
   }
 }
+```
+
+Perfect for parsing in CI/CD pipelines:
+```bash
+# Extract trust score for threshold checking
+jq '.summary.avg_score' vow-results.json
+
+# Count critical issues
+jq '.summary.issues_by_severity.critical // 0' vow-results.json
+
+# List all files with issues
+jq -r '.files[] | select(.issues | length > 0) | .path' vow-results.json
+
+# Performance monitoring
+jq '.summary.files_per_second' vow-results.json
 ```
 
 ## Configuration
@@ -247,7 +320,7 @@ Minimum score: 0%, Maximum score: 100%
 
 ## Command Line Reference
 
-```
+```bash
 vow init [PATH]                 Initialize Vow project
 vow check <PATH|-> [OPTIONS]    Analyze files or stdin
 vow scan <TARGET> [OPTIONS]     Scan network ports for security issues
@@ -257,6 +330,11 @@ Check Options:
   -r, --rules <PATH>           Custom rules directory
       --threshold <SCORE>       Minimum trust score (0-100)
       --ci                     CI mode (JSON output, exit on failure)
+  -v, --verbose                Verbose output with per-analyzer timing
+  -q, --quiet                  Quiet output (errors and summary only)
+      --max-file-size <MB>     Maximum file size to process in MB (default: 10)
+      --max-depth <N>          Maximum directory depth to scan (default: 20)
+      --max-issues <N>         Maximum issues per file before moving on (default: 100)
 
 Scan Options:
   -p, --ports <PORTS>          Port range (e.g., 1-1000, 22,80,443)
@@ -264,6 +342,81 @@ Scan Options:
       --timeout <MS>           Connection timeout in milliseconds
   -c, --concurrency <NUM>      Number of concurrent scans
       --issues-only           Only show security issues
+```
+
+## Advanced Features
+
+### 🗂️ **File Filtering (.vowignore)**
+
+Create a `.vowignore` file (gitignore syntax) to exclude files/directories:
+
+```gitignore
+# Ignore test files
+**/test/**
+**/tests/**
+**/__tests__/**
+*.test.js
+*.test.ts
+
+# Ignore build artifacts
+dist/
+build/
+target/
+node_modules/
+
+# Ignore temporary files
+*.tmp
+*.temp
+.cache/
+```
+
+### 📊 **JSON Output for CI/CD**
+
+Perfect for automated pipelines and integration with other tools:
+
+```bash
+# Basic JSON output
+vow check src/ --format json
+
+# CI mode (JSON + proper exit codes)
+vow check . --ci --threshold 80
+
+# Save results for further processing
+vow check . --format json > results.json
+```
+
+### 🐞 **Verbose Mode with Performance Insights**
+
+Get detailed timing breakdown per analyzer per file:
+
+```bash
+vow check suspicious.py --verbose
+```
+
+Output includes:
+```
+🔍 Analyzing suspicious.py (Python)
+  📊 Code Analyzer: 12.34ms (3 issues)
+  🛡️  Injection Analyzer: 8.76ms (1 issue)
+  ⏱️  Total analysis time: 21.45ms (Trust Score: 45%)
+```
+
+### ⚡ **Performance & Scale Controls**
+
+Optimize for large codebases:
+
+```bash
+# Skip large files (default: 10MB)
+vow check . --max-file-size 5
+
+# Limit directory depth (default: 20)
+vow check . --max-depth 10
+
+# Control issue reporting per file (default: 100)
+vow check . --max-issues 50
+
+# Quiet mode for CI (only shows summary)
+vow check . --quiet --ci
 ```
 
 ## Contributing

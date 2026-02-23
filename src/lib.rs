@@ -314,9 +314,9 @@ fn analyze_file_simple(path: &Path) -> Result<AnalysisResult, Box<dyn std::error
     analyze_file(path)
 }
 
-/// Analyze content with a given path context and issue limits
-pub fn analyze_content_with_limits(path: &Path, content: &str, max_issues: usize) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
-    let mut result = analyze_content(path, content)?;
+/// Analyze content with a given path context, issue limits, and verbose option
+pub fn analyze_content_with_limits_verbose(path: &Path, content: &str, max_issues: usize, verbose: bool) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
+    let mut result = analyze_content_verbose(path, content, verbose)?;
     
     // Limit issues per file
     if result.issues.len() > max_issues {
@@ -335,16 +335,31 @@ pub fn analyze_content_with_limits(path: &Path, content: &str, max_issues: usize
     Ok(result)
 }
 
-/// Analyze a single file with issue limits
-pub fn analyze_file_with_limits(path: &Path, max_issues: usize) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
-    let content = fs::read_to_string(path)?;
-    analyze_content_with_limits(path, &content, max_issues)
+/// Analyze content with a given path context and issue limits (non-verbose wrapper)
+pub fn analyze_content_with_limits(path: &Path, content: &str, max_issues: usize) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
+    analyze_content_with_limits_verbose(path, content, max_issues, false)
 }
 
-/// Analyze content with a given path context
-pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
+/// Analyze a single file with issue limits and verbose option
+pub fn analyze_file_with_limits_verbose(path: &Path, max_issues: usize, verbose: bool) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
+    let content = fs::read_to_string(path)?;
+    analyze_content_with_limits_verbose(path, &content, max_issues, verbose)
+}
+
+/// Analyze a single file with issue limits (non-verbose wrapper)
+pub fn analyze_file_with_limits(path: &Path, max_issues: usize) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
+    analyze_file_with_limits_verbose(path, max_issues, false)
+}
+
+/// Analyze content with a given path context and optional verbose timing
+pub fn analyze_content_verbose(path: &Path, content: &str, verbose: bool) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
     let file_type = detect_file_type(path);
     let mut issues = Vec::new();
+    let file_start = if verbose { Some(Instant::now()) } else { None };
+    
+    if verbose {
+        println!("🔍 Analyzing {} ({:?})", path.display(), file_type);
+    }
     
     // Run appropriate analyzers based on file type
     match file_type {
@@ -357,26 +372,54 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
                        FileType::Go | FileType::Ruby | FileType::C | FileType::Cpp | FileType::CSharp | FileType::PHP | 
                        FileType::Swift | FileType::Kotlin | FileType::R | FileType::MQL5 | FileType::Scala | 
                        FileType::Perl | FileType::Lua | FileType::Dart | FileType::Haskell) {
+                let analyzer_start = if verbose { Some(Instant::now()) } else { None };
                 let custom_allowlist = analyzers::code::CodeAnalyzer::load_custom_allowlist();
                 let code_analyzer = analyzers::code::CodeAnalyzer::with_custom_allowlist(custom_allowlist);
                 let mut result = code_analyzer.analyze(path, content);
+                let issues_found = result.issues.len();
                 issues.append(&mut result.issues);
+                
+                if let Some(start) = analyzer_start {
+                    println!("  📊 Code Analyzer: {:.2}ms ({} issues)", 
+                           start.elapsed().as_secs_f64() * 1000.0, issues_found);
+                }
             }
             
             // Run injection analyzer for all code files (including shell scripts)
+            let analyzer_start = if verbose { Some(Instant::now()) } else { None };
             let injection_analyzer = analyzers::injection::InjectionAnalyzer::new();
             let mut injection_result = injection_analyzer.analyze(path, content);
+            let issues_found = injection_result.issues.len();
             issues.append(&mut injection_result.issues);
+            
+            if let Some(start) = analyzer_start {
+                println!("  🛡️  Injection Analyzer: {:.2}ms ({} issues)", 
+                       start.elapsed().as_secs_f64() * 1000.0, issues_found);
+            }
         }
         FileType::Markdown | FileType::Text => {
+            let analyzer_start = if verbose { Some(Instant::now()) } else { None };
             let text_analyzer = analyzers::text::TextAnalyzer::new();
             let mut result = text_analyzer.analyze(path, content);
+            let issues_found = result.issues.len();
             issues.append(&mut result.issues);
             
+            if let Some(start) = analyzer_start {
+                println!("  📝 Text Analyzer: {:.2}ms ({} issues)", 
+                       start.elapsed().as_secs_f64() * 1000.0, issues_found);
+            }
+            
             // Also run injection analyzer on text files (they might contain malicious code snippets)
+            let analyzer_start = if verbose { Some(Instant::now()) } else { None };
             let injection_analyzer = analyzers::injection::InjectionAnalyzer::new();
             let mut injection_result = injection_analyzer.analyze(path, content);
+            let issues_found = injection_result.issues.len();
             issues.append(&mut injection_result.issues);
+            
+            if let Some(start) = analyzer_start {
+                println!("  🛡️  Injection Analyzer: {:.2}ms ({} issues)", 
+                       start.elapsed().as_secs_f64() * 1000.0, issues_found);
+            }
         }
         _ => {} // No specific analyzer for this file type
     }
@@ -384,12 +427,22 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
     // Calculate trust score
     let trust_score = calculate_trust_score(&issues);
     
+    if let Some(start) = file_start {
+        println!("  ⏱️  Total analysis time: {:.2}ms (Trust Score: {}%)\n", 
+               start.elapsed().as_secs_f64() * 1000.0, trust_score);
+    }
+    
     Ok(AnalysisResult {
         path: path.to_path_buf(),
         file_type,
         issues,
         trust_score,
     })
+}
+
+/// Analyze content with a given path context (non-verbose wrapper)
+pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
+    analyze_content_verbose(path, content, false)
 }
 
 /// Analyze all supported files in a directory with parallel processing and advanced features
@@ -512,21 +565,22 @@ pub fn analyze_directory_parallel(
     file_candidates.into_par_iter().for_each(|(file_path, _priority)| {
         let file_start = Instant::now();
         
-        match analyze_file_with_limits(&file_path, max_issues) {
+        match analyze_file_with_limits_verbose(&file_path, max_issues, verbose) {
             Ok(result) => {
                 let duration = file_start.elapsed();
                 
                 // Thread-safe result storage
                 {
-                    let mut results_lock = results.lock().unwrap();
-                    results_lock.push(result);
+                    if let Ok(mut results_lock) = results.lock() {
+                        results_lock.push(result);
+                    }
                 }
                 
                 // Thread-safe progress reporting (respects quiet flag)
                 if !quiet {
-                    let mut count = processed_count.lock().unwrap();
-                    *count += 1;
-                    let current_count = *count;
+                    if let Ok(mut count) = processed_count.lock() {
+                        *count += 1;
+                        let current_count = *count;
                     
                     if verbose || (current_count % 10 == 0) {
                         let elapsed = start_time.elapsed();
@@ -542,10 +596,12 @@ pub fn analyze_directory_parallel(
                                file_path.file_name().unwrap_or_default().to_string_lossy(),
                                duration.as_secs_f32());
                     }
+                    }
                 } else {
                     // Still need to increment counter for final metrics, even in quiet mode
-                    let mut count = processed_count.lock().unwrap();
-                    *count += 1;
+                    if let Ok(mut count) = processed_count.lock() {
+                        *count += 1;
+                    }
                 }
                 
                 if verbose && duration.as_secs() > 3 {
@@ -560,18 +616,23 @@ pub fn analyze_directory_parallel(
                 
                 // Still increment counter for progress
                 if !quiet {
-                    let mut count = processed_count.lock().unwrap();
-                    *count += 1;
+                    if let Ok(mut count) = processed_count.lock() {
+                        *count += 1;
+                    }
                 } else {
-                    let mut count = processed_count.lock().unwrap();
-                    *count += 1;
+                    if let Ok(mut count) = processed_count.lock() {
+                        *count += 1;
+                    }
                 }
             },
         }
     });
     
     let total_duration = start_time.elapsed();
-    let final_results = Arc::try_unwrap(results).unwrap().into_inner().unwrap();
+    let final_results = Arc::try_unwrap(results)
+        .map_err(|_| "Failed to unwrap results Arc")?
+        .into_inner()
+        .map_err(|_| "Failed to unwrap results Mutex")?;
     let files_processed = final_results.len();
     
     // Enhanced performance summary (always show in quiet mode, this is the summary)

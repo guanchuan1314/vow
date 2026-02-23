@@ -44,6 +44,9 @@ enum Commands {
         /// Hook mode: accept file list via stdin
         #[arg(long)]
         hook_mode: bool,
+        /// Watch mode: continuously monitor for file changes
+        #[arg(long)]
+        watch: bool,
         /// Maximum file size to process in MB
         #[arg(long, default_value = "10")]
         max_file_size: u64,
@@ -96,14 +99,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Init { path } => {
             vow::init_project(path)?;
         }
-        Commands::Check { path, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues } => {
+        Commands::Check { path, format, rules, threshold, ci, verbose, quiet, hook_mode, watch, max_file_size, max_depth, max_issues } => {
             let path_str = if hook_mode {
                 "-".to_string() // In hook mode, we read from stdin
             } else {
                 path.unwrap_or(".".to_string()) // Default to current directory if no path provided
             };
-            let exit_code = vow::check_input(path_str, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues)?;
-            std::process::exit(exit_code);
+            
+            if watch {
+                // Watch mode - never exits unless interrupted
+                vow::watch_files(path_str, format, rules, threshold, ci, verbose, quiet, max_file_size, max_depth, max_issues)?;
+            } else {
+                let exit_code = vow::check_input(path_str, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues)?;
+                std::process::exit(exit_code);
+            }
         }
         Commands::Scan { target, ports, format, timeout, concurrency, issues_only } => {
             let exit_code = vow::scan_ports(target, ports, format, timeout, concurrency, issues_only)?;

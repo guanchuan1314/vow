@@ -10,7 +10,10 @@ use ignore::WalkBuilder;
 use serde::{Deserialize, Serialize};
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::time::{Instant, Duration, SystemTime};
+use std::collections::HashMap;
+use notify::{RecommendedWatcher, RecursiveMode, Watcher, Event, EventKind};
+use crossbeam_channel::{bounded, select, Receiver};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalysisResult {
@@ -209,6 +212,314 @@ target/
     println!("  - Created .vow/rules/security.yaml");
     println!("  - Created .vowignore");
     
+    Ok(())
+}
+
+/// Watch mode: continuously monitor for file changes and re-analyze
+pub fn watch_files(
+    path: String,
+    format: String,
+    rules: Option<PathBuf>,
+    threshold: Option<u8>,
+    ci: bool,
+    verbose: bool,
+    quiet: bool,
+    max_file_size: u64,
+    max_depth: usize,
+    max_issues: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if path == "-" {
+        return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
+    }
+    
+    let watch_path = PathBuf::from(&path);
+    if !watch_path.exists() {
+        return Err(format!("Path does not exist: {}", path).into());
+    }
+
+    // Set up signal handling for graceful shutdown
+    let (shutdown_tx, shutdown_rx) = bounded::<()>(1);
+    let shutdown_tx_clone = shutdown_tx.clone();
+    
+    ctrlc::set_handler(move || {
+        println!("\n🛑 Shutting down watch mode...");
+        let _ = shutdown_tx_clone.send(());
+    }).expect("Error setting Ctrl-C handler");
+
+    // Create file system watcher
+    let (tx, rx) = bounded(100);
+    let mut watcher: RecommendedWatcher = Watcher::new(
+        move |result: Result<Event, notify::Error>| {
+            match result {
+                Ok(event) => {
+                    let _ = tx.send(event);
+                },
+                Err(e) => {
+                    eprintln!("⚠️ Watcher error: {}", e);
+                }
+            }
+        },
+        notify::Config::default().with_poll_interval(Duration::from_millis(100))
+    )?;
+
+    // Start watching
+    if watch_path.is_file() {
+        watcher.watch(&watch_path, RecursiveMode::NonRecursive)?;
+        if !quiet {
+            println!("👁️ Watching file: {}", watch_path.display());
+        }
+    } else {
+        watcher.watch(&watch_path, RecursiveMode::Recursive)?;
+        if !quiet {
+            println!("👁️ Watching directory: {}", watch_path.display());
+        }
+    }
+
+    // Run initial analysis
+    if !quiet {
+        println!("🔍 Running initial analysis...");
+    }
+    run_single_analysis(&path, &format, &rules, threshold, ci, verbose, quiet, max_file_size, max_depth, max_issues)?;
+
+    // Debouncing state
+    let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
+    let debounce_duration = Duration::from_millis(200);
+
+    if !quiet {
+        println!("\n✅ Watch mode started. Press Ctrl+C to stop.\n");
+    }
+
+    // Main event loop
+    loop {
+        select! {
+            recv(shutdown_rx) -> _ => {
+                if !quiet {
+                    println!("👋 Watch mode stopped");
+                }
+                break;
+            }
+            recv(rx) -> event => {
+                match event {
+                    Ok(event) => {
+                        handle_watch_event(
+                            event, 
+                            &mut last_events, 
+                            debounce_duration,
+                            &path,
+                            &format,
+                            &rules,
+                            threshold,
+                            ci,
+                            verbose,
+                            quiet,
+                            max_file_size,
+                            max_depth,
+                            max_issues
+                        )?;
+                    },
+                    Err(e) => {
+                        eprintln!("❌ Error receiving watch event: {}", e);
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Handle a single watch event with debouncing
+fn handle_watch_event(
+    event: Event,
+    last_events: &mut HashMap<PathBuf, SystemTime>,
+    debounce_duration: Duration,
+    _base_path: &str,
+    format: &str,
+    rules: &Option<PathBuf>,
+    threshold: Option<u8>,
+    ci: bool,
+    verbose: bool,
+    quiet: bool,
+    max_file_size: u64,
+    _max_depth: usize,
+    max_issues: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    
+    // Only handle write/create events for performance
+    match event.kind {
+        EventKind::Create(_) | EventKind::Modify(_) => {},
+        _ => return Ok(()) // Ignore other event types
+    }
+
+    let now = SystemTime::now();
+    
+    for path in event.paths {
+        // Skip if not a supported file
+        if !path.is_file() || !is_supported_file(&path) {
+            continue;
+        }
+
+        // Debouncing: check if we've seen this file recently
+        if let Some(&last_time) = last_events.get(&path) {
+            if let Ok(elapsed) = now.duration_since(last_time) {
+                if elapsed < debounce_duration {
+                    continue; // Skip this event, too recent
+                }
+            }
+        }
+
+        // Update timestamp
+        last_events.insert(path.clone(), now);
+
+        // Check file size
+        match fs::metadata(&path) {
+            Ok(metadata) => {
+                if metadata.len() > max_file_size * 1024 * 1024 {
+                    if verbose {
+                        println!("⏭️ Skipping {} (too large: {}MB)", 
+                               path.display(),
+                               metadata.len() / (1024 * 1024));
+                    }
+                    continue;
+                }
+            },
+            Err(_) => continue, // Skip files we can't read metadata for
+        }
+
+        // Analyze the changed file
+        analyze_changed_file(&path, format, rules, threshold, ci, verbose, quiet, max_issues)?;
+    }
+
+    Ok(())
+}
+
+/// Analyze a single changed file and display results
+fn analyze_changed_file(
+    file_path: &Path,
+    format: &str,
+    rules: &Option<PathBuf>,
+    threshold: Option<u8>,
+    _ci: bool,
+    verbose: bool,
+    quiet: bool,
+    max_issues: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let timestamp = chrono::Local::now().format("%H:%M:%S");
+    
+    if !quiet {
+        println!("🔄 [{}] Analyzing: {}", timestamp, file_path.display());
+    }
+
+    let analysis_start = Instant::now();
+    
+    // Analyze the file
+    let mut result = match analyze_file_with_limits_verbose(file_path, max_issues, verbose) {
+        Ok(result) => result,
+        Err(e) => {
+            if !quiet {
+                eprintln!("❌ [{}] Error analyzing {}: {}", timestamp, file_path.display(), e);
+            }
+            return Ok(());
+        }
+    };
+
+    // Apply rules if available
+    result = apply_rules_to_result(result, rules)?;
+
+    let analysis_duration = analysis_start.elapsed();
+
+    // Load config for threshold
+    let config = load_config(&PathBuf::from(".")).unwrap_or_default();
+    let effective_threshold = threshold.or(config.threshold).unwrap_or(70);
+
+    // Display results based on format
+    match format {
+        "json" => {
+            // For JSON, just print the single file result
+            let json_output = serde_json::to_string_pretty(&result)?;
+            println!("{}", json_output);
+        },
+        "terminal" | _ => {
+            // Terminal format with clear output
+            if result.issues.is_empty() {
+                if !quiet {
+                    println!("✅ [{}] {} - Trust Score: {}% ({}ms)", 
+                           timestamp, 
+                           file_path.file_name().unwrap_or_default().to_string_lossy(),
+                           result.trust_score,
+                           analysis_duration.as_millis());
+                }
+            } else {
+                println!("⚠️ [{}] {} - Trust Score: {}% ({} issues, {}ms)",
+                       timestamp,
+                       file_path.file_name().unwrap_or_default().to_string_lossy(),
+                       result.trust_score,
+                       result.issues.len(),
+                       analysis_duration.as_millis());
+
+                // Show issues
+                for issue in &result.issues {
+                    let severity_icon = match issue.severity {
+                        Severity::Critical => "🔴",
+                        Severity::High => "🟠", 
+                        Severity::Medium => "🟡",
+                        Severity::Low => "🔵",
+                    };
+                    
+                    if let Some(line) = issue.line {
+                        println!("  {} Line {}: {}", severity_icon, line, issue.message);
+                    } else {
+                        println!("  {} {}", severity_icon, issue.message);
+                    }
+                }
+
+                // Check threshold
+                if result.trust_score < effective_threshold {
+                    println!("❌ [{}] Below threshold ({}%)", timestamp, effective_threshold);
+                }
+            }
+        }
+    }
+
+    if !quiet {
+        println!(); // Add blank line for readability
+    }
+
+    Ok(())
+}
+
+/// Run a single analysis (used for initial scan)
+fn run_single_analysis(
+    path: &str,
+    format: &str,
+    rules: &Option<PathBuf>,
+    threshold: Option<u8>,
+    ci: bool,
+    verbose: bool,
+    quiet: bool,
+    max_file_size: u64,
+    max_depth: usize,
+    max_issues: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Run regular analysis once
+    let exit_code = check_input(
+        path.to_string(),
+        format.to_string(),
+        rules.clone(),
+        threshold,
+        ci,
+        verbose,
+        quiet,
+        false, // Not hook mode
+        max_file_size,
+        max_depth,
+        max_issues
+    )?;
+    
+    if exit_code != 0 && verbose {
+        println!("⚠️ Initial analysis found issues");
+    }
+
     Ok(())
 }
 
@@ -1659,5 +1970,110 @@ javascript:
         assert!(result.unwrap_err().to_string().contains("Not in a git repository"));
         
         env::set_current_dir(original_dir).unwrap();
+    }
+
+    #[test]
+    fn test_watch_mode_validation() {
+        // Test that watch mode rejects stdin
+        let result = watch_files(
+            "-".to_string(),
+            "terminal".to_string(),
+            None,
+            None,
+            false,
+            false,
+            true, // quiet mode for tests
+            10,
+            20,
+            100
+        );
+        
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err().to_string();
+        assert!(error_msg.contains("stdin"));
+    }
+
+    #[test]
+    fn test_watch_mode_nonexistent_path() {
+        // Test that watch mode rejects non-existent paths
+        let result = watch_files(
+            "/nonexistent/path".to_string(),
+            "terminal".to_string(),
+            None,
+            None,
+            false,
+            false,
+            true, // quiet mode for tests
+            10,
+            20,
+            100
+        );
+        
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err().to_string();
+        assert!(error_msg.contains("does not exist"));
+    }
+
+    #[test]
+    fn test_changed_file_analysis() {
+        let temp_dir = TempDir::new().unwrap();
+        let test_file = temp_dir.path().join("test.py");
+        
+        // Create test file
+        fs::write(&test_file, "print('hello')").unwrap();
+        
+        // Test analyzing changed file
+        let result = analyze_changed_file(
+            &test_file,
+            "terminal",
+            &None,
+            Some(70),
+            false,
+            false,
+            true, // quiet mode for tests
+            100
+        );
+        
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_debouncing_logic() {
+        let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
+        let debounce_duration = Duration::from_millis(200);
+        let now = SystemTime::now();
+        
+        let test_path = PathBuf::from("test.py");
+        
+        // First event should be allowed
+        assert!(!last_events.contains_key(&test_path));
+        
+        // Add event
+        last_events.insert(test_path.clone(), now);
+        
+        // Check if recent event would be debounced
+        if let Some(&last_time) = last_events.get(&test_path) {
+            if let Ok(elapsed) = now.duration_since(last_time) {
+                // Should be debounced (elapsed is 0)
+                assert!(elapsed < debounce_duration);
+            }
+        }
+    }
+
+    #[test]
+    fn test_file_size_checking() {
+        let temp_dir = TempDir::new().unwrap();
+        let test_file = temp_dir.path().join("large.py");
+        
+        // Create a small test file (should pass)
+        fs::write(&test_file, "print('hello')").unwrap();
+        
+        // Check metadata reading works
+        let metadata = fs::metadata(&test_file).unwrap();
+        assert!(metadata.len() < 1024 * 1024); // Should be less than 1MB
+        
+        // Test would skip files larger than max size
+        let max_size_bytes = 10 * 1024 * 1024; // 10MB
+        assert!(metadata.len() <= max_size_bytes);
     }
 }

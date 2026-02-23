@@ -342,6 +342,7 @@ pub struct CodeAnalyzer {
     custom_allowlist: Option<CustomAllowlist>,
     signature_analyzer: SignatureAnalyzer,
     type_analyzer: TypeAnalyzer,
+    method_analyzer: MethodAnalyzer,
 }
 
 struct SignatureAnalyzer {
@@ -361,6 +362,19 @@ struct SuspiciousSignature {
 struct ImpossibleType {
     name: &'static str,
     pattern: Regex,
+    message: &'static str,
+}
+
+struct MethodAnalyzer {
+    python_stdlib_methods: std::collections::HashMap<&'static str, Vec<&'static str>>,
+    javascript_stdlib_methods: std::collections::HashMap<&'static str, Vec<&'static str>>,
+    common_wrong_signatures: Vec<WrongSignaturePattern>,
+}
+
+struct WrongSignaturePattern {
+    name: &'static str,
+    pattern: Regex,
+    correct_usage: &'static str,
     message: &'static str,
 }
 
@@ -437,6 +451,141 @@ impl TypeAnalyzer {
     }
 }
 
+impl MethodAnalyzer {
+    fn new() -> Self {
+        let mut python_stdlib_methods = std::collections::HashMap::new();
+        let mut javascript_stdlib_methods = std::collections::HashMap::new();
+        
+        // Python stdlib methods - curated list of commonly hallucinated methods
+        python_stdlib_methods.insert("os.path", vec!["exists", "join", "dirname", "basename", "abspath", "isfile", "isdir", "split", "splitext", "expanduser", "expandvars", "normpath", "realpath"]);
+        python_stdlib_methods.insert("str", vec!["strip", "split", "join", "replace", "find", "index", "startswith", "endswith", "upper", "lower", "capitalize", "title", "format", "encode", "decode", "isdigit", "isalpha", "isalnum", "isupper", "islower"]);
+        python_stdlib_methods.insert("list", vec!["append", "extend", "insert", "remove", "pop", "index", "count", "sort", "reverse", "copy", "clear"]);
+        python_stdlib_methods.insert("dict", vec!["get", "pop", "popitem", "keys", "values", "items", "update", "clear", "copy", "setdefault"]);
+        python_stdlib_methods.insert("json", vec!["loads", "dumps", "load", "dump"]);
+        python_stdlib_methods.insert("re", vec!["match", "search", "findall", "finditer", "sub", "subn", "split", "compile", "escape"]);
+        python_stdlib_methods.insert("sys", vec!["exit", "argv", "path", "version", "platform", "executable", "stdin", "stdout", "stderr"]);
+        python_stdlib_methods.insert("pathlib.Path", vec!["exists", "is_file", "is_dir", "mkdir", "rmdir", "unlink", "rename", "read_text", "write_text", "read_bytes", "write_bytes", "iterdir", "glob", "rglob", "parent", "parents", "name", "stem", "suffix", "parts"]);
+
+        // JavaScript/TypeScript stdlib methods - commonly hallucinated methods  
+        javascript_stdlib_methods.insert("Array", vec!["push", "pop", "shift", "unshift", "splice", "slice", "concat", "join", "indexOf", "lastIndexOf", "includes", "find", "findIndex", "filter", "map", "reduce", "reduceRight", "forEach", "some", "every", "sort", "reverse", "flat", "flatMap", "fill", "copyWithin"]);
+        javascript_stdlib_methods.insert("String", vec!["charAt", "charCodeAt", "concat", "indexOf", "lastIndexOf", "slice", "substring", "substr", "toLowerCase", "toUpperCase", "trim", "trimStart", "trimEnd", "split", "replace", "replaceAll", "match", "search", "includes", "startsWith", "endsWith", "repeat", "padStart", "padEnd"]);
+        javascript_stdlib_methods.insert("Object", vec!["keys", "values", "entries", "assign", "create", "defineProperty", "defineProperties", "getOwnPropertyNames", "getOwnPropertyDescriptor", "getPrototypeOf", "setPrototypeOf", "hasOwnProperty", "isPrototypeOf", "freeze", "seal", "isFrozen", "isSealed"]);
+        javascript_stdlib_methods.insert("Map", vec!["set", "get", "has", "delete", "clear", "keys", "values", "entries", "forEach"]);
+        javascript_stdlib_methods.insert("Set", vec!["add", "has", "delete", "clear", "keys", "values", "entries", "forEach"]);
+        javascript_stdlib_methods.insert("Promise", vec!["then", "catch", "finally", "resolve", "reject", "all", "allSettled", "race", "any"]);
+        javascript_stdlib_methods.insert("JSON", vec!["parse", "stringify"]);
+        javascript_stdlib_methods.insert("Math", vec!["abs", "ceil", "floor", "round", "max", "min", "random", "pow", "sqrt", "sin", "cos", "tan", "log", "exp"]);
+        
+        MethodAnalyzer {
+            python_stdlib_methods,
+            javascript_stdlib_methods,
+            common_wrong_signatures: vec![
+                // Python common mistakes
+                WrongSignaturePattern {
+                    name: "os_path_exist",
+                    pattern: Regex::new(r"os\.path\.exist\(").unwrap(),
+                    correct_usage: "os.path.exists()",
+                    message: "Method 'exist' does not exist on os.path, use 'exists' instead",
+                },
+                WrongSignaturePattern {
+                    name: "str_contains",
+                    pattern: Regex::new(r"\.contains\(").unwrap(),
+                    correct_usage: "'in' operator or str.find() method",
+                    message: "Python strings don't have a 'contains' method, use 'in' operator or find() method",
+                },
+                WrongSignaturePattern {
+                    name: "list_push",
+                    pattern: Regex::new(r"\.push\(").unwrap(),
+                    correct_usage: "list.append()",
+                    message: "Python lists don't have a 'push' method, use 'append' instead",
+                },
+                WrongSignaturePattern {
+                    name: "dict_length",
+                    pattern: Regex::new(r"\.length\(\)").unwrap(),
+                    correct_usage: "len(dict)",
+                    message: "Python objects don't have a 'length()' method, use len() function",
+                },
+                WrongSignaturePattern {
+                    name: "json_parse",
+                    pattern: Regex::new(r"json\.parse\(").unwrap(),
+                    correct_usage: "json.loads()",
+                    message: "Python json module uses 'loads', not 'parse'",
+                },
+                WrongSignaturePattern {
+                    name: "json_stringify",
+                    pattern: Regex::new(r"json\.stringify\(").unwrap(),
+                    correct_usage: "json.dumps()",
+                    message: "Python json module uses 'dumps', not 'stringify'",
+                },
+                WrongSignaturePattern {
+                    name: "path_join_wrong_args",
+                    pattern: Regex::new(r"os\.path\.join\([^)]*,\s*[^)]*,\s*[^)]*,\s*[^)]*,\s*[^)]*,\s*[^)]*\)").unwrap(),
+                    correct_usage: "os.path.join() with reasonable number of arguments",
+                    message: "Too many arguments for os.path.join(), possible AI hallucination",
+                },
+                
+                // JavaScript common mistakes
+                WrongSignaturePattern {
+                    name: "array_flatmap_case",
+                    pattern: Regex::new(r"\.flatmap\(").unwrap(),
+                    correct_usage: "Array.flatMap() (camelCase)",
+                    message: "JavaScript Array method is 'flatMap', not 'flatmap'",
+                },
+                WrongSignaturePattern {
+                    name: "array_indexof_case", 
+                    pattern: Regex::new(r"\.indexof\(").unwrap(),
+                    correct_usage: "Array.indexOf() (camelCase)",
+                    message: "JavaScript Array method is 'indexOf', not 'indexof'",
+                },
+                WrongSignaturePattern {
+                    name: "string_indexof_case",
+                    pattern: Regex::new(r"\.indexof\(").unwrap(),
+                    correct_usage: "String.indexOf() (camelCase)",
+                    message: "JavaScript String method is 'indexOf', not 'indexof'",
+                },
+                WrongSignaturePattern {
+                    name: "object_keys_wrong_call",
+                    pattern: Regex::new(r"\.keys\(\)").unwrap(),
+                    correct_usage: "Object.keys(obj)",
+                    message: "Object.keys() is a static method, not an instance method",
+                },
+                WrongSignaturePattern {
+                    name: "array_append",
+                    pattern: Regex::new(r"\.append\(").unwrap(),
+                    correct_usage: "Array.push()",
+                    message: "JavaScript arrays don't have an 'append' method, use 'push' instead",
+                },
+                WrongSignaturePattern {
+                    name: "array_size",
+                    pattern: Regex::new(r"\.size\(\)").unwrap(),
+                    correct_usage: "Array.length property",
+                    message: "JavaScript arrays don't have a 'size()' method, use 'length' property",
+                },
+                WrongSignaturePattern {
+                    name: "string_len",
+                    pattern: Regex::new(r"\.len\(\)").unwrap(),
+                    correct_usage: "String.length property",
+                    message: "JavaScript strings don't have a 'len()' method, use 'length' property",
+                },
+                
+                // Common open() function mistakes
+                WrongSignaturePattern {
+                    name: "open_too_many_args",
+                    pattern: Regex::new(r"open\([^)]*,\s*[^)]*,\s*[^)]*,\s*[^)]*,\s*[^)]*\)").unwrap(),
+                    correct_usage: "open(file, mode='r', encoding=None, ...)",
+                    message: "Too many positional arguments for open() function",
+                },
+                WrongSignaturePattern {
+                    name: "open_wrong_mode_type",
+                    pattern: Regex::new(r"open\([^)]*,\s*mode\s*=\s*\d+").unwrap(),
+                    correct_usage: "open(file, mode='r')",
+                    message: "Mode argument should be a string, not a number",
+                },
+            ],
+        }
+    }
+}
+
 impl Default for CodeAnalyzer {
     fn default() -> Self {
         Self::new()
@@ -453,6 +602,7 @@ impl CodeAnalyzer {
             custom_allowlist,
             signature_analyzer: SignatureAnalyzer::new(),
             type_analyzer: TypeAnalyzer::new(),
+            method_analyzer: MethodAnalyzer::new(),
         }
     }
     
@@ -554,6 +704,9 @@ impl CodeAnalyzer {
         // Run type analysis for impossible type combinations
         self.analyze_type_errors(content, &file_type, &mut issues);
         
+        // Run method signature analysis for hallucinated function signatures
+        self.analyze_method_signatures(content, &file_type, &mut issues);
+        
         AnalysisResult {
             path: path.to_path_buf(),
             file_type: file_type.clone(),
@@ -641,6 +794,320 @@ impl CodeAnalyzer {
             _ => {} // Skip type analysis for other languages
         }
     }
+
+    fn analyze_method_signatures(&self, content: &str, file_type: &FileType, issues: &mut Vec<Issue>) {
+        match file_type {
+            FileType::Python => {
+                self.analyze_python_method_signatures(content, issues);
+            }
+            FileType::JavaScript | FileType::TypeScript => {
+                self.analyze_javascript_method_signatures(content, issues);
+            }
+            _ => {} // Skip method analysis for other languages
+        }
+    }
+
+    fn analyze_python_method_signatures(&self, content: &str, issues: &mut Vec<Issue>) {
+        for (line_num, line) in content.lines().enumerate() {
+            // First, check for common wrong signature patterns
+            for pattern in &self.method_analyzer.common_wrong_signatures {
+                if pattern.pattern.is_match(line) {
+                    // Skip false positives for JS-style method calls if this is clearly Python
+                    if (pattern.name == "array_append" || pattern.name == "array_size" || pattern.name == "string_len") 
+                       && !line.contains("def ") && !line.contains("class ") {
+                        continue;
+                    }
+                    
+                    issues.push(Issue {
+                        severity: Severity::Medium,
+                        message: format!("Hallucinated method signature: {}. Correct usage: {}", pattern.message, pattern.correct_usage),
+                        line: Some(line_num + 1),
+                        rule: Some("hallucinated_signature".to_string()),
+                    });
+                }
+            }
+            
+            // Check for nonexistent methods on known Python stdlib objects
+            self.check_python_stdlib_methods(line, line_num, issues);
+        }
+    }
+
+    fn analyze_javascript_method_signatures(&self, content: &str, issues: &mut Vec<Issue>) {
+        for (line_num, line) in content.lines().enumerate() {
+            // First, check for common wrong signature patterns
+            for pattern in &self.method_analyzer.common_wrong_signatures {
+                if pattern.pattern.is_match(line) {
+                    // Skip Python-specific patterns if this is clearly JavaScript
+                    if (pattern.name == "str_contains" || pattern.name == "list_push" || pattern.name == "dict_length") 
+                       && !line.contains("function ") && !line.contains("class ") {
+                        continue;
+                    }
+                    
+                    issues.push(Issue {
+                        severity: Severity::Medium,
+                        message: format!("Hallucinated method signature: {}. Correct usage: {}", pattern.message, pattern.correct_usage),
+                        line: Some(line_num + 1),
+                        rule: Some("hallucinated_signature".to_string()),
+                    });
+                }
+            }
+            
+            // Check for nonexistent methods on known JavaScript stdlib objects
+            self.check_javascript_stdlib_methods(line, line_num, issues);
+        }
+    }
+
+    fn check_python_stdlib_methods(&self, line: &str, line_num: usize, issues: &mut Vec<Issue>) {
+        // Check os.path methods
+        if line.contains("os.path.") {
+            if let Some(method_call) = extract_method_call(line, "os.path.") {
+                if let Some(valid_methods) = self.method_analyzer.python_stdlib_methods.get("os.path") {
+                    if !valid_methods.contains(&method_call.as_str()) {
+                        // Check for common typos
+                        let suggestion = if method_call == "exist" {
+                            " (did you mean 'exists'?)"
+                        } else if method_call == "joinpath" {
+                            " (did you mean 'join'?)"
+                        } else if method_call == "dirname_name" || method_call == "path_dirname" {
+                            " (did you mean 'dirname'?)"
+                        } else {
+                            ""
+                        };
+                        
+                        issues.push(Issue {
+                            severity: Severity::High,
+                            message: format!("Method '{}' does not exist on os.path{}", method_call, suggestion),
+                            line: Some(line_num + 1),
+                            rule: Some("nonexistent_method".to_string()),
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Check string methods (simplified - look for .method() patterns on string-like contexts)
+        if line.contains("\"") || line.contains("'") || line.contains("str(") {
+            if let Some(method_call) = extract_string_method_call(line) {
+                if let Some(valid_methods) = self.method_analyzer.python_stdlib_methods.get("str") {
+                    if !valid_methods.contains(&method_call.as_str()) && is_likely_string_method(&method_call) {
+                        let suggestion = if method_call == "contains" {
+                            " (use 'in' operator or 'find' method)"
+                        } else if method_call == "length" {
+                            " (use len() function)"
+                        } else if method_call == "substr" {
+                            " (use 'substring' or slice notation)"
+                        } else {
+                            ""
+                        };
+                        
+                        issues.push(Issue {
+                            severity: Severity::High,
+                            message: format!("Method '{}' does not exist on Python strings{}", method_call, suggestion),
+                            line: Some(line_num + 1),
+                            rule: Some("nonexistent_method".to_string()),
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Check list methods
+        if line.contains(".append(") || line.contains(".extend(") || line.contains("[") {
+            if let Some(method_call) = extract_list_method_call(line) {
+                if let Some(valid_methods) = self.method_analyzer.python_stdlib_methods.get("list") {
+                    if !valid_methods.contains(&method_call.as_str()) && is_likely_list_method(&method_call) {
+                        let suggestion = if method_call == "push" {
+                            " (use 'append' method)"
+                        } else if method_call == "length" {
+                            " (use len() function)"
+                        } else if method_call == "size" {
+                            " (use len() function)"
+                        } else {
+                            ""
+                        };
+                        
+                        issues.push(Issue {
+                            severity: Severity::High,
+                            message: format!("Method '{}' does not exist on Python lists{}", method_call, suggestion),
+                            line: Some(line_num + 1),
+                            rule: Some("nonexistent_method".to_string()),
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Check json methods
+        if line.contains("json.") {
+            if let Some(method_call) = extract_method_call(line, "json.") {
+                if let Some(valid_methods) = self.method_analyzer.python_stdlib_methods.get("json") {
+                    if !valid_methods.contains(&method_call.as_str()) {
+                        let suggestion = if method_call == "parse" {
+                            " (use 'loads' method)"
+                        } else if method_call == "stringify" {
+                            " (use 'dumps' method)"
+                        } else {
+                            ""
+                        };
+                        
+                        issues.push(Issue {
+                            severity: Severity::High,
+                            message: format!("Method '{}' does not exist on json module{}", method_call, suggestion),
+                            line: Some(line_num + 1),
+                            rule: Some("nonexistent_method".to_string()),
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    fn check_javascript_stdlib_methods(&self, line: &str, line_num: usize, issues: &mut Vec<Issue>) {
+        // Check Array methods
+        if line.contains(".map(") || line.contains(".filter(") || line.contains(".push(") || line.contains("[") {
+            if let Some(method_call) = extract_js_array_method_call(line) {
+                if let Some(valid_methods) = self.method_analyzer.javascript_stdlib_methods.get("Array") {
+                    if !valid_methods.contains(&method_call.as_str()) && is_likely_array_method(&method_call) {
+                        let suggestion = if method_call == "append" {
+                            " (use 'push' method)"
+                        } else if method_call == "length" {
+                            " (use 'length' property, not method)"
+                        } else if method_call == "size" {
+                            " (use 'length' property)"
+                        } else if method_call == "flatmap" {
+                            " (use 'flatMap' with correct capitalization)"
+                        } else if method_call == "indexof" {
+                            " (use 'indexOf' with correct capitalization)"
+                        } else {
+                            ""
+                        };
+                        
+                        issues.push(Issue {
+                            severity: Severity::High,
+                            message: format!("Method '{}' does not exist on JavaScript Array{}", method_call, suggestion),
+                            line: Some(line_num + 1),
+                            rule: Some("nonexistent_method".to_string()),
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Check String methods
+        if line.contains("\"") || line.contains("'") || line.contains("`") {
+            if let Some(method_call) = extract_js_string_method_call(line) {
+                if let Some(valid_methods) = self.method_analyzer.javascript_stdlib_methods.get("String") {
+                    if !valid_methods.contains(&method_call.as_str()) && is_likely_string_method(&method_call) {
+                        let suggestion = if method_call == "contains" {
+                            " (use 'includes' method)"
+                        } else if method_call == "length" {
+                            " (use 'length' property, not method)"
+                        } else if method_call == "indexof" {
+                            " (use 'indexOf' with correct capitalization)"
+                        } else {
+                            ""
+                        };
+                        
+                        issues.push(Issue {
+                            severity: Severity::High,
+                            message: format!("Method '{}' does not exist on JavaScript String{}", method_call, suggestion),
+                            line: Some(line_num + 1),
+                            rule: Some("nonexistent_method".to_string()),
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Check Object static method calls that are used incorrectly as instance methods
+        if line.contains(".keys()") || line.contains(".values()") || line.contains(".entries()") {
+            issues.push(Issue {
+                severity: Severity::High,
+                message: "Object.keys/values/entries are static methods - use Object.keys(obj), not obj.keys()".to_string(),
+                line: Some(line_num + 1),
+                rule: Some("incorrect_static_method".to_string()),
+            });
+        }
+    }
+}
+
+// Helper functions for method extraction
+fn extract_method_call(line: &str, prefix: &str) -> Option<String> {
+    if let Some(start) = line.find(prefix) {
+        let after_prefix = &line[start + prefix.len()..];
+        if let Some(paren_pos) = after_prefix.find('(') {
+            let method_name = &after_prefix[..paren_pos];
+            if method_name.chars().all(|c| c.is_alphanumeric() || c == '_') {
+                return Some(method_name.to_string());
+            }
+        }
+    }
+    None
+}
+
+fn extract_string_method_call(line: &str) -> Option<String> {
+    // Look for patterns like .method() that might be string methods
+    let method_pattern = Regex::new(r"\.([a-zA-Z_][a-zA-Z0-9_]*)\s*\(").unwrap();
+    if let Some(captures) = method_pattern.captures(line) {
+        if let Some(method_match) = captures.get(1) {
+            return Some(method_match.as_str().to_string());
+        }
+    }
+    None
+}
+
+fn extract_list_method_call(line: &str) -> Option<String> {
+    // Similar to string method extraction but look for list-like contexts
+    let method_pattern = Regex::new(r"\.([a-zA-Z_][a-zA-Z0-9_]*)\s*\(").unwrap();
+    if let Some(captures) = method_pattern.captures(line) {
+        if let Some(method_match) = captures.get(1) {
+            return Some(method_match.as_str().to_string());
+        }
+    }
+    None
+}
+
+fn extract_js_array_method_call(line: &str) -> Option<String> {
+    let method_pattern = Regex::new(r"\.([a-zA-Z_][a-zA-Z0-9_]*)\s*\(").unwrap();
+    if let Some(captures) = method_pattern.captures(line) {
+        if let Some(method_match) = captures.get(1) {
+            return Some(method_match.as_str().to_string());
+        }
+    }
+    None
+}
+
+fn extract_js_string_method_call(line: &str) -> Option<String> {
+    let method_pattern = Regex::new(r"\.([a-zA-Z_][a-zA-Z0-9_]*)\s*\(").unwrap();
+    if let Some(captures) = method_pattern.captures(line) {
+        if let Some(method_match) = captures.get(1) {
+            return Some(method_match.as_str().to_string());
+        }
+    }
+    None
+}
+
+fn is_likely_string_method(method_name: &str) -> bool {
+    matches!(method_name, 
+        "contains" | "length" | "substr" | "len" | "size" | "count" |
+        "indexof" | "lastindexof" | "substring" | "capitalize" | 
+        "trim" | "ltrim" | "rtrim" | "split" | "join" | "replace"
+    )
+}
+
+fn is_likely_list_method(method_name: &str) -> bool {
+    matches!(method_name,
+        "push" | "length" | "size" | "len" | "add" | "remove" | 
+        "contains" | "get" | "set" | "first" | "last" | "head" | "tail"
+    )
+}
+
+fn is_likely_array_method(method_name: &str) -> bool {
+    matches!(method_name,
+        "append" | "length" | "size" | "add" | "remove" | "contains" |
+        "flatmap" | "indexof" | "lastindexof" | "foreach" | "reduce" |
+        "get" | "set" | "first" | "last" | "head" | "tail"
+    )
 }
 
 fn detect_code_type(path: &Path) -> FileType {

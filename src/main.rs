@@ -23,7 +23,7 @@ enum Commands {
     Check {
         /// Path to analyze (file or directory), or "-" for stdin
         path: String,
-        /// Output format
+        /// Output format (terminal, json, sarif)
         #[arg(short, long, default_value = "terminal")]
         format: String,
         /// Rule file or directory
@@ -35,6 +35,21 @@ enum Commands {
         /// CI mode (JSON output, non-zero exit on failure)
         #[arg(long)]
         ci: bool,
+        /// Verbose output
+        #[arg(short, long)]
+        verbose: bool,
+        /// Quiet output (errors only)
+        #[arg(short, long)]
+        quiet: bool,
+        /// Maximum file size to process in MB
+        #[arg(long, default_value = "10")]
+        max_file_size: u64,
+        /// Maximum directory depth to scan
+        #[arg(long, default_value = "20")]
+        max_depth: usize,
+        /// Maximum issues per file before moving on
+        #[arg(long, default_value = "100")]
+        max_issues: usize,
     },
     /// Scan network ports and evaluate security
     Scan {
@@ -65,8 +80,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Init { path } => {
             vow::init_project(path)?;
         }
-        Commands::Check { path, format, rules, threshold, ci } => {
-            let exit_code = vow::check_input(path, format, rules, threshold, ci)?;
+        Commands::Check { path, format, rules, threshold, ci, verbose, quiet, max_file_size, max_depth, max_issues } => {
+            let exit_code = vow::check_input(path, format, rules, threshold, ci, verbose, quiet, max_file_size, max_depth, max_issues)?;
             std::process::exit(exit_code);
         }
         Commands::Scan { target, ports, format, timeout, concurrency, issues_only } => {

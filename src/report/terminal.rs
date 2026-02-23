@@ -12,6 +12,28 @@ pub fn print_terminal_report(results: &ProjectResults) {
     println!("  Files analyzed: {}", results.summary.total_files);
     println!("  Average trust score: {}", format_trust_score(results.summary.avg_score));
     println!("  Total issues found: {}", results.summary.total_issues);
+    
+    // Print performance metrics if available
+    if results.summary.total_time_seconds > 0.0 {
+        println!("  Analysis time: {:.1}s", results.summary.total_time_seconds);
+        println!("  Processing speed: {:.2} files/second", results.summary.files_per_second);
+    }
+    
+    if results.summary.files_skipped > 0 {
+        println!("  Files skipped: {}", results.summary.files_skipped);
+        if !results.summary.skipped_reasons.is_empty() {
+            println!("  Skip reasons:");
+            for (reason, count) in &results.summary.skipped_reasons {
+                let reason_display = match reason.as_str() {
+                    "too_large" => "Too large (>10MB)",
+                    "metadata_error" => "Metadata error",
+                    _ => reason,
+                };
+                println!("    {}: {}", reason_display, count);
+            }
+        }
+    }
+    
     println!();
     
     // Print severity breakdown

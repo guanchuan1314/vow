@@ -401,6 +401,22 @@ pub fn analyze_content_verbose(path: &Path, content: &str, verbose: bool) -> Res
                 println!("  🛡️  Injection Analyzer: {:.2}ms ({} issues)", 
                        start.elapsed().as_secs_f64() * 1000.0, issues_found);
             }
+            
+            // Run type combination analyzer for strongly typed languages
+            if matches!(file_type, FileType::Python | FileType::JavaScript | FileType::TypeScript | FileType::Rust | 
+                       FileType::Java | FileType::Go | FileType::CSharp | FileType::Swift | FileType::Kotlin | 
+                       FileType::Scala | FileType::Dart | FileType::Haskell) {
+                let analyzer_start = if verbose { Some(Instant::now()) } else { None };
+                let type_analyzer = analyzers::type_combinations::TypeCombinationAnalyzer::new();
+                let mut type_result = type_analyzer.analyze(path, content);
+                let issues_found = type_result.issues.len();
+                issues.append(&mut type_result.issues);
+                
+                if let Some(start) = analyzer_start {
+                    println!("  🎯 Type Combination Analyzer: {:.2}ms ({} issues)", 
+                           start.elapsed().as_secs_f64() * 1000.0, issues_found);
+                }
+            }
         }
         FileType::Markdown | FileType::Text => {
             let analyzer_start = if verbose { Some(Instant::now()) } else { None };

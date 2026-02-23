@@ -278,10 +278,11 @@ impl InjectionAnalyzer {
                 let end = std::cmp::min(i + 4, lines.len());
                 
                 let context = lines[start..end].join(" ");
-                // Only flag requests to external domains, not localhost/internal APIs
-                let external_http_regex = Regex::new(r"(?i)(requests\.post|fetch\(.*?method.*?post|axios\.post|curl\s+-.*?-d|wget\s+--post-data).*?(?:http[s]?://(?!(?:localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)))").unwrap();
+                // Check for external HTTP requests (simplified pattern)
+                let external_http_regex = Regex::new(r"(?i)(requests\.post|fetch\(.*?method.*?post|axios\.post|curl\s+-.*?-d|wget\s+--post-data).*?http[s]?://").unwrap();
+                let internal_regex = Regex::new(r"(?i)(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)").unwrap();
                 
-                if external_http_regex.is_match(&context) {
+                if external_http_regex.is_match(&context) && !internal_regex.is_match(&context) {
                     issues.push(Issue {
                         severity: Severity::Critical,
                         message: "Sensitive environment variable access followed by external HTTP request - potential secret exfiltration".to_string(),
@@ -304,9 +305,10 @@ impl InjectionAnalyzer {
                 let context = lines[start..end].join(" ");
                 
                 let base64_regex = Regex::new(r"(?i)(base64\.encode|base64\.b64encode|btoa\(|Buffer\.from.*?base64)").unwrap();
-                let external_http_regex = Regex::new(r"(?i)(requests\.post|fetch\(.*?method.*?post|axios\.post|curl\s+-.*?-d).*?(?:http[s]?://(?!(?:localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)))").unwrap();
+                let external_http_regex = Regex::new(r"(?i)(requests\.post|fetch\(.*?method.*?post|axios\.post|curl\s+-.*?-d).*?http[s]?://").unwrap();
+                let internal_regex = Regex::new(r"(?i)(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)").unwrap();
                 
-                if base64_regex.is_match(&context) && external_http_regex.is_match(&context) {
+                if base64_regex.is_match(&context) && external_http_regex.is_match(&context) && !internal_regex.is_match(&context) {
                     issues.push(Issue {
                         severity: Severity::Critical,
                         message: "Sensitive file read + base64 encoding + external HTTP request pattern - likely data exfiltration".to_string(),

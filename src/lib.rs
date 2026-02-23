@@ -190,9 +190,11 @@ file_types: ["py", "js", "ts"]
 *.spec.ts
 
 # Ignore build artifacts
+node_modules/
 dist/
 build/
 out/
+target/
 
 # Ignore temporary files
 *.tmp

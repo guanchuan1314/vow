@@ -340,6 +340,101 @@ struct HallucinationPattern {
 /// Code analyzer for detecting issues in source code
 pub struct CodeAnalyzer {
     custom_allowlist: Option<CustomAllowlist>,
+    signature_analyzer: SignatureAnalyzer,
+    type_analyzer: TypeAnalyzer,
+}
+
+struct SignatureAnalyzer {
+    suspicious_patterns: Vec<SuspiciousSignature>,
+}
+
+struct TypeAnalyzer {
+    impossible_combinations: Vec<ImpossibleType>,
+}
+
+struct SuspiciousSignature {
+    name: &'static str,
+    pattern: Regex,
+    message: &'static str,
+}
+
+struct ImpossibleType {
+    name: &'static str,
+    pattern: Regex,
+    message: &'static str,
+}
+
+impl SignatureAnalyzer {
+    fn new() -> Self {
+        SignatureAnalyzer {
+            suspicious_patterns: vec![
+                SuspiciousSignature {
+                    name: "impossible_params",
+                    pattern: Regex::new(r"def\s+\w+\([^)]*\w+:\s*(?:str|int|float|bool),\s*\w+:\s*(?:str|int|float|bool),\s*\w+:\s*(?:str|int|float|bool),\s*\w+:\s*(?:str|int|float|bool),\s*\w+:\s*(?:str|int|float|bool),\s*\w+:\s*(?:str|int|float|bool)").unwrap(),
+                    message: "Suspicious function signature: too many simple parameters (possible AI hallucination)",
+                },
+                SuspiciousSignature {
+                    name: "magic_returns",
+                    pattern: Regex::new(r"def\s+\w+\([^)]*\)\s*->\s*(?:Optional\[Dict\[str,\s*Any\]\]|Union\[str,\s*int,\s*float,\s*bool\]|Tuple\[str,\s*str,\s*str,\s*str\])").unwrap(),
+                    message: "Overly complex return type annotation (possible AI generation)",
+                },
+                SuspiciousSignature {
+                    name: "excessive_generics",
+                    pattern: Regex::new(r"<\w+,\s*\w+,\s*\w+,\s*\w+,\s*\w+>").unwrap(),
+                    message: "Excessive generic parameters (possible AI hallucination)",
+                },
+                SuspiciousSignature {
+                    name: "impossible_method_chains",
+                    pattern: Regex::new(r"\.\w+\(\)\.\w+\(\)\.\w+\(\)\.\w+\(\)\.\w+\(\)").unwrap(),
+                    message: "Extremely long method chain (possible AI hallucination)",
+                },
+                SuspiciousSignature {
+                    name: "contradictory_names",
+                    pattern: Regex::new(r"(?:async\s+def\s+sync_\w+|def\s+async_\w+|sync.*async|get.*delete|create.*destroy)").unwrap(),
+                    message: "Contradictory function naming (possible AI confusion)",
+                },
+            ],
+        }
+    }
+}
+
+impl TypeAnalyzer {
+    fn new() -> Self {
+        TypeAnalyzer {
+            impossible_combinations: vec![
+                ImpossibleType {
+                    name: "string_plus_int",
+                    pattern: Regex::new(r#"["'][^"']*["']\s*\+\s*\d+|\d+\s*\+\s*["'][^"']*["']"#).unwrap(),
+                    message: "String + integer operation without conversion (type error)",
+                },
+                ImpossibleType {
+                    name: "dict_list_confusion",
+                    pattern: Regex::new(r"\.append\(\)\s*\[|\[.*\]\.append\(.*\)\.get\(").unwrap(),
+                    message: "Mixed dict/list operations (type confusion)",
+                },
+                ImpossibleType {
+                    name: "impossible_comparisons",
+                    pattern: Regex::new(r#"["'][^"']*["']\s*[<>]=?\s*\d+|\d+\s*[<>]=?\s*["'][^"']*["']"#).unwrap(),
+                    message: "String/number comparison without conversion",
+                },
+                ImpossibleType {
+                    name: "wrong_api_usage",
+                    pattern: Regex::new(r"requests\.get\([^)]*method\s*=|requests\.post\([^)]*get\s*=|json\.loads\([^)]*encoding=").unwrap(),
+                    message: "Incorrect API method usage (possible AI hallucination)",
+                },
+                ImpossibleType {
+                    name: "filesystem_type_error",
+                    pattern: Regex::new(r"open\([^)]*mode\s*=\s*\d+|os\.path\.join\(\d+").unwrap(),
+                    message: "Incorrect filesystem operation types",
+                },
+                ImpossibleType {
+                    name: "datetime_confusion",
+                    pattern: Regex::new(r"datetime\.now\(\)\s*\+\s*\d+[^.]|strftime\([^)]*datetime|datetime\.strptime\([^)]*int").unwrap(),
+                    message: "Datetime type confusion (missing timedelta/format)",
+                },
+            ],
+        }
+    }
 }
 
 impl Default for CodeAnalyzer {
@@ -356,6 +451,8 @@ impl CodeAnalyzer {
     pub fn with_custom_allowlist(custom_allowlist: Option<CustomAllowlist>) -> Self {
         CodeAnalyzer {
             custom_allowlist,
+            signature_analyzer: SignatureAnalyzer::new(),
+            type_analyzer: TypeAnalyzer::new(),
         }
     }
     
@@ -451,6 +548,12 @@ impl CodeAnalyzer {
         // Run hallucinated API detection (optimized to avoid re-scanning content)
         self.detect_hallucinated_apis(content, &file_type, &mut issues);
         
+        // Run signature analysis for suspicious function patterns
+        self.analyze_suspicious_signatures(content, &mut issues);
+        
+        // Run type analysis for impossible type combinations
+        self.analyze_type_errors(content, &file_type, &mut issues);
+        
         AnalysisResult {
             path: path.to_path_buf(),
             file_type: file_type.clone(),
@@ -499,6 +602,43 @@ impl CodeAnalyzer {
                     }
                 }
             }
+        }
+    }
+
+    fn analyze_suspicious_signatures(&self, content: &str, issues: &mut Vec<Issue>) {
+        for (line_num, line) in content.lines().enumerate() {
+            for pattern in &self.signature_analyzer.suspicious_patterns {
+                if pattern.pattern.is_match(line) {
+                    issues.push(Issue {
+                        severity: Severity::Medium,
+                        message: pattern.message.to_string(),
+                        line: Some(line_num + 1),
+                        rule: Some(pattern.name.to_string()),
+                    });
+                }
+            }
+        }
+    }
+
+    fn analyze_type_errors(&self, content: &str, file_type: &FileType, issues: &mut Vec<Issue>) {
+        // Only run type analysis on languages where it's relevant
+        match file_type {
+            FileType::Python | FileType::JavaScript | FileType::TypeScript | 
+            FileType::Java | FileType::Cpp | FileType::CSharp => {
+                for (line_num, line) in content.lines().enumerate() {
+                    for pattern in &self.type_analyzer.impossible_combinations {
+                        if pattern.pattern.is_match(line) {
+                            issues.push(Issue {
+                                severity: Severity::High,
+                                message: format!("{}: {}", pattern.message, line.trim()),
+                                line: Some(line_num + 1),
+                                rule: Some(pattern.name.to_string()),
+                            });
+                        }
+                    }
+                }
+            }
+            _ => {} // Skip type analysis for other languages
         }
     }
 }

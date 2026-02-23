@@ -22,7 +22,7 @@ enum Commands {
     /// Check a file, directory, or stdin for verification
     Check {
         /// Path to analyze (file or directory), or "-" for stdin
-        path: String,
+        path: Option<String>,
         /// Output format (terminal, json, sarif)
         #[arg(short, long, default_value = "terminal")]
         format: String,
@@ -97,7 +97,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             vow::init_project(path)?;
         }
         Commands::Check { path, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues } => {
-            let exit_code = vow::check_input(path, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues)?;
+            let path_str = if hook_mode {
+                "-".to_string() // In hook mode, we read from stdin
+            } else {
+                path.unwrap_or(".".to_string()) // Default to current directory if no path provided
+            };
+            let exit_code = vow::check_input(path_str, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues)?;
             std::process::exit(exit_code);
         }
         Commands::Scan { target, ports, format, timeout, concurrency, issues_only } => {

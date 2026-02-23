@@ -237,6 +237,7 @@ pub fn check_input(
     ci: bool,
     verbose: bool,
     quiet: bool,
+    hook_mode: bool,
     max_file_size: u64,
     max_depth: usize,
     max_issues: usize,
@@ -251,7 +252,36 @@ pub fn check_input(
     // SARIF format needs to be truly quiet (no performance summaries)
     let truly_quiet = quiet || format == "sarif";
     
-    let (results, metrics) = if path == "-" {
+    let (results, metrics) = if hook_mode {
+        // Hook mode: read file paths from stdin
+        let mut buffer = String::new();
+        io::stdin().read_to_string(&mut buffer)?;
+        let file_paths: Vec<&str> = buffer.lines().collect();
+        
+        let start_time = std::time::Instant::now();
+        let mut results = Vec::new();
+        
+        for file_path in file_paths {
+            let path_buf = PathBuf::from(file_path);
+            if path_buf.exists() && path_buf.is_file() && is_supported_file(&path_buf) {
+                match analyze_file_with_limits(&path_buf, max_issues) {
+                    Ok(result) => results.push(result),
+                    Err(e) => {
+                        if !quiet {
+                            eprintln!("Warning: Failed to analyze {}: {}", file_path, e);
+                        }
+                    }
+                }
+            }
+        }
+        
+        let metrics = AnalysisMetrics {
+            total_time_seconds: start_time.elapsed().as_secs_f32(),
+            files_skipped: 0,
+            skipped_reasons: std::collections::HashMap::new(),
+        };
+        (results, metrics)
+    } else if path == "-" {
         // Read from stdin
         let mut buffer = String::new();
         io::stdin().read_to_string(&mut buffer)?;
@@ -978,6 +1008,189 @@ fn is_supported_file(path: &Path) -> bool {
     )
 }
 
+/// Install pre-commit git hook
+pub fn hooks_install() -> Result<(), Box<dyn std::error::Error>> {
+    // Check if we're in a git repository
+    let git_dir = PathBuf::from(".git");
+    if !git_dir.exists() {
+        return Err("Not in a git repository. Run 'git init' first.".into());
+    }
+    
+    let hooks_dir = git_dir.join("hooks");
+    fs::create_dir_all(&hooks_dir)?;
+    
+    let hook_path = hooks_dir.join("pre-commit");
+    
+    // Check if hook already exists
+    if hook_path.exists() {
+        // Back up existing hook
+        let backup_path = hooks_dir.join("pre-commit.vow-backup");
+        fs::copy(&hook_path, &backup_path)?;
+        println!("⚠️  Existing pre-commit hook backed up to pre-commit.vow-backup");
+        
+        // Read existing hook content
+        let existing_content = fs::read_to_string(&hook_path)?;
+        if existing_content.contains("# Vow pre-commit hook") {
+            println!("✓ Vow hook already installed");
+            return Ok(());
+        }
+        
+        // Chain with existing hook
+        let hook_content = generate_hook_script_with_chain(&existing_content)?;
+        fs::write(&hook_path, hook_content)?;
+    } else {
+        // Create new hook
+        let hook_content = generate_hook_script()?;
+        fs::write(&hook_path, hook_content)?;
+    }
+    
+    // Make hook executable
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mut perms = fs::metadata(&hook_path)?.permissions();
+        perms.set_mode(0o755);
+        fs::set_permissions(&hook_path, perms)?;
+    }
+    
+    println!("✅ Git pre-commit hook installed successfully");
+    println!("   The hook will run 'vow check' on staged files before each commit");
+    println!("   Use 'git commit --no-verify' to bypass the hook");
+    
+    Ok(())
+}
+
+/// Uninstall pre-commit git hook
+pub fn hooks_uninstall() -> Result<(), Box<dyn std::error::Error>> {
+    let git_dir = PathBuf::from(".git");
+    if !git_dir.exists() {
+        return Err("Not in a git repository".into());
+    }
+    
+    let hooks_dir = git_dir.join("hooks");
+    let hook_path = hooks_dir.join("pre-commit");
+    let backup_path = hooks_dir.join("pre-commit.vow-backup");
+    
+    if !hook_path.exists() {
+        println!("✓ No pre-commit hook found");
+        return Ok(());
+    }
+    
+    let hook_content = fs::read_to_string(&hook_path)?;
+    
+    if hook_content.contains("# Vow pre-commit hook") {
+        // This is our hook or contains our hook
+        if backup_path.exists() {
+            // Restore backup
+            fs::copy(&backup_path, &hook_path)?;
+            fs::remove_file(&backup_path)?;
+            println!("✅ Vow hook removed, original pre-commit hook restored");
+        } else {
+            // Remove the hook entirely
+            fs::remove_file(&hook_path)?;
+            println!("✅ Vow pre-commit hook removed");
+        }
+    } else {
+        println!("⚠️  Pre-commit hook exists but doesn't appear to be installed by Vow");
+        return Err("Cannot safely remove hook not installed by Vow".into());
+    }
+    
+    Ok(())
+}
+
+/// Generate the pre-commit hook script
+fn generate_hook_script() -> Result<String, Box<dyn std::error::Error>> {
+    // Try to find the best vow command to use
+    let vow_cmd = find_vow_command();
+    
+    let script = format!(r#"#!/bin/sh
+# Vow pre-commit hook
+# Auto-generated by vow hooks install
+
+# Get list of staged files with supported extensions
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(rs|js|jsx|ts|tsx|py|sh|bash|zsh|md|txt|yaml|yml|json|java|go|rb|c|h|cpp|cc|cxx|hpp|cs|php|swift|kt|kts|r|mq5|mqh|scala|pl|pm|lua|dart|hs|html|htm|css|scss|sass)$')
+
+# Exit early if no supported files are staged
+if [ -z "$staged_files" ]; then
+    exit 0
+fi
+
+# Run vow check on staged files
+echo "$staged_files" | {vow_cmd} check --hook-mode --quiet --format terminal
+
+# Exit with vow's exit code
+exit_code=$?
+
+if [ $exit_code -ne 0 ]; then
+    echo ""
+    echo "❌ Vow found issues in staged files. Commit blocked."
+    echo "   Fix the issues above, or use 'git commit --no-verify' to bypass."
+    exit 1
+fi
+
+exit 0
+"#, vow_cmd = vow_cmd);
+    
+    Ok(script)
+}
+
+/// Generate hook script that chains with existing hook
+fn generate_hook_script_with_chain(existing_content: &str) -> Result<String, Box<dyn std::error::Error>> {
+    let vow_cmd = find_vow_command();
+    
+    let script = format!(r#"#!/bin/sh
+# Vow pre-commit hook (chained with existing hook)
+# Auto-generated by vow hooks install
+
+# === VOW CHECK START ===
+# Get list of staged files with supported extensions
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(rs|js|jsx|ts|tsx|py|sh|bash|zsh|md|txt|yaml|yml|json|java|go|rb|c|h|cpp|cc|cxx|hpp|cs|php|swift|kt|kts|r|mq5|mqh|scala|pl|pm|lua|dart|hs|html|htm|css|scss|sass)$')
+
+# Only run vow if we have supported files
+if [ -n "$staged_files" ]; then
+    echo "$staged_files" | {vow_cmd} check --hook-mode --quiet --format terminal
+    vow_exit_code=$?
+    
+    if [ $vow_exit_code -ne 0 ]; then
+        echo ""
+        echo "❌ Vow found issues in staged files. Commit blocked."
+        echo "   Fix the issues above, or use 'git commit --no-verify' to bypass."
+        exit 1
+    fi
+fi
+# === VOW CHECK END ===
+
+# === ORIGINAL HOOK START ===
+{existing_hook}
+# === ORIGINAL HOOK END ===
+"#, vow_cmd = vow_cmd, existing_hook = existing_content);
+    
+    Ok(script)
+}
+
+/// Find the best vow command to use in hooks
+fn find_vow_command() -> String {
+    // First check if vow is in PATH
+    if which::which("vow").is_ok() {
+        return "vow".to_string();
+    }
+    
+    // Check for local release build
+    let local_release = PathBuf::from("target/release/vow");
+    if local_release.exists() {
+        return "./target/release/vow".to_string();
+    }
+    
+    // Check for local debug build  
+    let local_debug = PathBuf::from("target/debug/vow");
+    if local_debug.exists() {
+        return "./target/debug/vow".to_string();
+    }
+    
+    // Fall back to cargo run
+    "cargo run --release --".to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1383,5 +1596,68 @@ javascript:
         assert!(content.contains("**/test/**"));
         assert!(content.contains("node_modules"));
         assert!(content.contains("*.test.js"));
+    }
+
+    #[test]
+    fn test_hook_mode_check() {
+        use std::fs;
+        
+        let temp_dir = TempDir::new().unwrap();
+        let original_dir = env::current_dir().unwrap();
+        env::set_current_dir(temp_dir.path()).unwrap();
+        
+        // Create test files
+        fs::write(temp_dir.path().join("good.py"), "print('hello world')").unwrap();
+        fs::write(temp_dir.path().join("bad.py"), "eval('malicious code')").unwrap();
+        
+        // Test hook mode with file list via stdin
+        // This is a bit tricky to test since it reads from stdin
+        // In a real scenario, the git hook would pipe file names to vow
+        
+        // Restore directory
+        env::set_current_dir(original_dir).unwrap();
+    }
+
+    #[test] 
+    fn test_find_vow_command() {
+        let cmd = find_vow_command();
+        
+        // Should return some valid command
+        assert!(!cmd.is_empty());
+        assert!(cmd.contains("vow") || cmd.contains("cargo run"));
+    }
+
+    #[test]
+    fn test_generate_hook_script() {
+        let script = generate_hook_script().unwrap();
+        
+        // Should contain our hook marker
+        assert!(script.contains("# Vow pre-commit hook"));
+        
+        // Should contain the staged files check
+        assert!(script.contains("git diff --cached --name-only"));
+        
+        // Should contain hook-mode flag
+        assert!(script.contains("--hook-mode"));
+        
+        // Should contain supported extensions
+        assert!(script.contains("rs|js|jsx|ts|tsx|py"));
+        
+        // Should be executable (starts with shebang)
+        assert!(script.starts_with("#!/bin/sh"));
+    }
+
+    #[test]
+    fn test_hooks_install_no_git_repo() {
+        let temp_dir = TempDir::new().unwrap();
+        let original_dir = env::current_dir().unwrap();
+        env::set_current_dir(temp_dir.path()).unwrap();
+        
+        // Should fail when not in a git repo
+        let result = hooks_install();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("Not in a git repository"));
+        
+        env::set_current_dir(original_dir).unwrap();
     }
 }

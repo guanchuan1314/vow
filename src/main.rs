@@ -41,6 +41,9 @@ enum Commands {
         /// Quiet output (errors only)
         #[arg(short, long)]
         quiet: bool,
+        /// Hook mode: accept file list via stdin
+        #[arg(long)]
+        hook_mode: bool,
         /// Maximum file size to process in MB
         #[arg(long, default_value = "10")]
         max_file_size: u64,
@@ -71,6 +74,19 @@ enum Commands {
         #[arg(long)]
         issues_only: bool,
     },
+    /// Manage git hooks integration
+    Hooks {
+        #[command(subcommand)]
+        action: HookAction,
+    },
+}
+
+#[derive(Subcommand)]
+enum HookAction {
+    /// Install git pre-commit hook
+    Install,
+    /// Uninstall git pre-commit hook
+    Uninstall,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -80,13 +96,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Init { path } => {
             vow::init_project(path)?;
         }
-        Commands::Check { path, format, rules, threshold, ci, verbose, quiet, max_file_size, max_depth, max_issues } => {
-            let exit_code = vow::check_input(path, format, rules, threshold, ci, verbose, quiet, max_file_size, max_depth, max_issues)?;
+        Commands::Check { path, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues } => {
+            let exit_code = vow::check_input(path, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues)?;
             std::process::exit(exit_code);
         }
         Commands::Scan { target, ports, format, timeout, concurrency, issues_only } => {
             let exit_code = vow::scan_ports(target, ports, format, timeout, concurrency, issues_only)?;
             std::process::exit(exit_code);
+        }
+        Commands::Hooks { action } => {
+            match action {
+                HookAction::Install => {
+                    vow::hooks_install()?;
+                }
+                HookAction::Uninstall => {
+                    vow::hooks_uninstall()?;
+                }
+            }
         }
     }
 

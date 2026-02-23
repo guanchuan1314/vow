@@ -27,6 +27,7 @@ rayon = "1.10"
 # futures removed - using synchronous approach
 socket2 = "0.5"
 trust-dns-resolver = "0.23"
+which = "6.0"
 
 [dev-dependencies]
 tempfile = "3.0"

@@ -1,0 +1,17 @@
+name: "rust_open_redirect"
+description: "Detect potential open redirect vulnerabilities in Rust/Actix web responses"
+severity: "medium"
+patterns:
+  - type: "regex"
+    pattern: "HttpResponse::Found\\(\\)\\s*\\.header\\(\"location\",\\s*[^)]*\\)"
+  - type: "regex"
+    pattern: "HttpResponse::MovedPermanently\\(\\)\\s*\\.header\\(\"location\",\\s*[^)]*\\)"
+  - type: "regex"
+    pattern: "HttpResponse::TemporaryRedirect\\(\\)\\s*\\.header\\(\"location\",\\s*[^)]*\\)"
+  - type: "contains"
+    pattern: ".header(\"Location\", user_input)"
+  - type: "contains"
+    pattern: ".header(\"location\", query.redirect_url)"
+  - type: "regex"
+    pattern: "Redirect::to\\([^)]*params\\.[^)]*\\)"
+file_types: ["rs"]

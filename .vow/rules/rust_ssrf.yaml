@@ -1,0 +1,17 @@
+name: "rust_ssrf"
+description: "Detect potential SSRF vulnerabilities in Rust/Actix code"
+severity: "high"
+patterns:
+  - type: "regex"
+    pattern: "reqwest::get\\(.*\\)"
+  - type: "regex"
+    pattern: "Client::new\\(\\)\\s*\\.get\\([^)]*\\)"
+  - type: "regex"
+    pattern: "HttpClient::new\\(\\)\\s*\\.send\\([^)]*\\)"
+  - type: "contains"
+    pattern: ".get(&user_input)"
+  - type: "contains"
+    pattern: ".get(request_url)"
+  - type: "contains"
+    pattern: ".get(params.url)"
+file_types: ["rs"]

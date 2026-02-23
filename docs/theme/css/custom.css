@@ -172,21 +172,28 @@ p code, li code, td code, h1 code, h2 code, h3 code, h4 code {
   font-size: 14px !important; /* Minimum 14px for sidebar items */
 }
 
-.sidebar ol.chapter li a:hover {
-  background-color: var(--hover-bg) !important;
-  color: var(--accent-primary) !important;
-  text-decoration: none !important;
-}
+/* Generic hover is now overridden by more specific rules above */
 
 .sidebar ol.chapter li.chapter-item.expanded.has-sub-chapter > a.toggle {
   color: var(--accent-primary) !important;
 }
 
-/* Active sidebar item */
+/* Active sidebar item - enhanced with left border accent */
 .sidebar ol.chapter li.chapter-item.current > a {
   background-color: var(--accent-primary) !important;
   color: white !important;
   font-weight: 600 !important;
+  border-left: 4px solid var(--accent-light) !important; /* Left border accent */
+  padding-left: 0.75rem !important; /* Adjust padding to account for border */
+}
+
+/* Hover state for non-active items - distinct from active */
+.sidebar ol.chapter li.chapter-item:not(.current) a:hover {
+  background-color: var(--hover-bg) !important;
+  color: var(--accent-primary) !important;
+  text-decoration: none !important;
+  border-left: 2px solid var(--accent-secondary) !important; /* Lighter left accent on hover */
+  padding-left: 0.875rem !important; /* Adjust padding for thinner border */
 }
 
 /* Blockquotes as callout boxes */

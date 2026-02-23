@@ -1092,6 +1092,14 @@ impl CodeAnalyzer {
                 },
             },
             HallucinationPattern {
+                name: "mql5_functions",
+                regex: Regex::new(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(").unwrap(),
+                check_imports: |function_name| {
+                    // For MQL5, check if function is in known built-in functions
+                    !KNOWN_MQL5_PACKAGES.contains(&function_name)
+                },
+            },
+            HallucinationPattern {
                 name: "haskell_import",
                 regex: Regex::new(r"import\s+(?:qualified\s+)?([a-zA-Z_][a-zA-Z0-9_.]*)").unwrap(),
                 check_imports: |package| {
@@ -1277,7 +1285,7 @@ impl CodeAnalyzer {
             FileType::Swift => "swift_import",
             FileType::Kotlin => "kotlin_import",
             FileType::R => "r_library",
-            FileType::MQL5 => return, // MQL5 has built-in functions, not imports
+            FileType::MQL5 => "mql5_functions", // MQL5 has built-in functions
             FileType::Scala => "scala_import",
             FileType::Perl => "perl_use",
             FileType::Lua => "lua_require",

@@ -42,7 +42,7 @@ impl InjectionAnalyzer {
             },
             SecurityPattern {
                 name: "env_var_dump",
-                regex: Regex::new(r"(?i)(os\.environ|process\.env|ENV(?:\.|::|->)(?:keys|to_dict|to_hash)|printenv|env\s*$|export\s*-p)").unwrap(),
+                regex: Regex::new(r"(?i)(JSON\.stringify\(process\.env\)|Object\.keys\(process\.env\)|console\.log\(process\.env\)|\.\.\.process\.env|for\s+.*?\s+in\s+os\.environ|ENV\.each|printenv\s*$|export\s*-p\s*$)").unwrap(),
                 severity: Severity::High,
                 message: "Dumping all environment variables - potential secret exfiltration",
             },
@@ -100,12 +100,6 @@ impl InjectionAnalyzer {
         ];
 
         let data_exfiltration_patterns = vec![
-            SecurityPattern {
-                name: "suspicious_domains",
-                regex: Regex::new(r"(?i)(webhook\.site|requestbin|ngrok\.|burpcollaborator|pipedream\.|httpbin\.|postman-echo|httpstat\.us|mockbin|beeceptor)").unwrap(),
-                severity: Severity::Critical,
-                message: "Exfiltration to known malicious/testing domains detected",
-            },
             SecurityPattern {
                 name: "dns_exfiltration",
                 regex: Regex::new(r"(?i)(nslookup|dig|host)\s+[a-z0-9]{20,}\.[a-z0-9.-]+|[a-z0-9]{32,}\.(?:[a-z0-9-]+\.)*[a-z]{2,}").unwrap(),
@@ -204,6 +198,7 @@ impl InjectionAnalyzer {
         // Special checks
         self.check_base64_content(content, &mut issues);
         self.check_combined_patterns(content, &mut issues);
+        self.check_suspicious_domains(content, &mut issues);
 
         AnalysisResult {
             path: path.to_path_buf(),
@@ -316,6 +311,25 @@ impl InjectionAnalyzer {
                         line: Some(i + 1),
                         rule: Some("file_exfiltration_combo".to_string()),
                     });
+                }
+            }
+        }
+    }
+
+    fn check_suspicious_domains(&self, content: &str, issues: &mut Vec<Issue>) {
+        for (line_num, line) in content.lines().enumerate() {
+            for &domain in &self.suspicious_domains {
+                if line.to_lowercase().contains(domain) {
+                    // Check if it's being used in a suspicious context (HTTP requests)
+                    let http_pattern = Regex::new(r"(?i)(fetch\(|requests\.|curl|wget|XMLHttpRequest|axios\.|http[s]?://|\.get\(|\.post\()").unwrap();
+                    if http_pattern.is_match(line) {
+                        issues.push(Issue {
+                            severity: Severity::Critical,
+                            message: format!("Exfiltration to known malicious/testing domain detected: {}", domain),
+                            line: Some(line_num + 1),
+                            rule: Some("suspicious_domains".to_string()),
+                        });
+                    }
                 }
             }
         }

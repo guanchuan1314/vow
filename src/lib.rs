@@ -6,6 +6,7 @@ pub mod scanner;
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io::{self, Read};
+use std::time::Duration;
 use ignore::WalkBuilder;
 use serde::{Deserialize, Serialize};
 use scanner::port_scanner::PortScanner;
@@ -187,7 +188,7 @@ pub async fn scan_ports(
 }
 
 /// Main entry point for checking input (file, directory, or stdin)
-pub fn check_input(
+pub async fn check_input(
     path: String,
     format: String,
     rules: Option<PathBuf>,
@@ -212,7 +213,7 @@ pub fn check_input(
         if path_buf.is_file() {
             vec![analyze_file(&path_buf)?]
         } else if path_buf.is_dir() {
-            analyze_directory(&path_buf)?
+            analyze_directory(&path_buf).await?
         } else {
             return Err(format!("Path does not exist: {}", path).into());
         }
@@ -247,6 +248,20 @@ pub fn check_input(
 pub fn analyze_file(path: &Path) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
     let content = fs::read_to_string(path)?;
     analyze_content(path, &content)
+}
+
+/// Analyze a single file with timeout to prevent hanging
+async fn analyze_file_with_timeout(path: &Path, timeout_secs: u64) -> Result<AnalysisResult, Box<dyn std::error::Error + Send + Sync>> {
+    let path_owned = path.to_owned();
+    let timeout_duration = Duration::from_secs(timeout_secs);
+    
+    match tokio::time::timeout(timeout_duration, tokio::task::spawn_blocking(move || {
+        analyze_file(&path_owned).map_err(|e| format!("{}", e))
+    })).await {
+        Ok(Ok(result)) => result.map_err(|e| e.into()),
+        Ok(Err(join_error)) => Err(format!("Task join error: {}", join_error).into()),
+        Err(_) => Err(format!("File analysis timed out after {} seconds", timeout_secs).into()),
+    }
 }
 
 /// Analyze content with a given path context
@@ -300,8 +315,8 @@ pub fn analyze_content(path: &Path, content: &str) -> Result<AnalysisResult, Box
     })
 }
 
-/// Analyze all supported files in a directory
-pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std::error::Error>> {
+/// Analyze all supported files in a directory with per-file timeout
+pub async fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std::error::Error>> {
     let mut results = Vec::new();
     
     // Create walker with default exclusions and .vowignore support
@@ -331,15 +346,28 @@ pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std
     // Add .vowignore file support
     walker.add_custom_ignore_filename(".vowignore");
     
+    println!("Scanning directory: {}", path.display());
+    let mut file_count = 0;
+    
     for result in walker.build() {
         match result {
             Ok(entry) => {
                 if entry.file_type().map_or(false, |ft| ft.is_file()) {
                     let file_path = entry.path();
                     if is_supported_file(file_path) {
-                        match analyze_file(file_path) {
-                            Ok(result) => results.push(result),
-                            Err(e) => eprintln!("Warning: Failed to analyze {}: {}", file_path.display(), e),
+                        file_count += 1;
+                        print!("Analyzing file {} ({}): ", file_count, file_path.display());
+                        
+                        // Use 5-second timeout per file
+                        match analyze_file_with_timeout(file_path, 5).await {
+                            Ok(result) => {
+                                println!("OK ({} issues)", result.issues.len());
+                                results.push(result);
+                            },
+                            Err(e) => {
+                                println!("FAILED - {}", e);
+                                eprintln!("Warning: Failed to analyze {}: {}", file_path.display(), e);
+                            },
                         }
                     }
                 }
@@ -348,6 +376,7 @@ pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std
         }
     }
     
+    println!("Completed analysis of {} files.", file_count);
     Ok(results)
 }
 

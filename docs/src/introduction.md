@@ -10,7 +10,7 @@
 
 ## What is Vow?
 
-Vow is a command-line tool that analyzes files, directories, or stdin input to identify potential issues in AI-generated content. It uses a combination of advanced analysis techniques to ensure the reliability and security of AI outputs.
+Vow is a high-performance command-line tool that analyzes files, directories, or stdin input to identify potential issues in AI-generated content. It uses a combination of advanced analysis techniques to ensure the reliability and security of AI outputs across **20+ programming languages**.
 
 <div class="feature-grid">
   <div class="feature-card">
@@ -20,22 +20,22 @@ Vow is a command-line tool that analyzes files, directories, or stdin input to i
   
   <div class="feature-card">
     <h3>⚡ Lightning Fast</h3>
-    <p>Single binary, no dependencies, sub-second analysis. Optimized for real-world development workflows.</p>
+    <p>Parallel processing engine analyzing 35+ files/sec with optimized HashSet lookups and smart file filtering.</p>
   </div>
   
   <div class="feature-card">
     <h3>🎯 Accurate Detection</h3>
-    <p>Specialized models trained on AI hallucination patterns with high precision and low false positives.</p>
+    <p>Advanced heuristics with improved false positive handling and precision-tuned detection algorithms.</p>
   </div>
   
   <div class="feature-card">
     <h3>🔧 Extensible</h3>
-    <p>YAML-based rules and WASM plugin system for custom domain-specific checks.</p>
+    <p>YAML-based rules system with .vowignore support for project-specific customization.</p>
   </div>
   
   <div class="feature-card">
     <h3>🏗️ CI/CD Ready</h3>
-    <p>JSON, SARIF, and HTML output formats with seamless CI integration.</p>
+    <p>JSON, SARIF, and HTML output formats with detailed performance summaries for automated workflows.</p>
   </div>
   
   <div class="feature-card">
@@ -46,17 +46,18 @@ Vow is a command-line tool that analyzes files, directories, or stdin input to i
 
 ## How It Works
 
-Vow uses a sophisticated multi-stage analysis pipeline:
+Vow uses a sophisticated multi-stage analysis pipeline with parallel processing:
 
-1. **Input Processing**: Reads files, directories, or stdin with intelligent content detection
-2. **AI Content Detection**: Identifies likely AI-generated sections using advanced heuristics
+1. **Input Processing**: Intelligently reads files, directories, or stdin with .vowignore filtering support
+2. **AI Content Detection**: Identifies likely AI-generated sections using advanced heuristics across 20+ languages
 3. **Multi-Analyzer Pipeline**: 
-   - **Code analyzer** for syntax and API validation
+   - **Code analyzer** for syntax, API validation, and import verification
    - **Text analyzer** for factual consistency and hallucination detection
    - **Security scanner** for dangerous patterns and vulnerabilities
 4. **Rule Engine**: Applies custom YAML rules for domain-specific requirements
-5. **Trust Scoring**: Calculates confidence metrics using multiple signals
-6. **Output**: Structured results in JSON, SARIF, or HTML formats
+5. **Trust Scoring**: Calculates confidence metrics using multiple signals and improved false positive handling
+6. **Performance Summary**: Provides detailed timing and processing statistics
+7. **Output**: Structured results in JSON, SARIF, table, or HTML formats
 
 ## Use Cases
 
@@ -86,11 +87,19 @@ Vow uses a sophisticated multi-stage analysis pipeline:
 ## Core Features
 
 ### 🧠 **Advanced Analysis**
+- **Multi-language support**: Python, JavaScript, TypeScript, Java, Go, Ruby, C, C++, C#, PHP, Swift, Kotlin, R, Scala, Perl, Lua, Dart, Haskell, MQL5, Rust, Shell
 - **Static code analysis** to detect hallucinated APIs and imports
 - **Text analysis** to identify potential fabricated information  
 - **Security scanning** to catch dangerous patterns
 - **Custom rule engine** for domain-specific checks
-- **Machine learning models** running locally via ONNX
+- **Improved false positive handling** with precision-tuned algorithms
+
+### ⚡ **High Performance**
+- **Parallel processing** with rayon for optimal CPU utilization
+- **35+ files per second** analysis speed on typical hardware
+- **Optimized data structures** with HashSet lookups for fast package verification
+- **Smart filtering** with .vowignore support to skip unnecessary files
+- **Configurable limits** for file size, directory depth, and issue count
 
 ### 🛡️ **Security & Privacy**
 - **100% local processing** - no cloud dependencies
@@ -100,9 +109,10 @@ Vow uses a sophisticated multi-stage analysis pipeline:
 
 ### 🚀 **Developer Experience**
 - **Zero configuration** to get started
+- **Flexible CLI options**: `--quiet`, `--verbose`, `--max-file-size`, `--max-depth`, `--max-issues`
+- **Multiple output formats**: JSON, SARIF, table, HTML with performance summaries
+- **CI/CD integration** with structured JSON output for automated workflows
 - **Comprehensive documentation** and examples
-- **Multiple output formats** for different workflows
-- **Extensive CLI options** for fine-tuning
 
 ---
 

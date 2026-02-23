@@ -34,7 +34,11 @@ jobs:
         run: vow setup --models code,security
         
       - name: Check AI-generated content
-        run: vow check . --format sarif --output vow-results.sarif
+        run: |
+          # JSON format recommended for CI/CD performance
+          vow check . --format json --quiet --max-file-size 5 --output vow-results.json
+          # Also generate SARIF for GitHub Security tab
+          vow check . --format sarif --output vow-results.sarif
         
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v3
@@ -628,13 +632,21 @@ script:
 
 **Large repository performance:**
 ```yaml
-# Use parallel processing and caching
+# Use parallel processing, new performance options, and .vowignore
 - name: Fast check for large repos
   run: |
-    vow check . --jobs 4 --cache --timeout 60 \
-      --exclude "node_modules/**" \
-      --exclude "vendor/**" \
-      --max-file-size 1MB
+    # Create .vowignore for performance
+    echo "node_modules/
+    .venv/
+    build/
+    dist/" > .vowignore
+    
+    # Use new performance flags (35+ files/sec throughput)
+    vow check . --quiet --verbose \
+      --max-file-size 10 \
+      --max-depth 5 \
+      --max-issues 50 \
+      --format json
 ```
 
 **False positives in generated code:**

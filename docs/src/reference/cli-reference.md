@@ -34,7 +34,8 @@ vow check --stdin [OPTIONS]
 --stdin                    Read from stdin instead of files
 --include <PATTERN>        Include files matching pattern (can be used multiple times)
 --exclude <PATTERN>        Exclude files matching pattern (can be used multiple times)
---max-file-size <SIZE>     Skip files larger than SIZE (e.g., 10MB)
+--max-file-size <MB>       Skip files larger than SIZE in MB (e.g., 10)
+--max-depth <N>           Maximum directory depth to traverse
 --follow-symlinks          Follow symbolic links
 ```
 
@@ -44,17 +45,19 @@ vow check --stdin [OPTIONS]
                           (code, text, security, all)
 --exclude-analyzers <LIST> Analyzers to exclude
 --strictness <LEVEL>       Detection strictness (low, medium, high, paranoid)
---no-ml-models            Skip machine learning models (faster, less accurate)
---model-size <SIZE>        Model size to use (small, medium, large)
+--max-issues <N>          Stop analysis after finding N issues per file
 ```
 
 **Output Options:**
 ```
 --format <FORMAT>          Output format (json, sarif, table, html)
+                          Use 'json' for CI/CD integration
 --output <FILE>            Write output to file instead of stdout
 --min-severity <LEVEL>     Minimum severity to report (info, low, medium, high)
 --trust-score-only         Only show trust score, no detailed issues
 --show-context             Include code context around issues
+--quiet, -q               Suppress non-essential output
+--verbose, -v             Enable verbose output with performance details
 --no-color                 Disable colored output
 ```
 
@@ -81,11 +84,17 @@ vow check . --format sarif --output results.sarif
 # Check from stdin
 cat file.py | vow check --stdin --format table
 
-# Check with specific file patterns
-vow check . --include "*.py" --include "*.js" --exclude "test_*"
+# Check with specific file patterns and size limits
+vow check . --include "*.py" --include "*.js" --exclude "test_*" --max-file-size 5
 
-# High-strictness check for critical code
-vow check production/ --strictness high --min-severity medium
+# High-strictness check for critical code with depth limit
+vow check production/ --strictness high --min-severity medium --max-depth 3
+
+# Fast check with issue limit and quiet output
+vow check . --max-issues 10 --quiet --format json
+
+# Verbose check with performance summary
+vow check . --verbose --max-depth 2 --max-file-size 10
 ```
 
 ### `vow setup` - Initialize and Configure
@@ -343,7 +352,9 @@ VOW_VERBOSE=1                            # Enable verbose output
 # Performance
 VOW_JOBS=4                               # Parallel jobs
 VOW_TIMEOUT=60                           # Timeout per file (seconds)
-VOW_MAX_FILE_SIZE=10MB                   # Maximum file size
+VOW_MAX_FILE_SIZE=10                     # Maximum file size (MB)
+VOW_MAX_DEPTH=10                         # Maximum directory depth
+VOW_MAX_ISSUES=100                       # Maximum issues per file
 
 # Network
 VOW_OFFLINE=1                            # Disable network requests

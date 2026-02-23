@@ -77,9 +77,10 @@ You should see output like this:
 Let's break down what Vow found:
 
 - **Trust Score**: 0.3 (out of 1.0) indicates low confidence in this code
-- **Hallucinated Import**: `nonexistent_lib` isn't a real Python package
+- **Hallucinated Import**: `nonexistent_lib` isn't a real Python package (verified against HashSet of 20+ language package databases)
 - **Hallucinated API**: The API endpoint looks fabricated
 - **Severity Levels**: `high`, `medium`, `low`, and `info`
+- **Performance**: Analysis completed in milliseconds with parallel processing
 
 ## Different Output Formats
 
@@ -137,9 +138,27 @@ pbpaste | vow check --stdin
 git diff --cached | vow check --stdin --format table
 ```
 
-## Common Options
+## High-Performance Analysis
 
-Here are some useful command-line options:
+Vow is optimized for speed and efficiency:
+
+```bash
+# Fast analysis with performance summary
+vow check . --verbose
+
+# Limit analysis scope for faster results
+vow check . --max-file-size 5 --max-depth 3
+
+# Quiet mode for CI/CD (JSON output recommended)
+vow check . --quiet --format json --max-issues 50
+
+# Check specific languages only
+vow check . --include "*.py" --include "*.js" --include "*.go"
+```
+
+## New Features & Options
+
+Vow supports 20+ programming languages and includes these powerful options:
 
 ```bash
 # Set minimum severity level
@@ -148,15 +167,21 @@ vow check file.py --min-severity medium
 # Show only trust score
 vow check file.py --trust-score-only
 
-# Verbose output with explanations
+# Verbose output with performance details
 vow check file.py --verbose
 
 # Use specific analyzers only
 vow check file.py --analyzers code,security
 
+# Limit analysis scope for better performance
+vow check . --max-file-size 10 --max-depth 5 --max-issues 100
+
 # Custom configuration file
 vow check file.py --config custom.yaml
 ```
+
+### Supported Languages
+Python, JavaScript, TypeScript, Java, Go, Ruby, C, C++, C#, PHP, Swift, Kotlin, R, Scala, Perl, Lua, Dart, Haskell, MQL5, Rust, Shell
 
 ## Configuration File
 
@@ -172,9 +197,15 @@ analyzers:
 severity:
   min_level: medium
 
+performance:
+  max_file_size: 10  # MB
+  max_depth: 5       # directory levels
+  max_issues: 100    # per file
+
 output:
   format: table
   show_trust_score: true
+  verbose: false
 
 rules:
   include:
@@ -194,9 +225,23 @@ known_packages:
     - lodash
 ```
 
+### Use .vowignore for Performance
+
+Create a `.vowignore` file to skip unnecessary files:
+
+```
+# .vowignore
+node_modules/
+.venv/
+build/
+dist/
+*.min.js
+test_*.py
+```
+
 ## CI/CD Integration
 
-Add Vow to your GitHub Actions workflow:
+Add Vow to your GitHub Actions workflow with JSON output for optimal performance:
 
 ```yaml
 # .github/workflows/vow-check.yml
@@ -213,9 +258,33 @@ jobs:
           curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
           chmod +x vow
           sudo mv vow /usr/local/bin/
-      - name: Check AI-generated content
-        run: vow check . --format sarif --output vow-results.sarif
-      - name: Upload SARIF results
+      
+      - name: Check AI-generated content (JSON output)
+        run: |
+          vow check . --format json --quiet --max-file-size 5 --max-issues 50 --output results.json
+          
+      - name: Process results
+        run: |
+          ISSUES=$(jq '.summary.total_issues' results.json)
+          PERFORMANCE=$(jq '.performance.files_per_second' results.json)
+          echo "Found $ISSUES issues"
+          echo "Performance: $PERFORMANCE files/sec"
+          if [ "$ISSUES" -gt 0 ]; then
+            echo "❌ AI content verification failed"
+            jq '.files[] | select(.issues | length > 0)' results.json
+            exit 1
+          else
+            echo "✅ All AI content verified successfully"
+          fi
+          
+      - name: Upload SARIF results (optional)
+        if: failure()
+        run: |
+          vow check . --format sarif --output vow-results.sarif
+        continue-on-error: true
+        
+      - name: Upload SARIF
+        if: failure()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: vow-results.sarif

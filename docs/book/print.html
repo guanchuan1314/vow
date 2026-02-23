@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" class="navy sidebar-visible" dir="ltr">
+<html lang="en" class="navy" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -40,53 +40,39 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/css/custom-aee557ad.css">
+        <link rel="stylesheet" href="theme/css/custom.css">
 
-
-        <!-- Provide site root and default themes to javascript -->
-        <script>
-            const path_to_root = "";
-            const default_light_theme = "navy";
-            const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-cae3228e.js";
-        </script>
-        <!-- Start loading toc.js asap -->
-        <script src="toc-ef4885d1.js"></script>
     </head>
-    <body>
-    <div id="mdbook-help-container">
-        <div id="mdbook-help-popup">
-            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
-            <div>
-                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
-                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
-                <p>Press <kbd>?</kbd> to show this help</p>
-                <p>Press <kbd>Esc</kbd> to hide this help</p>
-            </div>
-        </div>
-    </div>
-    <div id="mdbook-body-container">
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "navy";
+        </script>
+
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                let theme = localStorage.getItem('mdbook-theme');
-                let sidebar = localStorage.getItem('mdbook-sidebar');
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -100,69 +86,87 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
-            let theme;
+            var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            const html = document.documentElement;
+            var html = document.querySelector('html');
             html.classList.remove('navy')
             html.classList.add(theme);
-            html.classList.add("js");
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
         </script>
 
-        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            let sidebar = null;
-            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
-                sidebar_toggle.checked = false;
             }
-            if (sidebar === 'visible') {
-                sidebar_toggle.checked = true;
-            } else {
-                html.classList.remove('sidebar-visible');
-            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
         </script>
 
-        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
-            <!-- populated by js -->
-            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
-            <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
-            </noscript>
-            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Getting Started</li><li class="chapter-item expanded "><a href="getting-started/installation.html"><strong aria-hidden="true">1.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started/quick-start.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="guide/checking-files.html"><strong aria-hidden="true">3.</strong> Checking Files</a></li><li class="chapter-item expanded "><a href="guide/checking-directories.html"><strong aria-hidden="true">4.</strong> Checking Directories</a></li><li class="chapter-item expanded "><a href="guide/ci-cd-integration.html"><strong aria-hidden="true">5.</strong> CI/CD Integration</a></li><li class="chapter-item expanded "><a href="guide/stdin-pipes.html"><strong aria-hidden="true">6.</strong> Stdin and Pipes</a></li><li class="chapter-item expanded affix "><li class="part-title">Analyzers</li><li class="chapter-item expanded "><a href="analyzers/overview.html"><strong aria-hidden="true">7.</strong> Overview</a></li><li class="chapter-item expanded "><a href="analyzers/code-analyzer.html"><strong aria-hidden="true">8.</strong> Code Analyzer</a></li><li class="chapter-item expanded "><a href="analyzers/text-analyzer.html"><strong aria-hidden="true">9.</strong> Text Analyzer</a></li><li class="chapter-item expanded "><a href="analyzers/hallucination-detection.html"><strong aria-hidden="true">10.</strong> Hallucination Detection</a></li><li class="chapter-item expanded "><a href="analyzers/injection-detection.html"><strong aria-hidden="true">11.</strong> Injection & Exfiltration Detection</a></li><li class="chapter-item expanded affix "><li class="part-title">Rules</li><li class="chapter-item expanded "><a href="rules/overview.html"><strong aria-hidden="true">12.</strong> Overview</a></li><li class="chapter-item expanded "><a href="rules/writing-rules.html"><strong aria-hidden="true">13.</strong> Writing Rules</a></li><li class="chapter-item expanded "><a href="rules/built-in-rules.html"><strong aria-hidden="true">14.</strong> Built-in Rules</a></li><li class="chapter-item expanded affix "><li class="part-title">Configuration</li><li class="chapter-item expanded "><a href="configuration/config-file.html"><strong aria-hidden="true">15.</strong> Configuration File</a></li><li class="chapter-item expanded "><a href="configuration/known-packages.html"><strong aria-hidden="true">16.</strong> Known Packages</a></li><li class="chapter-item expanded "><a href="configuration/vowignore.html"><strong aria-hidden="true">17.</strong> Vowignore File</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference</li><li class="chapter-item expanded "><a href="reference/cli-reference.html"><strong aria-hidden="true">18.</strong> CLI Reference</a></li><li class="chapter-item expanded "><a href="reference/output-formats.html"><strong aria-hidden="true">19.</strong> Output Formats</a></li><li class="chapter-item expanded "><a href="reference/trust-score.html"><strong aria-hidden="true">20.</strong> Trust Score</a></li><li class="chapter-item expanded "><a href="reference/exit-codes.html"><strong aria-hidden="true">21.</strong> Exit Codes</a></li><li class="chapter-item expanded affix "><a href="contributing.html">Contributing</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
 
-        <div id="mdbook-page-wrapper" class="page-wrapper">
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="mdbook-menu-bar-hover-placeholder"></div>
-                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
                         </label>
-                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
                         </button>
-                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
                         </button>
                     </div>
 
@@ -170,137 +174,89 @@
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
-                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                            <i id="print-button" class="fa fa-print"></i>
                         </a>
                         <a href="https://github.com/guanchuan1314/vow" title="Git repository" aria-label="Git repository">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                            <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
 
                     </div>
                 </div>
 
-                <div id="mdbook-search-wrapper" class="hidden">
-                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
-                        <div class="search-wrapper">
-                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
-                            <div class="spinner-wrapper">
-                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
-                            </div>
-                        </div>
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
-                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
-                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
-                        <ul id="mdbook-searchresults">
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
                         </ul>
                     </div>
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
                 <script>
-                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
-                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
-                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
                         link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
                     });
                 </script>
 
-                <div id="mdbook-content" class="content">
+                <div id="content" class="content">
                     <main>
                         <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
 <div class="hero-section">
-  
-<h1 class="hero-title">Vow</h1>
-
-  
-<p class="hero-tagline">Trust, verified. Locally.</p>
-
-  
-<p style="font-size: 1.1rem; color: var(--text-primary); max-width: 600px; margin: 0 auto;">
+  <h1 id="vow" class="hero-title"><a class="header" href="#vow">Vow</a></h1>
+  <p class="hero-tagline">Trust, verified. Locally.</p>
+  <p style="font-size: 1.1rem; color: var(--text-primary); max-width: 600px; margin: 0 auto;">
     A local-first AI output verification engine that helps you detect hallucinations, security issues, and quality problems in AI-generated code and text.
   </p>
-
 </div>
-
 <h2 id="what-is-vow"><a class="header" href="#what-is-vow">What is Vow?</a></h2>
-<p>Vow is a command-line tool that analyzes files, directories, or stdin input to identify potential issues in AI-generated content. It uses a combination of advanced analysis techniques to ensure the reliability and security of AI outputs.</p>
+<p>Vow is a high-performance command-line tool that analyzes files, directories, or stdin input to identify potential issues in AI-generated content. It uses a combination of advanced analysis techniques to ensure the reliability and security of AI outputs across <strong>20+ programming languages</strong>.</p>
 <div class="feature-grid">
-  
-<div class="feature-card">
-    
-<h3>🔒 Privacy-First</h3>
-
-    
-<p>All analysis runs locally - no data leaves your machine. Your code and content stay completely private.</p>
-
+  <div class="feature-card">
+    <h3 id="-privacy-first"><a class="header" href="#-privacy-first">🔒 Privacy-First</a></h3>
+    <p>All analysis runs locally - no data leaves your machine. Your code and content stay completely private.</p>
   </div>
-
-  
-<div class="feature-card">
-    
-<h3>⚡ Lightning Fast</h3>
-
-    
-<p>Single binary, no dependencies, sub-second analysis. Optimized for real-world development workflows.</p>
-
+  <div class="feature-card">
+    <h3 id="-lightning-fast"><a class="header" href="#-lightning-fast">⚡ Lightning Fast</a></h3>
+    <p>Parallel processing engine analyzing 35+ files/sec with optimized HashSet lookups and smart file filtering.</p>
   </div>
-
-  
-<div class="feature-card">
-    
-<h3>🎯 Accurate Detection</h3>
-
-    
-<p>Specialized models trained on AI hallucination patterns with high precision and low false positives.</p>
-
+  <div class="feature-card">
+    <h3 id="-accurate-detection"><a class="header" href="#-accurate-detection">🎯 Accurate Detection</a></h3>
+    <p>Advanced heuristics with improved false positive handling and precision-tuned detection algorithms.</p>
   </div>
-
-  
-<div class="feature-card">
-    
-<h3>🔧 Extensible</h3>
-
-    
-<p>YAML-based rules and WASM plugin system for custom domain-specific checks.</p>
-
+  <div class="feature-card">
+    <h3 id="-extensible"><a class="header" href="#-extensible">🔧 Extensible</a></h3>
+    <p>YAML-based rules system with .vowignore support for project-specific customization.</p>
   </div>
-
-  
-<div class="feature-card">
-    
-<h3>🏗️ CI/CD Ready</h3>
-
-    
-<p>JSON, SARIF, and HTML output formats with seamless CI integration.</p>
-
+  <div class="feature-card">
+    <h3 id="-cicd-ready"><a class="header" href="#-cicd-ready">🏗️ CI/CD Ready</a></h3>
+    <p>JSON, SARIF, and HTML output formats with detailed performance summaries for automated workflows.</p>
   </div>
-
-  
-<div class="feature-card">
-    
-<h3>📊 Trust Scoring</h3>
-
-    
-<p>Quantified confidence metrics to guide decision-making and review priorities.</p>
-
+  <div class="feature-card">
+    <h3 id="-trust-scoring"><a class="header" href="#-trust-scoring">📊 Trust Scoring</a></h3>
+    <p>Quantified confidence metrics to guide decision-making and review priorities.</p>
   </div>
-
 </div>
-
 <h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
-<p>Vow uses a sophisticated multi-stage analysis pipeline:</p>
+<p>Vow uses a sophisticated multi-stage analysis pipeline with parallel processing:</p>
 <ol>
-<li><strong>Input Processing</strong>: Reads files, directories, or stdin with intelligent content detection</li>
-<li><strong>AI Content Detection</strong>: Identifies likely AI-generated sections using advanced heuristics</li>
+<li><strong>Input Processing</strong>: Intelligently reads files, directories, or stdin with .vowignore filtering support</li>
+<li><strong>AI Content Detection</strong>: Identifies likely AI-generated sections using advanced heuristics across 20+ languages</li>
 <li><strong>Multi-Analyzer Pipeline</strong>:
 <ul>
-<li><strong>Code analyzer</strong> for syntax and API validation</li>
+<li><strong>Code analyzer</strong> for syntax, API validation, and import verification</li>
 <li><strong>Text analyzer</strong> for factual consistency and hallucination detection</li>
 <li><strong>Security scanner</strong> for dangerous patterns and vulnerabilities</li>
 </ul>
 </li>
 <li><strong>Rule Engine</strong>: Applies custom YAML rules for domain-specific requirements</li>
-<li><strong>Trust Scoring</strong>: Calculates confidence metrics using multiple signals</li>
-<li><strong>Output</strong>: Structured results in JSON, SARIF, or HTML formats</li>
+<li><strong>Trust Scoring</strong>: Calculates confidence metrics using multiple signals and improved false positive handling</li>
+<li><strong>Performance Summary</strong>: Provides detailed timing and processing statistics</li>
+<li><strong>Output</strong>: Structured results in JSON, SARIF, table, or HTML formats</li>
 </ol>
 <h2 id="use-cases"><a class="header" href="#use-cases">Use Cases</a></h2>
 <h3 id="-software-development"><a class="header" href="#-software-development">🔍 Software Development</a></h3>
@@ -323,26 +279,28 @@
 <li>Provide trust scores to guide review priorities and focus areas</li>
 </ul>
 <div class="install-section">
-  
-<h3>Quick Install</h3>
-
-  
-<p>Get started with Vow in seconds:</p>
-
-  
-<pre><code>curl -sSL https://getvow.dev/install.sh | sh</code></pre>
-
-  <a href="#installation" class="cta-button">Get Started</a>
+  <h3 id="quick-install"><a class="header" href="#quick-install">Quick Install</a></h3>
+  <p>Get started with Vow in seconds:</p>
+  <pre><code>curl -sSL https://getvow.dev/install.sh | sh</code></pre>
+  <a href="getting-started/installation.html" class="cta-button">Get Started</a>
 </div>
-
 <h2 id="core-features"><a class="header" href="#core-features">Core Features</a></h2>
 <h3 id="-advanced-analysis"><a class="header" href="#-advanced-analysis">🧠 <strong>Advanced Analysis</strong></a></h3>
 <ul>
+<li><strong>Multi-language support</strong>: Python, JavaScript, TypeScript, Java, Go, Ruby, C, C++, C#, PHP, Swift, Kotlin, R, Scala, Perl, Lua, Dart, Haskell, MQL5, Rust, Shell</li>
 <li><strong>Static code analysis</strong> to detect hallucinated APIs and imports</li>
 <li><strong>Text analysis</strong> to identify potential fabricated information</li>
 <li><strong>Security scanning</strong> to catch dangerous patterns</li>
 <li><strong>Custom rule engine</strong> for domain-specific checks</li>
-<li><strong>Machine learning models</strong> running locally via ONNX</li>
+<li><strong>Improved false positive handling</strong> with precision-tuned algorithms</li>
+</ul>
+<h3 id="-high-performance"><a class="header" href="#-high-performance">⚡ <strong>High Performance</strong></a></h3>
+<ul>
+<li><strong>Parallel processing</strong> with rayon for optimal CPU utilization</li>
+<li><strong>35+ files per second</strong> analysis speed on typical hardware</li>
+<li><strong>Optimized data structures</strong> with HashSet lookups for fast package verification</li>
+<li><strong>Smart filtering</strong> with .vowignore support to skip unnecessary files</li>
+<li><strong>Configurable limits</strong> for file size, directory depth, and issue count</li>
 </ul>
 <h3 id="-security--privacy"><a class="header" href="#-security--privacy">🛡️ <strong>Security &amp; Privacy</strong></a></h3>
 <ul>
@@ -354,16 +312,16 @@
 <h3 id="-developer-experience"><a class="header" href="#-developer-experience">🚀 <strong>Developer Experience</strong></a></h3>
 <ul>
 <li><strong>Zero configuration</strong> to get started</li>
+<li><strong>Flexible CLI options</strong>: <code>--quiet</code>, <code>--verbose</code>, <code>--max-file-size</code>, <code>--max-depth</code>, <code>--max-issues</code></li>
+<li><strong>Multiple output formats</strong>: JSON, SARIF, table, HTML with performance summaries</li>
+<li><strong>CI/CD integration</strong> with structured JSON output for automated workflows</li>
 <li><strong>Comprehensive documentation</strong> and examples</li>
-<li><strong>Multiple output formats</strong> for different workflows</li>
-<li><strong>Extensive CLI options</strong> for fine-tuning</li>
 </ul>
-<hr>
-<p><strong>Ready to verify your AI outputs?</strong> Head over to the <a href="#installation">Installation Guide</a> to get up and running in minutes, or check out the <a href="#quick-start">Quick Start</a> for a rapid overview of basic usage.</p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<hr />
+<p><strong>Ready to verify your AI outputs?</strong> Head over to the <a href="getting-started/installation.html">Installation Guide</a> to get up and running in minutes, or check out the <a href="getting-started/quick-start.html">Quick Start</a> for a rapid overview of basic usage.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>Vow is distributed as a single binary with no dependencies, making installation straightforward on all supported platforms.</p>
-<h2 id="quick-install"><a class="header" href="#quick-install">Quick Install</a></h2>
+<h2 id="quick-install-1"><a class="header" href="#quick-install-1">Quick Install</a></h2>
 <h3 id="download-pre-built-binaries"><a class="header" href="#download-pre-built-binaries">Download Pre-built Binaries</a></h3>
 <p>The easiest way to install Vow is to download a pre-built binary from our releases page:</p>
 <pre><code class="language-bash"># Linux x86_64
@@ -488,14 +446,13 @@ vow setup --no-verify
 <li>Restart your terminal</li>
 </ol>
 <h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
-<p>Once installed, head to the <a href="#quick-start">Quick Start</a> guide to learn basic usage.</p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h1>
-<p>This guide will get you up and running with Vow in just a few minutes. We’ll check some AI-generated code and explore the basic features.</p>
+<p>Once installed, head to the <a href="getting-started/quick-start.html">Quick Start</a> guide to learn basic usage.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h1>
+<p>This guide will get you up and running with Vow in just a few minutes. We'll check some AI-generated code and explore the basic features.</p>
 <h2 id="prerequisites-1"><a class="header" href="#prerequisites-1">Prerequisites</a></h2>
-<p>Make sure you have Vow installed. If not, see the <a href="#installation">Installation</a> guide.</p>
+<p>Make sure you have Vow installed. If not, see the <a href="getting-started/installation.html">Installation</a> guide.</p>
 <h2 id="your-first-check"><a class="header" href="#your-first-check">Your First Check</a></h2>
-<p>Let’s start with a simple example. Create a test file with some AI-generated Python code:</p>
+<p>Let's start with a simple example. Create a test file with some AI-generated Python code:</p>
 <pre><code class="language-bash"># Create a test file
 cat &lt;&lt; 'EOF' &gt; test_ai_code.py
 import requests
@@ -516,7 +473,7 @@ if __name__ == "__main__":
     print(data)
 EOF
 </code></pre>
-<p>Now let’s check this file with Vow:</p>
+<p>Now let's check this file with Vow:</p>
 <pre><code class="language-bash">vow check test_ai_code.py
 </code></pre>
 <p>You should see output like this:</p>
@@ -551,12 +508,13 @@ EOF
 }
 </code></pre>
 <h2 id="understanding-the-output"><a class="header" href="#understanding-the-output">Understanding the Output</a></h2>
-<p>Let’s break down what Vow found:</p>
+<p>Let's break down what Vow found:</p>
 <ul>
 <li><strong>Trust Score</strong>: 0.3 (out of 1.0) indicates low confidence in this code</li>
-<li><strong>Hallucinated Import</strong>: <code>nonexistent_lib</code> isn’t a real Python package</li>
+<li><strong>Hallucinated Import</strong>: <code>nonexistent_lib</code> isn't a real Python package (verified against HashSet of 20+ language package databases)</li>
 <li><strong>Hallucinated API</strong>: The API endpoint looks fabricated</li>
 <li><strong>Severity Levels</strong>: <code>high</code>, <code>medium</code>, <code>low</code>, and <code>info</code></li>
+<li><strong>Performance</strong>: Analysis completed in milliseconds with parallel processing</li>
 </ul>
 <h2 id="different-output-formats"><a class="header" href="#different-output-formats">Different Output Formats</a></h2>
 <p>Vow supports multiple output formats:</p>
@@ -597,23 +555,42 @@ pbpaste | vow check --stdin
 # Check git diff before committing
 git diff --cached | vow check --stdin --format table
 </code></pre>
-<h2 id="common-options"><a class="header" href="#common-options">Common Options</a></h2>
-<p>Here are some useful command-line options:</p>
+<h2 id="high-performance-analysis"><a class="header" href="#high-performance-analysis">High-Performance Analysis</a></h2>
+<p>Vow is optimized for speed and efficiency:</p>
+<pre><code class="language-bash"># Fast analysis with performance summary
+vow check . --verbose
+
+# Limit analysis scope for faster results
+vow check . --max-file-size 5 --max-depth 3
+
+# Quiet mode for CI/CD (JSON output recommended)
+vow check . --quiet --format json --max-issues 50
+
+# Check specific languages only
+vow check . --include "*.py" --include "*.js" --include "*.go"
+</code></pre>
+<h2 id="new-features--options"><a class="header" href="#new-features--options">New Features &amp; Options</a></h2>
+<p>Vow supports 20+ programming languages and includes these powerful options:</p>
 <pre><code class="language-bash"># Set minimum severity level
 vow check file.py --min-severity medium
 
 # Show only trust score
 vow check file.py --trust-score-only
 
-# Verbose output with explanations
+# Verbose output with performance details
 vow check file.py --verbose
 
 # Use specific analyzers only
 vow check file.py --analyzers code,security
 
+# Limit analysis scope for better performance
+vow check . --max-file-size 10 --max-depth 5 --max-issues 100
+
 # Custom configuration file
 vow check file.py --config custom.yaml
 </code></pre>
+<h3 id="supported-languages"><a class="header" href="#supported-languages">Supported Languages</a></h3>
+<p>Python, JavaScript, TypeScript, Java, Go, Ruby, C, C++, C#, PHP, Swift, Kotlin, R, Scala, Perl, Lua, Dart, Haskell, MQL5, Rust, Shell</p>
 <h2 id="configuration-file"><a class="header" href="#configuration-file">Configuration File</a></h2>
 <p>Create a <code>.vow.yaml</code> file in your project root for persistent configuration:</p>
 <pre><code class="language-yaml"># .vow.yaml
@@ -625,9 +602,15 @@ analyzers:
 severity:
   min_level: medium
 
+performance:
+  max_file_size: 10  # MB
+  max_depth: 5       # directory levels
+  max_issues: 100    # per file
+
 output:
   format: table
   show_trust_score: true
+  verbose: false
 
 rules:
   include:
@@ -646,8 +629,18 @@ known_packages:
     - express
     - lodash
 </code></pre>
+<h3 id="use-vowignore-for-performance"><a class="header" href="#use-vowignore-for-performance">Use .vowignore for Performance</a></h3>
+<p>Create a <code>.vowignore</code> file to skip unnecessary files:</p>
+<pre><code># .vowignore
+node_modules/
+.venv/
+build/
+dist/
+*.min.js
+test_*.py
+</code></pre>
 <h2 id="cicd-integration"><a class="header" href="#cicd-integration">CI/CD Integration</a></h2>
-<p>Add Vow to your GitHub Actions workflow:</p>
+<p>Add Vow to your GitHub Actions workflow with JSON output for optimal performance:</p>
 <pre><code class="language-yaml"># .github/workflows/vow-check.yml
 name: AI Output Verification
 on: [push, pull_request]
@@ -662,21 +655,45 @@ jobs:
           curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
           chmod +x vow
           sudo mv vow /usr/local/bin/
-      - name: Check AI-generated content
-        run: vow check . --format sarif --output vow-results.sarif
-      - name: Upload SARIF results
+      
+      - name: Check AI-generated content (JSON output)
+        run: |
+          vow check . --format json --quiet --max-file-size 5 --max-issues 50 --output results.json
+          
+      - name: Process results
+        run: |
+          ISSUES=$(jq '.summary.total_issues' results.json)
+          PERFORMANCE=$(jq '.performance.files_per_second' results.json)
+          echo "Found $ISSUES issues"
+          echo "Performance: $PERFORMANCE files/sec"
+          if [ "$ISSUES" -gt 0 ]; then
+            echo "❌ AI content verification failed"
+            jq '.files[] | select(.issues | length &gt; 0)' results.json
+            exit 1
+          else
+            echo "✅ All AI content verified successfully"
+          fi
+          
+      - name: Upload SARIF results (optional)
+        if: failure()
+        run: |
+          vow check . --format sarif --output vow-results.sarif
+        continue-on-error: true
+        
+      - name: Upload SARIF
+        if: failure()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: vow-results.sarif
 </code></pre>
-<h2 id="whats-next"><a class="header" href="#whats-next">What’s Next?</a></h2>
+<h2 id="whats-next"><a class="header" href="#whats-next">What's Next?</a></h2>
 <p>Now that you have Vow up and running, explore these areas:</p>
 <ul>
-<li><strong><a href="#checking-files">Checking Files</a></strong>: Learn advanced file checking techniques</li>
-<li><strong><a href="#configuration-file-2">Configuration</a></strong>: Customize Vow for your projects</li>
-<li><strong><a href="#analyzers-overview">Analyzers</a></strong>: Deep dive into how each analyzer works</li>
-<li><strong><a href="#writing-rules">Rules</a></strong>: Write custom rules for your domain</li>
-<li><strong><a href="#cicd-integration-1">CI/CD Integration</a></strong>: Set up automated checks</li>
+<li><strong><a href="getting-started/../guide/checking-files.html">Checking Files</a></strong>: Learn advanced file checking techniques</li>
+<li><strong><a href="getting-started/../configuration/config-file.html">Configuration</a></strong>: Customize Vow for your projects</li>
+<li><strong><a href="getting-started/../analyzers/overview.html">Analyzers</a></strong>: Deep dive into how each analyzer works</li>
+<li><strong><a href="getting-started/../rules/writing-rules.html">Rules</a></strong>: Write custom rules for your domain</li>
+<li><strong><a href="getting-started/../guide/ci-cd-integration.html">CI/CD Integration</a></strong>: Set up automated checks</li>
 </ul>
 <h2 id="getting-help"><a class="header" href="#getting-help">Getting Help</a></h2>
 <ul>
@@ -685,8 +702,7 @@ jobs:
 <li>List available analyzers: <code>vow analyzers list</code></li>
 <li>Test rule syntax: <code>vow rules validate my_rules.yaml</code></li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="checking-files"><a class="header" href="#checking-files">Checking Files</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="checking-files"><a class="header" href="#checking-files">Checking Files</a></h1>
 <p>Learn advanced techniques for analyzing individual files with Vow.</p>
 <h2 id="single-file-analysis"><a class="header" href="#single-file-analysis">Single File Analysis</a></h2>
 <pre><code class="language-bash"># Basic file check
@@ -707,10 +723,9 @@ vow check script.py --verbose
 <li><strong>Configuration files</strong> (<code>.yaml</code>, <code>.json</code>) → Security analyzer</li>
 </ul>
 <h2 id="advanced-options"><a class="header" href="#advanced-options">Advanced Options</a></h2>
-<p>See <a href="#cli-reference">CLI Reference</a> for complete options.</p>
-<p><em>This page is under development. See <a href="#quick-start">Quick Start</a> for current examples.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="checking-directories"><a class="header" href="#checking-directories">Checking Directories</a></h1>
+<p>See <a href="guide/../reference/cli-reference.html">CLI Reference</a> for complete options.</p>
+<p><em>This page is under development. See <a href="guide/../getting-started/quick-start.html">Quick Start</a> for current examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="checking-directories"><a class="header" href="#checking-directories">Checking Directories</a></h1>
 <p>Learn how to analyze entire directories and projects with Vow.</p>
 <h2 id="directory-analysis"><a class="header" href="#directory-analysis">Directory Analysis</a></h2>
 <pre><code class="language-bash"># Check all files in current directory
@@ -728,9 +743,8 @@ vow check . --include "*.py" --exclude "test_*"
 <li>Cache results with <code>--cache</code></li>
 <li>Set file size limits with <code>--max-file-size</code></li>
 </ul>
-<p><em>This page is under development. See <a href="#cicd-integration-1">CI/CD Integration</a> for advanced examples.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="cicd-integration-1"><a class="header" href="#cicd-integration-1">CI/CD Integration</a></h1>
+<p><em>This page is under development. See <a href="guide/ci-cd-integration.html">CI/CD Integration</a> for advanced examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="cicd-integration-1"><a class="header" href="#cicd-integration-1">CI/CD Integration</a></h1>
 <p>Integrating Vow into your CI/CD pipeline helps catch AI output issues before they reach production. This guide covers setup for major CI platforms and best practices for automated verification.</p>
 <h2 id="github-actions"><a class="header" href="#github-actions">GitHub Actions</a></h2>
 <h3 id="basic-setup"><a class="header" href="#basic-setup">Basic Setup</a></h3>
@@ -760,7 +774,11 @@ jobs:
         run: vow setup --models code,security
         
       - name: Check AI-generated content
-        run: vow check . --format sarif --output vow-results.sarif
+        run: |
+          # JSON format recommended for CI/CD performance
+          vow check . --format json --quiet --max-file-size 5 --output vow-results.json
+          # Also generate SARIF for GitHub Security tab
+          vow check . --format sarif --output vow-results.sarif
         
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v3
@@ -1293,13 +1311,21 @@ exit 0
     done
 </code></pre>
 <p><strong>Large repository performance:</strong></p>
-<pre><code class="language-yaml"># Use parallel processing and caching
+<pre><code class="language-yaml"># Use parallel processing, new performance options, and .vowignore
 - name: Fast check for large repos
   run: |
-    vow check . --jobs 4 --cache --timeout 60 \
-      --exclude "node_modules/**" \
-      --exclude "vendor/**" \
-      --max-file-size 1MB
+    # Create .vowignore for performance
+    echo "node_modules/
+    .venv/
+    build/
+    dist/" &gt; .vowignore
+    
+    # Use new performance flags (35+ files/sec throughput)
+    vow check . --quiet --verbose \
+      --max-file-size 10 \
+      --max-depth 5 \
+      --max-issues 50 \
+      --format json
 </code></pre>
 <p><strong>False positives in generated code:</strong></p>
 <pre><code class="language-yaml"># Skip auto-generated files
@@ -1312,12 +1338,11 @@ exit 0
 </code></pre>
 <h2 id="next-steps-1"><a class="header" href="#next-steps-1">Next Steps</a></h2>
 <ul>
-<li><a href="#configuration-file-2">Configuration File</a> - Customize Vow behavior for CI</li>
-<li><a href="#output-formats">Output Formats</a> - Understanding CI-friendly formats</li>
-<li><a href="#trust-score-algorithm">Trust Score</a> - Setting appropriate thresholds</li>
+<li><a href="guide/../configuration/config-file.html">Configuration File</a> - Customize Vow behavior for CI</li>
+<li><a href="guide/../reference/output-formats.html">Output Formats</a> - Understanding CI-friendly formats</li>
+<li><a href="guide/../reference/trust-score.html">Trust Score</a> - Setting appropriate thresholds</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="stdin-and-pipes"><a class="header" href="#stdin-and-pipes">Stdin and Pipes</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="stdin-and-pipes"><a class="header" href="#stdin-and-pipes">Stdin and Pipes</a></h1>
 <p>Use Vow with pipes and stdin for flexible integration with other tools.</p>
 <h2 id="basic-stdin-usage"><a class="header" href="#basic-stdin-usage">Basic Stdin Usage</a></h2>
 <pre><code class="language-bash"># Check code from clipboard
@@ -1336,22 +1361,15 @@ git diff --name-only --cached | xargs vow check
 # Process multiple files
 find . -name "*.py" | xargs vow check --format json
 </code></pre>
-<p><em>This page is under development. See <a href="#cli-reference">CLI Reference</a> for complete stdin options.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="analyzers-overview"><a class="header" href="#analyzers-overview">Analyzers Overview</a></h1>
+<p><em>This page is under development. See <a href="guide/../reference/cli-reference.html">CLI Reference</a> for complete stdin options.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="analyzers-overview"><a class="header" href="#analyzers-overview">Analyzers Overview</a></h1>
 <p>Vow uses a multi-analyzer architecture to detect different types of issues in AI-generated content. Each analyzer specializes in a particular domain and contributes to the overall trust score.</p>
 <h2 id="available-analyzers"><a class="header" href="#available-analyzers">Available Analyzers</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Analyzer</th><th>Purpose</th><th>Languages</th><th>Model Size</th></tr>
-</thead>
-<tbody>
-<tr><td><a href="#code-analyzer">Code</a></td><td>Detects hallucinated APIs, imports, and syntax issues</td><td>Python, JavaScript, TypeScript, Go, Rust</td><td>~50MB</td></tr>
-<tr><td><a href="#text-analyzer">Text</a></td><td>Identifies fabricated facts, inconsistencies, and style issues</td><td>Any text content</td><td>~75MB</td></tr>
-<tr><td><a href="#hallucination-detection">Security</a></td><td>Finds security vulnerabilities and dangerous patterns</td><td>All</td><td>~25MB</td></tr>
-</tbody>
-</table>
+<div class="table-wrapper"><table><thead><tr><th>Analyzer</th><th>Purpose</th><th>Languages</th><th>Model Size</th></tr></thead><tbody>
+<tr><td><a href="analyzers/code-analyzer.html">Code</a></td><td>Detects hallucinated APIs, imports, and syntax issues</td><td>Python, JavaScript, TypeScript, Go, Rust</td><td>~50MB</td></tr>
+<tr><td><a href="analyzers/text-analyzer.html">Text</a></td><td>Identifies fabricated facts, inconsistencies, and style issues</td><td>Any text content</td><td>~75MB</td></tr>
+<tr><td><a href="analyzers/hallucination-detection.html">Security</a></td><td>Finds security vulnerabilities and dangerous patterns</td><td>All</td><td>~25MB</td></tr>
+</tbody></table>
 </div>
 <h2 id="how-analyzers-work"><a class="header" href="#how-analyzers-work">How Analyzers Work</a></h2>
 <h3 id="1-content-detection"><a class="header" href="#1-content-detection">1. Content Detection</a></h3>
@@ -1443,17 +1461,11 @@ vow check . --exclude-analyzers text
 <li>Subsequent runs are faster (~100-500ms per file)</li>
 </ul>
 <h3 id="resource-usage"><a class="header" href="#resource-usage">Resource Usage</a></h3>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Analyzer</th><th>RAM Usage</th><th>CPU Usage</th><th>Disk I/O</th></tr>
-</thead>
-<tbody>
+<div class="table-wrapper"><table><thead><tr><th>Analyzer</th><th>RAM Usage</th><th>CPU Usage</th><th>Disk I/O</th></tr></thead><tbody>
 <tr><td>Code</td><td>~200MB</td><td>Medium</td><td>Low</td></tr>
 <tr><td>Text</td><td>~300MB</td><td>High</td><td>Low</td></tr>
 <tr><td>Security</td><td>~100MB</td><td>Low</td><td>Low</td></tr>
-</tbody>
-</table>
+</tbody></table>
 </div>
 <h3 id="optimization-tips"><a class="header" href="#optimization-tips">Optimization Tips</a></h3>
 <pre><code class="language-bash"># Skip model loading for syntax-only checks
@@ -1495,7 +1507,7 @@ vow analyzers list
 # Use custom analyzer
 vow check file.py --analyzers my-analyzer
 </code></pre>
-<p>See <a href="advanced/custom-analyzers.html">Writing Custom Analyzers</a> for details.</p>
+<p>See <a href="analyzers/../advanced/custom-analyzers.html">Writing Custom Analyzers</a> for details.</p>
 <h2 id="debugging-analyzers"><a class="header" href="#debugging-analyzers">Debugging Analyzers</a></h2>
 <h3 id="verbose-output"><a class="header" href="#verbose-output">Verbose Output</a></h3>
 <pre><code class="language-bash"># Show analyzer decisions
@@ -1520,15 +1532,14 @@ vow analyzers validate
 </code></pre>
 <h2 id="next-steps-2"><a class="header" href="#next-steps-2">Next Steps</a></h2>
 <ul>
-<li><a href="#code-analyzer">Code Analyzer</a> - Detailed guide to code analysis</li>
-<li><a href="#text-analyzer">Text Analyzer</a> - Understanding text verification</li>
-<li><a href="#hallucination-detection">Security Analyzer</a> - Security-focused checking</li>
-<li><a href="#configuration-file-2">Configuration</a> - Customize analyzer behavior</li>
+<li><a href="analyzers/code-analyzer.html">Code Analyzer</a> - Detailed guide to code analysis</li>
+<li><a href="analyzers/text-analyzer.html">Text Analyzer</a> - Understanding text verification</li>
+<li><a href="analyzers/hallucination-detection.html">Security Analyzer</a> - Security-focused checking</li>
+<li><a href="analyzers/../configuration/config-file.html">Configuration</a> - Customize analyzer behavior</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="code-analyzer"><a class="header" href="#code-analyzer">Code Analyzer</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="code-analyzer"><a class="header" href="#code-analyzer">Code Analyzer</a></h1>
 <p>The code analyzer detects issues in source code including hallucinated imports, invalid APIs, and syntax problems.</p>
-<h2 id="supported-languages"><a class="header" href="#supported-languages">Supported Languages</a></h2>
+<h2 id="supported-languages-1"><a class="header" href="#supported-languages-1">Supported Languages</a></h2>
 <ul>
 <li><strong>Python</strong>: Full support for imports, function calls, and syntax</li>
 <li><strong>JavaScript/TypeScript</strong>: Module imports, API calls, and common patterns</li>
@@ -1542,9 +1553,8 @@ vow analyzers validate
 <p>Validates that called functions and methods are real and properly used.</p>
 <h3 id="syntax-analysis"><a class="header" href="#syntax-analysis">Syntax Analysis</a></h3>
 <p>Detects syntax errors and malformed code structures.</p>
-<p><em>This page is under development. See <a href="#hallucination-detection">Hallucination Detection</a> for detailed examples.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="text-analyzer"><a class="header" href="#text-analyzer">Text Analyzer</a></h1>
+<p><em>This page is under development. See <a href="analyzers/hallucination-detection.html">Hallucination Detection</a> for detailed examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="text-analyzer"><a class="header" href="#text-analyzer">Text Analyzer</a></h1>
 <p>The text analyzer identifies issues in natural language content, including fabricated facts, broken references, and inconsistent information.</p>
 <h2 id="analysis-features"><a class="header" href="#analysis-features">Analysis Features</a></h2>
 <h3 id="factual-consistency"><a class="header" href="#factual-consistency">Factual Consistency</a></h3>
@@ -1563,10 +1573,9 @@ analyzers:
     check_urls: true
     fact_checking: true
 </code></pre>
-<p><em>This page is under development. See <a href="#analyzers-overview">Analyzers Overview</a> for current capabilities.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="hallucination-detection"><a class="header" href="#hallucination-detection">Hallucination Detection</a></h1>
-<p>The hallucination detection analyzer is Vow’s core feature, designed to identify when AI models generate fabricated APIs, imports, functions, or other non-existent code elements.</p>
+<p><em>This page is under development. See <a href="analyzers/overview.html">Analyzers Overview</a> for current capabilities.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="hallucination-detection"><a class="header" href="#hallucination-detection">Hallucination Detection</a></h1>
+<p>The hallucination detection analyzer is Vow's core feature, designed to identify when AI models generate fabricated APIs, imports, functions, or other non-existent code elements.</p>
 <h2 id="how-it-works-1"><a class="header" href="#how-it-works-1">How It Works</a></h2>
 <h3 id="the-allowlist-approach"><a class="header" href="#the-allowlist-approach">The Allowlist Approach</a></h3>
 <p>Vow uses an <strong>allowlist-based approach</strong> to detect hallucinations:</p>
@@ -1611,21 +1620,15 @@ requests.get().json()            # ✅ Known method chain
 requests.get().auto_parse()      # ❌ Method doesn't exist
 os.smart_cleanup()               # ❌ Function doesn't exist
 </code></pre>
-<h2 id="supported-languages-1"><a class="header" href="#supported-languages-1">Supported Languages</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Language</th><th>Import Detection</th><th>API Validation</th><th>Function Verification</th><th>Coverage</th></tr>
-</thead>
-<tbody>
+<h2 id="supported-languages-2"><a class="header" href="#supported-languages-2">Supported Languages</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Language</th><th>Import Detection</th><th>API Validation</th><th>Function Verification</th><th>Coverage</th></tr></thead><tbody>
 <tr><td><strong>Python</strong></td><td>✅ Full</td><td>✅ Full</td><td>✅ Full</td><td>95%+</td></tr>
 <tr><td><strong>JavaScript</strong></td><td>✅ Full</td><td>✅ Partial</td><td>✅ Full</td><td>85%+</td></tr>
 <tr><td><strong>TypeScript</strong></td><td>✅ Full</td><td>✅ Partial</td><td>✅ Full</td><td>85%+</td></tr>
 <tr><td><strong>Go</strong></td><td>✅ Full</td><td>❌ Limited</td><td>✅ Partial</td><td>70%+</td></tr>
 <tr><td><strong>Rust</strong></td><td>✅ Full</td><td>❌ Limited</td><td>✅ Partial</td><td>65%+</td></tr>
 <tr><td><strong>Java</strong></td><td>🔄 Coming Soon</td><td>🔄 Coming Soon</td><td>🔄 Coming Soon</td><td>-</td></tr>
-</tbody>
-</table>
+</tbody></table>
 </div>
 <h2 id="known-package-database"><a class="header" href="#known-package-database">Known Package Database</a></h2>
 <h3 id="python-packages"><a class="header" href="#python-packages">Python Packages</a></h3>
@@ -1658,7 +1661,7 @@ python_packages:
 <li><strong>Browser APIs</strong>: DOM, Fetch, etc.</li>
 </ul>
 <h3 id="custom-package-lists"><a class="header" href="#custom-package-lists">Custom Package Lists</a></h3>
-<p>Add your organization’s internal packages:</p>
+<p>Add your organization's internal packages:</p>
 <pre><code class="language-yaml"># .vow/known-packages.yaml
 custom_packages:
   python:
@@ -1731,7 +1734,7 @@ import internal_tool      # Unknown package
 </ul>
 <h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
 <h3 id="1-custominternal-packages"><a class="header" href="#1-custominternal-packages">1. Custom/Internal Packages</a></h3>
-<p>Vow doesn’t know about your internal packages by default:</p>
+<p>Vow doesn't know about your internal packages by default:</p>
 <pre><code class="language-python"># Will be flagged even if these are real internal packages
 import company_internal_lib
 from team_utils import helper
@@ -1848,12 +1851,11 @@ vow packages import team-packages.yaml
 </code></pre>
 <h2 id="next-steps-3"><a class="header" href="#next-steps-3">Next Steps</a></h2>
 <ul>
-<li><a href="#code-analyzer">Code Analyzer</a> - Related code analysis features</li>
-<li><a href="#known-packages">Known Packages</a> - Managing package lists</li>
-<li><a href="#writing-rules">Writing Rules</a> - Custom detection rules</li>
+<li><a href="analyzers/code-analyzer.html">Code Analyzer</a> - Related code analysis features</li>
+<li><a href="analyzers/../configuration/known-packages.html">Known Packages</a> - Managing package lists</li>
+<li><a href="analyzers/../rules/writing-rules.html">Writing Rules</a> - Custom detection rules</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="injection--exfiltration-detection"><a class="header" href="#injection--exfiltration-detection">Injection &amp; Exfiltration Detection</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="injection--exfiltration-detection"><a class="header" href="#injection--exfiltration-detection">Injection &amp; Exfiltration Detection</a></h1>
 <p>The injection analyzer is designed to detect prompt injection attacks and secret exfiltration attempts in AI-generated code. This analyzer helps identify potentially malicious code patterns that could compromise system security or manipulate AI systems.</p>
 <h2 id="detection-categories"><a class="header" href="#detection-categories">Detection Categories</a></h2>
 <h3 id="1-secret-exfiltration"><a class="header" href="#1-secret-exfiltration">1. Secret Exfiltration</a></h3>
@@ -1871,8 +1873,8 @@ vow packages import team-packages.yaml
 <p><strong>Purpose</strong>: Identify attempts to manipulate AI systems through prompt injection techniques.</p>
 <p><strong>Patterns Detected</strong>:</p>
 <ul>
-<li><strong>Ignore Instructions</strong> (MEDIUM): Commands like “ignore previous instructions”, “forget everything above”</li>
-<li><strong>System Takeover</strong> (MEDIUM): Phrases like “you are now”, “act as”, “new instructions”, “system: you”</li>
+<li><strong>Ignore Instructions</strong> (MEDIUM): Commands like "ignore previous instructions", "forget everything above"</li>
+<li><strong>System Takeover</strong> (MEDIUM): Phrases like "you are now", "act as", "new instructions", "system: you"</li>
 <li><strong>Base64 Instructions</strong> (HIGH): Base64 encoded instructions that might hide malicious prompts</li>
 <li><strong>Agent Instructions</strong> (MEDIUM): Direct manipulation attempts targeting AI assistants</li>
 <li><strong>Hidden System Prompts</strong> (MEDIUM): Malicious instructions hidden in comments or string literals</li>
@@ -1901,10 +1903,10 @@ vow packages import team-packages.yaml
 <h3 id="base64-content-analysis"><a class="header" href="#base64-content-analysis">Base64 Content Analysis</a></h3>
 <p>The analyzer decodes base64 strings found in code and checks for suspicious content including:</p>
 <ul>
-<li>Prompt injection attempts (“ignore instructions”, “you are”)</li>
-<li>System prompts (“system:”)</li>
-<li>Secret references (“password”, “api_key”)</li>
-<li>Command injection (“curl”, “wget”, “bash -i”)</li>
+<li>Prompt injection attempts ("ignore instructions", "you are")</li>
+<li>System prompts ("system:")</li>
+<li>Secret references ("password", "api_key")</li>
+<li>Command injection ("curl", "wget", "bash -i")</li>
 </ul>
 <h3 id="combined-pattern-detection"><a class="header" href="#combined-pattern-detection">Combined Pattern Detection</a></h3>
 <p>The analyzer looks for dangerous combinations of patterns within proximity:</p>
@@ -1983,8 +1985,7 @@ payload = "aWdub3JlIHByZXZpb3VzIGluc3RydWN0aW9ucw=="  # "ignore previous instruc
 vow check . --format json --ci --threshold 80
 </code></pre>
 <p>Critical findings will cause the build to fail, preventing potentially malicious AI-generated code from being deployed.</p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="rules-overview"><a class="header" href="#rules-overview">Rules Overview</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="rules-overview"><a class="header" href="#rules-overview">Rules Overview</a></h1>
 <p>Vow uses a flexible rule engine to detect patterns and issues in AI-generated content.</p>
 <h2 id="built-in-rules"><a class="header" href="#built-in-rules">Built-in Rules</a></h2>
 <p>Vow comes with built-in rules for common issues:</p>
@@ -2018,9 +2019,8 @@ vow rules validate custom-rules.yaml
 # Test rules
 vow rules test custom-rules.yaml sample.py
 </code></pre>
-<p><em>This page is under development. See <a href="#writing-rules">Writing Rules</a> for detailed syntax.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="writing-rules"><a class="header" href="#writing-rules">Writing Rules</a></h1>
+<p><em>This page is under development. See <a href="rules/writing-rules.html">Writing Rules</a> for detailed syntax.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="writing-rules"><a class="header" href="#writing-rules">Writing Rules</a></h1>
 <p>Learn how to write custom detection rules for your specific use cases.</p>
 <h2 id="rule-structure"><a class="header" href="#rule-structure">Rule Structure</a></h2>
 <pre><code class="language-yaml">name: "My Rule Set"
@@ -2058,9 +2058,8 @@ rules:
       - regex: "eval\\("
         message: "eval() in functions is dangerous"
 </code></pre>
-<p><em>This page is under development. See <a href="#rules-overview">Rules Overview</a> for examples.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="built-in-rules-1"><a class="header" href="#built-in-rules-1">Built-in Rules</a></h1>
+<p><em>This page is under development. See <a href="rules/overview.html">Rules Overview</a> for examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="built-in-rules-1"><a class="header" href="#built-in-rules-1">Built-in Rules</a></h1>
 <p>Reference for all built-in rules that come with Vow.</p>
 <h2 id="code-analysis-rules"><a class="header" href="#code-analysis-rules">Code Analysis Rules</a></h2>
 <h3 id="hallucinated-import"><a class="header" href="#hallucinated-import">hallucinated-import</a></h3>
@@ -2114,9 +2113,8 @@ rules:
 <li><strong>Languages</strong>: All text</li>
 </ul>
 <p><em>This page is under development.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="configuration-file-2"><a class="header" href="#configuration-file-2">Configuration File</a></h1>
-<p>Customize Vow’s behavior with configuration files in YAML format.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="configuration-file-2"><a class="header" href="#configuration-file-2">Configuration File</a></h1>
+<p>Customize Vow's behavior with configuration files in YAML format.</p>
 <h2 id="configuration-file-locations"><a class="header" href="#configuration-file-locations">Configuration File Locations</a></h2>
 <p>Vow looks for configuration files in this order:</p>
 <ol>
@@ -2157,9 +2155,8 @@ vow config init --global
 # Validate configuration
 vow config validate
 </code></pre>
-<p><em>This page is under development. See <a href="#cli-reference">CLI Reference</a> for all configuration options.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="known-packages"><a class="header" href="#known-packages">Known Packages</a></h1>
+<p><em>This page is under development. See <a href="configuration/../reference/cli-reference.html">CLI Reference</a> for all configuration options.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="known-packages"><a class="header" href="#known-packages">Known Packages</a></h1>
 <p>Manage the database of known packages for hallucination detection.</p>
 <h2 id="package-database"><a class="header" href="#package-database">Package Database</a></h2>
 <p>Vow maintains databases of known packages for each language:</p>
@@ -2189,46 +2186,220 @@ custom_packages:
     - name: "@company/shared"
       versions: ["&gt;=2.0.0"]
 </code></pre>
-<p><em>This page is under development. See <a href="#hallucination-detection">Hallucination Detection</a> for detailed examples.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="vowignore-file"><a class="header" href="#vowignore-file">Vowignore File</a></h1>
-<p>Use <code>.vowignore</code> files to exclude files and directories from analysis.</p>
+<p><em>This page is under development. See <a href="configuration/../analyzers/hallucination-detection.html">Hallucination Detection</a> for detailed examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="vowignore-file"><a class="header" href="#vowignore-file">Vowignore File</a></h1>
+<p>Use <code>.vowignore</code> files to exclude files and directories from analysis, similar to how <code>.gitignore</code> works for Git. This helps improve performance by skipping files that don't need verification.</p>
 <h2 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h2>
 <p>Create a <code>.vowignore</code> file in your project root:</p>
 <pre><code># Ignore test files
 test_*.py
 *_test.py
+tests/
 
 # Ignore generated code
 generated/
 **/proto/*.py
+build/
+dist/
 
 # Ignore dependencies
 node_modules/
 vendor/
+.venv/
+venv/
 
 # Ignore specific patterns
 *.pb.py
 *_pb2.py
+*.min.js
+*.bundle.js
+
+# Ignore documentation
+docs/
+*.md
 </code></pre>
 <h2 id="syntax"><a class="header" href="#syntax">Syntax</a></h2>
 <p>The <code>.vowignore</code> file uses gitignore-style patterns:</p>
 <ul>
-<li><code>#</code> for comments</li>
-<li><code>*</code> for wildcards</li>
+<li><code>#</code> for comments (ignored lines)</li>
+<li><code>*</code> for single-level wildcards</li>
 <li><code>**</code> for recursive directory matching</li>
-<li><code>!</code> to negate patterns</li>
+<li><code>!</code> to negate patterns (include what would otherwise be excluded)</li>
+<li><code>/</code> at the end to match directories only</li>
+<li><code>/</code> at the beginning for root-relative paths</li>
 </ul>
+<h3 id="pattern-examples"><a class="header" href="#pattern-examples">Pattern Examples</a></h3>
+<pre><code># Exact file name
+config.json
+
+# File extension
+*.log
+
+# Directory
+logs/
+
+# Files in any subdirectory
+**/cache/*
+
+# Negate pattern - include important configs
+!important.config
+
+# Root-relative path
+/root-only-file.txt
+
+# Multiple levels
+src/**/test/**/*.py
+</code></pre>
 <h2 id="multiple-vowignore-files"><a class="header" href="#multiple-vowignore-files">Multiple Vowignore Files</a></h2>
-<p>You can have <code>.vowignore</code> files in subdirectories:</p>
+<p>Vow supports hierarchical <code>.vowignore</code> files for granular control:</p>
+<ol>
+<li><strong>Global ignore</strong>: <code>~/.config/vow/ignore</code> - applies to all projects</li>
+<li><strong>Project root</strong>: <code>.vowignore</code> - applies to the entire project</li>
+<li><strong>Subdirectories</strong>: <code>subdir/.vowignore</code> - applies only to that subdirectory and below</li>
+</ol>
+<h3 id="precedence"><a class="header" href="#precedence">Precedence</a></h3>
+<p>More specific <code>.vowignore</code> files override more general ones:</p>
 <ul>
-<li>Project root: <code>.vowignore</code></li>
-<li>Subdirectories: <code>subdir/.vowignore</code></li>
-<li>Global: <code>~/.config/vow/ignore</code></li>
+<li>Subdirectory <code>.vowignore</code> overrides project root</li>
+<li>Project root <code>.vowignore</code> overrides global ignore</li>
+<li>Command-line <code>--include</code>/<code>--exclude</code> overrides all files</li>
 </ul>
-<p><em>This page is under development.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="cli-reference"><a class="header" href="#cli-reference">CLI Reference</a></h1>
+<h2 id="common-patterns"><a class="header" href="#common-patterns">Common Patterns</a></h2>
+<h3 id="python-projects"><a class="header" href="#python-projects">Python Projects</a></h3>
+<pre><code># Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated
+*_pb2.py
+*_pb2_grpc.py
+</code></pre>
+<h3 id="javascriptnodejs-projects"><a class="header" href="#javascriptnodejs-projects">JavaScript/Node.js Projects</a></h3>
+<pre><code># Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+build/
+dist/
+.next/
+out/
+
+# Generated
+*.min.js
+*.bundle.js
+*.d.ts.map
+</code></pre>
+<h3 id="go-projects"><a class="header" href="#go-projects">Go Projects</a></h3>
+<pre><code># Go build output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Vendor
+vendor/
+</code></pre>
+<h3 id="general-development"><a class="header" href="#general-development">General Development</a></h3>
+<pre><code># IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+</code></pre>
+<h2 id="performance-impact"><a class="header" href="#performance-impact">Performance Impact</a></h2>
+<p>Using <code>.vowignore</code> effectively can significantly improve Vow's performance:</p>
+<ul>
+<li><strong>Faster scanning</strong>: Skip large directories like <code>node_modules/</code></li>
+<li><strong>Reduced memory usage</strong>: Don't load unnecessary files</li>
+<li><strong>Better focus</strong>: Analyze only relevant source code</li>
+</ul>
+<h3 id="recommended-excludes-for-performance"><a class="header" href="#recommended-excludes-for-performance">Recommended Excludes for Performance</a></h3>
+<pre><code># Large dependency directories
+node_modules/
+vendor/
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+target/
+bin/
+obj/
+
+# Large generated files
+*.min.js
+*.bundle.js
+*.map
+
+# Binary files (automatically skipped, but explicit is clearer)
+*.exe
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+
+# Media files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.mp4
+*.mp3
+</code></pre>
+<h2 id="testing-your-patterns"><a class="header" href="#testing-your-patterns">Testing Your Patterns</a></h2>
+<p>You can test your <code>.vowignore</code> patterns by using the verbose flag:</p>
+<pre><code class="language-bash"># See which files are being analyzed
+vow check . --verbose
+
+# Check a specific pattern
+vow check . --exclude "test_*" --verbose
+</code></pre>
+<h2 id="best-practices-2"><a class="header" href="#best-practices-2">Best Practices</a></h2>
+<ol>
+<li><strong>Start simple</strong>: Begin with common patterns and add specific ones as needed</li>
+<li><strong>Use comments</strong>: Document why certain patterns are excluded</li>
+<li><strong>Test regularly</strong>: Verify your patterns aren't excluding important files</li>
+<li><strong>Version control</strong>: Commit <code>.vowignore</code> files to share patterns with your team</li>
+<li><strong>Performance first</strong>: Prioritize excluding large directories and generated files</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="cli-reference"><a class="header" href="#cli-reference">CLI Reference</a></h1>
 <p>This page provides a comprehensive reference for all Vow command-line options and subcommands.</p>
 <h2 id="global-options"><a class="header" href="#global-options">Global Options</a></h2>
 <p>These options are available for all commands:</p>
@@ -2251,7 +2422,8 @@ vow check --stdin [OPTIONS]
 <pre><code>--stdin                    Read from stdin instead of files
 --include &lt;PATTERN&gt;        Include files matching pattern (can be used multiple times)
 --exclude &lt;PATTERN&gt;        Exclude files matching pattern (can be used multiple times)
---max-file-size &lt;SIZE&gt;     Skip files larger than SIZE (e.g., 10MB)
+--max-file-size &lt;MB&gt;       Skip files larger than SIZE in MB (e.g., 10)
+--max-depth &lt;N&gt;           Maximum directory depth to traverse
 --follow-symlinks          Follow symbolic links
 </code></pre>
 <p><strong>Analyzer Options:</strong></p>
@@ -2259,15 +2431,17 @@ vow check --stdin [OPTIONS]
                           (code, text, security, all)
 --exclude-analyzers &lt;LIST&gt; Analyzers to exclude
 --strictness &lt;LEVEL&gt;       Detection strictness (low, medium, high, paranoid)
---no-ml-models            Skip machine learning models (faster, less accurate)
---model-size &lt;SIZE&gt;        Model size to use (small, medium, large)
+--max-issues &lt;N&gt;          Stop analysis after finding N issues per file
 </code></pre>
 <p><strong>Output Options:</strong></p>
 <pre><code>--format &lt;FORMAT&gt;          Output format (json, sarif, table, html)
+                          Use 'json' for CI/CD integration
 --output &lt;FILE&gt;            Write output to file instead of stdout
 --min-severity &lt;LEVEL&gt;     Minimum severity to report (info, low, medium, high)
 --trust-score-only         Only show trust score, no detailed issues
 --show-context             Include code context around issues
+--quiet, -q               Suppress non-essential output
+--verbose, -v             Enable verbose output with performance details
 --no-color                 Disable colored output
 </code></pre>
 <p><strong>Performance Options:</strong></p>
@@ -2289,15 +2463,21 @@ vow check . --format sarif --output results.sarif
 # Check from stdin
 cat file.py | vow check --stdin --format table
 
-# Check with specific file patterns
-vow check . --include "*.py" --include "*.js" --exclude "test_*"
+# Check with specific file patterns and size limits
+vow check . --include "*.py" --include "*.js" --exclude "test_*" --max-file-size 5
 
-# High-strictness check for critical code
-vow check production/ --strictness high --min-severity medium
+# High-strictness check for critical code with depth limit
+vow check production/ --strictness high --min-severity medium --max-depth 3
+
+# Fast check with issue limit and quiet output
+vow check . --max-issues 10 --quiet --format json
+
+# Verbose check with performance summary
+vow check . --verbose --max-depth 2 --max-file-size 10
 </code></pre>
 <h3 id="vow-setup---initialize-and-configure"><a class="header" href="#vow-setup---initialize-and-configure"><code>vow setup</code> - Initialize and Configure</a></h3>
 <p>Download models and set up Vow for first use.</p>
-<h4 id="syntax-1-1"><a class="header" href="#syntax-1-1">Syntax</a></h4>
+<h4 id="syntax-2"><a class="header" href="#syntax-2">Syntax</a></h4>
 <pre><code class="language-bash">vow setup [OPTIONS]
 </code></pre>
 <h4 id="options-1"><a class="header" href="#options-1">Options</a></h4>
@@ -2323,7 +2503,7 @@ vow setup --force
 </code></pre>
 <h3 id="vow-config---configuration-management"><a class="header" href="#vow-config---configuration-management"><code>vow config</code> - Configuration Management</a></h3>
 <p>Manage Vow configuration files and settings.</p>
-<h4 id="syntax-2"><a class="header" href="#syntax-2">Syntax</a></h4>
+<h4 id="syntax-3"><a class="header" href="#syntax-3">Syntax</a></h4>
 <pre><code class="language-bash">vow config &lt;SUBCOMMAND&gt; [OPTIONS]
 </code></pre>
 <h4 id="subcommands"><a class="header" href="#subcommands">Subcommands</a></h4>
@@ -2354,7 +2534,7 @@ vow config validate my-config.yaml
 </code></pre>
 <h3 id="vow-analyzers---analyzer-management"><a class="header" href="#vow-analyzers---analyzer-management"><code>vow analyzers</code> - Analyzer Management</a></h3>
 <p>List, install, and manage analyzers.</p>
-<h4 id="syntax-3"><a class="header" href="#syntax-3">Syntax</a></h4>
+<h4 id="syntax-4"><a class="header" href="#syntax-4">Syntax</a></h4>
 <pre><code class="language-bash">vow analyzers &lt;SUBCOMMAND&gt; [OPTIONS]
 </code></pre>
 <h4 id="subcommands-1"><a class="header" href="#subcommands-1">Subcommands</a></h4>
@@ -2382,7 +2562,7 @@ vow analyzers remove custom
 </code></pre>
 <h3 id="vow-packages---package-database-management"><a class="header" href="#vow-packages---package-database-management"><code>vow packages</code> - Package Database Management</a></h3>
 <p>Manage known package databases for hallucination detection.</p>
-<h4 id="syntax-4"><a class="header" href="#syntax-4">Syntax</a></h4>
+<h4 id="syntax-5"><a class="header" href="#syntax-5">Syntax</a></h4>
 <pre><code class="language-bash">vow packages &lt;SUBCOMMAND&gt; [OPTIONS]
 </code></pre>
 <h4 id="subcommands-2"><a class="header" href="#subcommands-2">Subcommands</a></h4>
@@ -2419,7 +2599,7 @@ vow packages export team-packages.yaml
 </code></pre>
 <h3 id="vow-rules---rule-management"><a class="header" href="#vow-rules---rule-management"><code>vow rules</code> - Rule Management</a></h3>
 <p>Manage custom detection rules.</p>
-<h4 id="syntax-5"><a class="header" href="#syntax-5">Syntax</a></h4>
+<h4 id="syntax-6"><a class="header" href="#syntax-6">Syntax</a></h4>
 <pre><code class="language-bash">vow rules &lt;SUBCOMMAND&gt; [OPTIONS]
 </code></pre>
 <h4 id="subcommands-3"><a class="header" href="#subcommands-3">Subcommands</a></h4>
@@ -2450,21 +2630,15 @@ vow rules create detect-deprecated --template python
 </code></pre>
 <h2 id="exit-codes"><a class="header" href="#exit-codes">Exit Codes</a></h2>
 <p>Vow uses these exit codes:</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Code</th><th>Meaning</th></tr>
-</thead>
-<tbody>
+<div class="table-wrapper"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
 <tr><td>0</td><td>Success, no issues found</td></tr>
-<tr><td>1</td><td>Issues found (severity depends on –min-severity)</td></tr>
+<tr><td>1</td><td>Issues found (severity depends on --min-severity)</td></tr>
 <tr><td>2</td><td>Configuration error</td></tr>
 <tr><td>3</td><td>Model/analyzer error</td></tr>
 <tr><td>4</td><td>File I/O error</td></tr>
 <tr><td>5</td><td>Network error (during setup/updates)</td></tr>
 <tr><td>10</td><td>Internal error</td></tr>
-</tbody>
-</table>
+</tbody></table>
 </div>
 <h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
 <p>Configure Vow behavior with environment variables:</p>
@@ -2481,7 +2655,9 @@ VOW_VERBOSE=1                            # Enable verbose output
 # Performance
 VOW_JOBS=4                               # Parallel jobs
 VOW_TIMEOUT=60                           # Timeout per file (seconds)
-VOW_MAX_FILE_SIZE=10MB                   # Maximum file size
+VOW_MAX_FILE_SIZE=10                     # Maximum file size (MB)
+VOW_MAX_DEPTH=10                         # Maximum directory depth
+VOW_MAX_ISSUES=100                       # Maximum issues per file
 
 # Network
 VOW_OFFLINE=1                            # Disable network requests
@@ -2541,58 +2717,206 @@ VOW_LOG_LEVEL=trace vow check file.py
 </code></pre>
 <h2 id="next-steps-4"><a class="header" href="#next-steps-4">Next Steps</a></h2>
 <ul>
-<li><a href="#configuration-file-2">Configuration File</a> - Detailed configuration options</li>
-<li><a href="#output-formats">Output Formats</a> - Understanding output formats</li>
-<li><a href="#exit-codes-1">Exit Codes</a> - Detailed exit code reference</li>
+<li><a href="reference/../configuration/config-file.html">Configuration File</a> - Detailed configuration options</li>
+<li><a href="reference/output-formats.html">Output Formats</a> - Understanding output formats</li>
+<li><a href="reference/exit-codes.html">Exit Codes</a> - Detailed exit code reference</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="output-formats"><a class="header" href="#output-formats">Output Formats</a></h1>
-<p>Vow supports multiple output formats for different use cases.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="output-formats"><a class="header" href="#output-formats">Output Formats</a></h1>
+<p>Vow supports multiple output formats optimized for different use cases, from human consumption to CI/CD automation.</p>
 <h2 id="available-formats"><a class="header" href="#available-formats">Available Formats</a></h2>
-<h3 id="json-format"><a class="header" href="#json-format">JSON Format</a></h3>
+<h3 id="json-format---format-json"><a class="header" href="#json-format---format-json">JSON Format (<code>--format json</code>)</a></h3>
 <pre><code class="language-bash">vow check . --format json
 </code></pre>
-<p>Machine-readable format for programmatic processing.</p>
-<h3 id="sarif-format"><a class="header" href="#sarif-format">SARIF Format</a></h3>
-<pre><code class="language-bash">vow check . --format sarif
-</code></pre>
-<p>Static Analysis Results Interchange Format - ideal for CI/CD and security tools.</p>
-<h3 id="table-format"><a class="header" href="#table-format">Table Format</a></h3>
+<p>Machine-readable format ideal for CI/CD pipelines, automation scripts, and programmatic processing. Includes performance summaries and detailed issue information.</p>
+<h3 id="table-format---format-table"><a class="header" href="#table-format---format-table">Table Format (<code>--format table</code>)</a></h3>
 <pre><code class="language-bash">vow check . --format table
 </code></pre>
-<p>Human-readable tabular output for terminal usage.</p>
-<h3 id="html-format"><a class="header" href="#html-format">HTML Format</a></h3>
+<p>Human-readable tabular output for terminal usage with color-coded severity levels and trust scores.</p>
+<h3 id="sarif-format---format-sarif"><a class="header" href="#sarif-format---format-sarif">SARIF Format (<code>--format sarif</code>)</a></h3>
+<pre><code class="language-bash">vow check . --format sarif
+</code></pre>
+<p>Static Analysis Results Interchange Format - standardized format for security tools and IDE integration.</p>
+<h3 id="html-format---format-html"><a class="header" href="#html-format---format-html">HTML Format (<code>--format html</code>)</a></h3>
 <pre><code class="language-bash">vow check . --format html --output report.html
 </code></pre>
-<p>Rich HTML report with interactive features.</p>
+<p>Rich HTML report with interactive features, filtering, and embedded CSS for standalone viewing.</p>
 <h2 id="format-examples"><a class="header" href="#format-examples">Format Examples</a></h2>
-<h3 id="json-output"><a class="header" href="#json-output">JSON Output</a></h3>
+<h3 id="json-output-recommended-for-cicd"><a class="header" href="#json-output-recommended-for-cicd">JSON Output (Recommended for CI/CD)</a></h3>
 <pre><code class="language-json">{
   "files": [
     {
       "path": "script.py",
       "trust_score": 0.7,
+      "language": "python",
+      "size_bytes": 1247,
       "issues": [
         {
           "rule": "hallucinated-import",
           "severity": "high",
-          "message": "Import not found",
-          "line": 1,
-          "column": 0
+          "message": "Import 'nonexistent_lib' not found in known packages",
+          "line": 2,
+          "column": 1,
+          "context": "from nonexistent_lib import magic_function",
+          "suggestion": "Verify this import exists or add to known packages"
+        },
+        {
+          "rule": "suspicious-api",
+          "severity": "medium",
+          "message": "API endpoint may be fabricated",
+          "line": 6,
+          "column": 25,
+          "context": "requests.get('https://api.fake.com/users')"
         }
       ]
     }
   ],
   "summary": {
     "total_files": 1,
-    "trust_score_avg": 0.7
+    "files_analyzed": 1,
+    "files_with_issues": 1,
+    "total_issues": 2,
+    "trust_score_avg": 0.7,
+    "issues_by_severity": {
+      "high": 1,
+      "medium": 1,
+      "low": 0,
+      "info": 0
+    }
+  },
+  "performance": {
+    "duration_ms": 152,
+    "files_per_second": 35.2,
+    "bytes_processed": 1247,
+    "skipped_files": 0,
+    "memory_usage_mb": 12.4
+  },
+  "metadata": {
+    "vow_version": "1.2.0",
+    "scan_time": "2024-01-15T10:30:45Z",
+    "analyzers_used": ["code", "text", "security"],
+    "languages_detected": ["python"]
   }
 }
 </code></pre>
-<p><em>This page is under development. See <a href="#cli-reference">CLI Reference</a> for all format options.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="trust-score-algorithm"><a class="header" href="#trust-score-algorithm">Trust Score Algorithm</a></h1>
-<p>The trust score is Vow’s quantitative measure of confidence in AI-generated content. It ranges from 0.0 (very low confidence) to 1.0 (high confidence) and helps you prioritize which outputs need human review.</p>
+<h3 id="table-output"><a class="header" href="#table-output">Table Output</a></h3>
+<pre><code>┌─────────────────┬──────────────┬──────────┬─────────────────────────────────────────────┐
+│ File            │ Line:Col     │ Severity │ Issue                                       │
+├─────────────────┼──────────────┼──────────┼─────────────────────────────────────────────┤
+│ script.py       │ 2:1          │ HIGH     │ Import 'nonexistent_lib' not found         │
+│ script.py       │ 6:25         │ MEDIUM   │ API endpoint may be fabricated              │
+└─────────────────┴──────────────┴──────────┴─────────────────────────────────────────────┘
+
+Summary:
+  Files analyzed: 1 (35.2 files/sec)
+  Issues found: 2
+  Trust Score: 0.7/1.0 (Medium confidence)
+  Duration: 152ms
+</code></pre>
+<h3 id="sarif-output"><a class="header" href="#sarif-output">SARIF Output</a></h3>
+<pre><code class="language-json">{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Vow",
+          "version": "1.2.0",
+          "informationUri": "https://getvow.dev"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "hallucinated-import",
+          "level": "error",
+          "message": {
+            "text": "Import 'nonexistent_lib' not found in known packages"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "script.py"
+                },
+                "region": {
+                  "startLine": 2,
+                  "startColumn": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+<h2 id="performance-summaries"><a class="header" href="#performance-summaries">Performance Summaries</a></h2>
+<p>All output formats include performance summaries when using <code>--verbose</code>:</p>
+<h3 id="key-metrics"><a class="header" href="#key-metrics">Key Metrics</a></h3>
+<ul>
+<li><strong>Files per second</strong>: Processing throughput</li>
+<li><strong>Duration</strong>: Total analysis time</li>
+<li><strong>Memory usage</strong>: Peak memory consumption</li>
+<li><strong>Files skipped</strong>: Files excluded by .vowignore or filters</li>
+<li><strong>Bytes processed</strong>: Total content analyzed</li>
+</ul>
+<h3 id="cicd-integration-2"><a class="header" href="#cicd-integration-2">CI/CD Integration</a></h3>
+<p>The JSON format is optimized for CI/CD workflows:</p>
+<pre><code class="language-yaml"># GitHub Actions example
+- name: Run Vow Analysis
+  run: vow check . --format json --output results.json
+  
+- name: Process Results
+  run: |
+    ISSUES=$(jq '.summary.total_issues' results.json)
+    if [ "$ISSUES" -gt 0 ]; then
+      echo "Found $ISSUES issues in AI-generated content"
+      exit 1
+    fi
+</code></pre>
+<h2 id="format-selection-guide"><a class="header" href="#format-selection-guide">Format Selection Guide</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Use Case</th><th>Recommended Format</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>Terminal usage</td><td><code>table</code></td><td>Human-readable, color-coded</td></tr>
+<tr><td>CI/CD pipelines</td><td><code>json</code></td><td>Machine-readable, complete data</td></tr>
+<tr><td>Security tools</td><td><code>sarif</code></td><td>Industry standard format</td></tr>
+<tr><td>Reports &amp; sharing</td><td><code>html</code></td><td>Rich presentation, self-contained</td></tr>
+<tr><td>IDE integration</td><td><code>sarif</code></td><td>Native support in most IDEs</td></tr>
+<tr><td>Scripting</td><td><code>json</code></td><td>Easy to parse with standard tools</td></tr>
+</tbody></table>
+</div>
+<h2 id="output-options"><a class="header" href="#output-options">Output Options</a></h2>
+<p>Control output verbosity and content:</p>
+<pre><code class="language-bash"># Minimal output - just issues
+vow check . --quiet --format json
+
+# Verbose output - includes performance data  
+vow check . --verbose --format table
+
+# Only trust scores
+vow check . --trust-score-only
+
+# Include code context
+vow check . --show-context --format json
+
+# Filter by severity
+vow check . --min-severity medium --format table
+</code></pre>
+<h2 id="file-output"><a class="header" href="#file-output">File Output</a></h2>
+<p>Save results to files for later analysis:</p>
+<pre><code class="language-bash"># Save JSON results
+vow check . --format json --output analysis.json
+
+# Save HTML report
+vow check . --format html --output report.html
+
+# Save SARIF for security tools
+vow check . --format sarif --output vow-results.sarif
+</code></pre>
+<hr />
+<p>For more output customization options, see the <a href="reference/cli-reference.html">CLI Reference</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="trust-score-algorithm"><a class="header" href="#trust-score-algorithm">Trust Score Algorithm</a></h1>
+<p>The trust score is Vow's quantitative measure of confidence in AI-generated content. It ranges from 0.0 (very low confidence) to 1.0 (high confidence) and helps you prioritize which outputs need human review.</p>
 <h2 id="how-trust-scores-work"><a class="header" href="#how-trust-scores-work">How Trust Scores Work</a></h2>
 <h3 id="basic-formula"><a class="header" href="#basic-formula">Basic Formula</a></h3>
 <pre><code>Trust Score = weighted_average(analyzer_scores) × confidence_multiplier
@@ -2604,17 +2928,11 @@ VOW_LOG_LEVEL=trace vow check file.py
 <li><strong>Confidence Multiplier</strong>: Adjustment based on detection certainty</li>
 </ul>
 <h3 id="default-weights"><a class="header" href="#default-weights">Default Weights</a></h3>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Analyzer</th><th>Weight</th><th>Rationale</th></tr>
-</thead>
-<tbody>
+<div class="table-wrapper"><table><thead><tr><th>Analyzer</th><th>Weight</th><th>Rationale</th></tr></thead><tbody>
 <tr><td>Code</td><td>40%</td><td>Code issues are objective and verifiable</td></tr>
 <tr><td>Text</td><td>35%</td><td>Text analysis has good accuracy but some subjectivity</td></tr>
 <tr><td>Security</td><td>25%</td><td>Security issues are critical but less frequent</td></tr>
-</tbody>
-</table>
+</tbody></table>
 </div>
 <h2 id="analyzer-specific-scoring"><a class="header" href="#analyzer-specific-scoring">Analyzer-Specific Scoring</a></h2>
 <h3 id="code-analyzer-scoring"><a class="header" href="#code-analyzer-scoring">Code Analyzer Scoring</a></h3>
@@ -2669,18 +2987,12 @@ Download it from https://python-official-new.com/downloads.
 </code></pre>
 <h2 id="score-interpretation-1"><a class="header" href="#score-interpretation-1">Score Interpretation</a></h2>
 <h3 id="confidence-levels"><a class="header" href="#confidence-levels">Confidence Levels</a></h3>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Score Range</th><th>Confidence</th><th>Color</th><th>Meaning</th><th>Action</th></tr>
-</thead>
-<tbody>
+<div class="table-wrapper"><table><thead><tr><th>Score Range</th><th>Confidence</th><th>Color</th><th>Meaning</th><th>Action</th></tr></thead><tbody>
 <tr><td>0.8 - 1.0</td><td>High</td><td>🟢 Green</td><td>Likely reliable</td><td>Use with minimal review</td></tr>
 <tr><td>0.6 - 0.8</td><td>Medium</td><td>🟡 Yellow</td><td>Some concerns</td><td>Review before use</td></tr>
 <tr><td>0.3 - 0.6</td><td>Low</td><td>🟠 Orange</td><td>Multiple issues</td><td>Careful review required</td></tr>
 <tr><td>0.0 - 0.3</td><td>Very Low</td><td>🔴 Red</td><td>Likely problematic</td><td>Significant review needed</td></tr>
-</tbody>
-</table>
+</tbody></table>
 </div>
 <h3 id="score-modifiers"><a class="header" href="#score-modifiers">Score Modifiers</a></h3>
 <p>Trust scores can be adjusted by various factors:</p>
@@ -2749,7 +3061,7 @@ def fetch_github_user(username: str) -&gt; Optional[Dict]:
 <ul>
 <li>Imports from non-existent packages</li>
 <li>Calls to fabricated functions</li>
-<li>Unusual or “magical” variable names</li>
+<li>Unusual or "magical" variable names</li>
 <li>Missing error handling</li>
 <li>Unrealistic functionality claims</li>
 </ul>
@@ -2875,10 +3187,10 @@ trust_score:
     # Week 3: Raise the bar
     # required: 0.7
 </code></pre>
-<h2 id="best-practices-2"><a class="header" href="#best-practices-2">Best Practices</a></h2>
+<h2 id="best-practices-3"><a class="header" href="#best-practices-3">Best Practices</a></h2>
 <h3 id="1-use-trust-scores-as-guidelines"><a class="header" href="#1-use-trust-scores-as-guidelines">1. Use Trust Scores as Guidelines</a></h3>
 <ul>
-<li>Don’t rely solely on scores for critical decisions</li>
+<li>Don't rely solely on scores for critical decisions</li>
 <li>Combine with human review for important content</li>
 <li>Consider context and domain requirements</li>
 </ul>
@@ -2901,13 +3213,13 @@ vow check . --output baseline.json
 vow check . --output improved.json --compare baseline.json
 </code></pre>
 <h2 id="limitations-1"><a class="header" href="#limitations-1">Limitations</a></h2>
-<h3 id="what-trust-scores-cant-tell-you"><a class="header" href="#what-trust-scores-cant-tell-you">What Trust Scores Can’t Tell You</a></h3>
+<h3 id="what-trust-scores-cant-tell-you"><a class="header" href="#what-trust-scores-cant-tell-you">What Trust Scores Can't Tell You</a></h3>
 <ul>
-<li><strong>Domain Expertise</strong>: Scores can’t evaluate domain-specific correctness</li>
-<li><strong>Business Logic</strong>: Can’t verify if code meets business requirements</li>
-<li><strong>Performance</strong>: Doesn’t measure code efficiency or scalability</li>
-<li><strong>User Experience</strong>: Can’t assess UI/UX quality</li>
-<li><strong>Integration</strong>: Doesn’t verify how code works with other systems</li>
+<li><strong>Domain Expertise</strong>: Scores can't evaluate domain-specific correctness</li>
+<li><strong>Business Logic</strong>: Can't verify if code meets business requirements</li>
+<li><strong>Performance</strong>: Doesn't measure code efficiency or scalability</li>
+<li><strong>User Experience</strong>: Can't assess UI/UX quality</li>
+<li><strong>Integration</strong>: Doesn't verify how code works with other systems</li>
 </ul>
 <h3 id="when-to-ignore-trust-scores"><a class="header" href="#when-to-ignore-trust-scores">When to Ignore Trust Scores</a></h3>
 <ul>
@@ -2918,29 +3230,22 @@ vow check . --output improved.json --compare baseline.json
 </ul>
 <h2 id="next-steps-5"><a class="header" href="#next-steps-5">Next Steps</a></h2>
 <ul>
-<li><a href="#output-formats">Output Formats</a> - Understanding different output formats</li>
-<li><a href="#configuration-file-2">Configuration</a> - Customize trust score calculation</li>
-<li><a href="#cicd-integration-1">CI/CD Integration</a> - Use trust scores in automation</li>
+<li><a href="reference/output-formats.html">Output Formats</a> - Understanding different output formats</li>
+<li><a href="reference/../configuration/config-file.html">Configuration</a> - Customize trust score calculation</li>
+<li><a href="reference/../guide/ci-cd-integration.html">CI/CD Integration</a> - Use trust scores in automation</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="exit-codes-1"><a class="header" href="#exit-codes-1">Exit Codes</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="exit-codes-1"><a class="header" href="#exit-codes-1">Exit Codes</a></h1>
 <p>Reference for all exit codes returned by Vow commands.</p>
 <h2 id="standard-exit-codes"><a class="header" href="#standard-exit-codes">Standard Exit Codes</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Code</th><th>Meaning</th><th>Description</th></tr>
-</thead>
-<tbody>
+<div class="table-wrapper"><table><thead><tr><th>Code</th><th>Meaning</th><th>Description</th></tr></thead><tbody>
 <tr><td>0</td><td>Success</td><td>No issues found, operation completed successfully</td></tr>
-<tr><td>1</td><td>Issues Found</td><td>Analysis found issues (severity depends on –min-severity)</td></tr>
+<tr><td>1</td><td>Issues Found</td><td>Analysis found issues (severity depends on --min-severity)</td></tr>
 <tr><td>2</td><td>Configuration Error</td><td>Invalid configuration file or options</td></tr>
 <tr><td>3</td><td>Model/Analyzer Error</td><td>ML model loading or analyzer execution failed</td></tr>
 <tr><td>4</td><td>File I/O Error</td><td>Cannot read input files or write output</td></tr>
 <tr><td>5</td><td>Network Error</td><td>Failed to download models or updates</td></tr>
 <tr><td>10</td><td>Internal Error</td><td>Unexpected internal error</td></tr>
-</tbody>
-</table>
+</tbody></table>
 </div>
 <h2 id="usage-in-scripts"><a class="header" href="#usage-in-scripts">Usage in Scripts</a></h2>
 <pre><code class="language-bash">#!/bin/bash
@@ -2965,16 +3270,15 @@ case $exit_code in
     ;;
 esac
 </code></pre>
-<h2 id="cicd-integration-2"><a class="header" href="#cicd-integration-2">CI/CD Integration</a></h2>
+<h2 id="cicd-integration-3"><a class="header" href="#cicd-integration-3">CI/CD Integration</a></h2>
 <p>Use exit codes to control build behavior:</p>
 <ul>
 <li><strong>Exit 0</strong>: Continue build</li>
 <li><strong>Exit 1</strong>: Continue with warnings or fail based on policy</li>
 <li><strong>Exit 2+</strong>: Fail build immediately</li>
 </ul>
-<p><em>This page is under development. See <a href="#cicd-integration-1">CI/CD Integration</a> for practical examples.</em></p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="contributing-to-vow"><a class="header" href="#contributing-to-vow">Contributing to Vow</a></h1>
+<p><em>This page is under development. See <a href="reference/../guide/ci-cd-integration.html">CI/CD Integration</a> for practical examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-to-vow"><a class="header" href="#contributing-to-vow">Contributing to Vow</a></h1>
 <p>Thank you for your interest in contributing to Vow! This guide will help you get started with contributing code, documentation, or ideas to make Vow better for everyone.</p>
 <h2 id="ways-to-contribute"><a class="header" href="#ways-to-contribute">Ways to Contribute</a></h2>
 <h3 id="-bug-reports"><a class="header" href="#-bug-reports">🐛 Bug Reports</a></h3>
@@ -2989,7 +3293,7 @@ esac
 <p>Have an idea for a new feature? Open an issue with:</p>
 <ul>
 <li>Clear description of the use case</li>
-<li>Why existing features don’t solve the problem</li>
+<li>Why existing features don't solve the problem</li>
 <li>Proposed solution or API design</li>
 <li>Examples of how it would be used</li>
 </ul>
@@ -3104,16 +3408,16 @@ test(integration): add tests for SARIF output format
 <h2 id="writing-analyzers"><a class="header" href="#writing-analyzers">Writing Analyzers</a></h2>
 <h3 id="analyzer-interface"><a class="header" href="#analyzer-interface">Analyzer Interface</a></h3>
 <p>All analyzers implement the <code>Analyzer</code> trait:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub trait Analyzer: Send + Sync {
     fn name(&amp;self) -&gt; &amp;str;
     fn analyze(&amp;self, content: &amp;AnalysisInput) -&gt; Result&lt;AnalysisResult&gt;;
     fn supported_languages(&amp;self) -&gt; &amp;[Language];
 }
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <h3 id="example-analyzer"><a class="header" href="#example-analyzer">Example Analyzer</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use crate::analyzer::{Analyzer, AnalysisInput, AnalysisResult, Issue};
 
@@ -3150,9 +3454,9 @@ impl Analyzer for MyAnalyzer {
         &amp;[Language::Python, Language::JavaScript]
     }
 }
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <h3 id="testing-analyzers"><a class="header" href="#testing-analyzers">Testing Analyzers</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>#[cfg(test)]
 mod tests {
@@ -3172,7 +3476,7 @@ mod tests {
         assert_eq!(result.issues[0].rule, "my-rule");
     }
 }
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <h2 id="writing-rules-1"><a class="header" href="#writing-rules-1">Writing Rules</a></h2>
 <h3 id="rule-format"><a class="header" href="#rule-format">Rule Format</a></h3>
 <p>Rules are written in YAML format:</p>
@@ -3214,16 +3518,16 @@ vow rules validate rules/my-rules.yaml
 </code></pre>
 <h2 id="adding-output-formats"><a class="header" href="#adding-output-formats">Adding Output Formats</a></h2>
 <h3 id="output-format-interface"><a class="header" href="#output-format-interface">Output Format Interface</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub trait OutputFormatter: Send + Sync {
     fn name(&amp;self) -&gt; &amp;str;
     fn format(&amp;self, results: &amp;AnalysisResults) -&gt; Result&lt;String&gt;;
     fn file_extension(&amp;self) -&gt; &amp;str;
 }
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <h3 id="example-formatter"><a class="header" href="#example-formatter">Example Formatter</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub struct MyFormatter;
 
@@ -3242,7 +3546,7 @@ impl OutputFormatter for MyFormatter {
         "myformat"
     }
 }
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <h2 id="testing"><a class="header" href="#testing">Testing</a></h2>
 <h3 id="unit-tests"><a class="header" href="#unit-tests">Unit Tests</a></h3>
 <pre><code class="language-bash"># Run all unit tests
@@ -3306,7 +3610,7 @@ mdbook serve --open
 </ul>
 <h3 id="documentation-standards"><a class="header" href="#documentation-standards">Documentation Standards</a></h3>
 <ul>
-<li><strong>Headings</strong>: Use sentence case (“Getting started”, not “Getting Started”)</li>
+<li><strong>Headings</strong>: Use sentence case ("Getting started", not "Getting Started")</li>
 <li><strong>Code blocks</strong>: Always specify language for syntax highlighting</li>
 <li><strong>Commands</strong>: Show full commands with expected output</li>
 <li><strong>Links</strong>: Use relative links within the documentation</li>
@@ -3370,7 +3674,7 @@ mdbook serve --open
 <li>Annual contributor spotlight</li>
 </ul>
 <p>Thank you for helping make Vow better! 🙏</p>
-<hr>
+<hr />
 <h2 id="quick-reference"><a class="header" href="#quick-reference">Quick Reference</a></h2>
 <h3 id="common-commands"><a class="header" href="#common-commands">Common Commands</a></h3>
 <pre><code class="language-bash"># Development build
@@ -3416,11 +3720,6 @@ vow rules test rules/my-rules.yaml test.py
 
         </div>
 
-        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
-        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
-        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
-        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
-        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
 
 
 
@@ -3429,13 +3728,13 @@ vow rules test rules/my-rules.yaml test.py
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
 
@@ -3444,7 +3743,6 @@ vow rules test rules/my-rules.yaml test.py
             window.setTimeout(window.print, 100);
         });
         </script>
-
 
     </div>
     </body>

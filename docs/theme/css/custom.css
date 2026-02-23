@@ -524,11 +524,26 @@ em, i {
 /* Header bar - vertical center align */
 .menu-bar {
     display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
+    justify-content: space-between !important;
+    height: 50px !important;
 }
-.menu-bar .left-buttons,
-.menu-bar .right-buttons,
+.menu-bar .left-buttons {
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+}
 .menu-bar .menu-title {
     display: flex !important;
     align-items: center !important;
+    flex: 1 !important;
+    margin: 0 !important;
+    line-height: 50px !important;
+}
+.menu-bar .right-buttons {
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
 }

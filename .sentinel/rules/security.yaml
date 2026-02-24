@@ -217,7 +217,7 @@
 
 - id: rust-insecure-deserialization
   name: Insecure Deserialization in Rust
-  description: Detects potentially unsafe deserialization patterns
+  description: Detects potentially unsafe deserialization patterns and improper input validation
   severity: medium
   file_types:
     - rs
@@ -231,6 +231,27 @@
     - pattern_type: contains
       value: "serde_json::from_str(&"
       message: "Deserialization risk - validate JSON input structure and size limits"
+    - pattern_type: contains
+      value: "web::Json<"
+      message: "Improper input validation - ensure deserialized user input is properly validated"
+    - pattern_type: contains
+      value: "web::Form<"
+      message: "Improper input validation - validate form input before processing"
+    - pattern_type: contains
+      value: "web::Query<"
+      message: "Improper input validation - validate query parameters before use"
+    - pattern_type: contains
+      value: "#[serde(skip_serializing_if"
+      message: "Input validation risk - conditional serialization may expose internal state"
+    - pattern_type: contains
+      value: "serde_json::from_slice("
+      message: "Improper input validation - validate byte input before deserialization"
+    - pattern_type: contains
+      value: "from_str(&request_body)"
+      message: "Improper input validation - no validation on deserialized user input"
+    - pattern_type: contains
+      value: "toml::from_str("
+      message: "Deserialization risk - validate TOML input to prevent malformed data processing"
 
 - id: rust-race-conditions
   name: Race Conditions in Rust
@@ -300,6 +321,96 @@
       value: "from_str(&xml"
       message: "XXE risk - validate XML input and disable external entities"
 
+- id: rust-xml-injection
+  name: XML Injection in Rust
+  description: Detects XML injection where user input is interpolated into XML response bodies
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "format!(\"<{}\""
+      message: "XML injection - user input interpolated directly into XML tags"
+    - pattern_type: contains
+      value: "format!(\"<?xml"
+      message: "XML injection - user input in XML declaration or processing instructions"
+    - pattern_type: contains
+      value: ".content_type(\"application/xml\")"
+      message: "XML injection risk - ensure XML response content is properly escaped"
+    - pattern_type: contains
+      value: "format!(\"<response>{}</response>\""
+      message: "XML injection - user input directly embedded in XML response body"
+    - pattern_type: contains
+      value: "&user_input + \"</"
+      message: "XML injection - string concatenation with XML tags and user input"
+    - pattern_type: contains
+      value: "to_string() + \"<"
+      message: "XML injection - user input concatenated with XML markup"
+
+- id: rust-nosql-injection
+  name: NoSQL Injection in Rust
+  description: Detects NoSQL injection where user input is used in format!() to build database query filters
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "format!(\"{{"
+      message: "NoSQL injection - user input used in format!() to build query filters"
+    - pattern_type: contains
+      value: "format!(\"{{$"
+      message: "NoSQL injection - user input in MongoDB-style query operators"
+    - pattern_type: contains
+      value: "format!(\"find({{\"name\": \"{}\"}}\""
+      message: "NoSQL injection - user input directly interpolated into NoSQL query"
+    - pattern_type: contains
+      value: "format!(\"{{\\\"$where\\\": \\\"this.{}\""
+      message: "NoSQL injection - user input in $where clauses can execute arbitrary JavaScript"
+    - pattern_type: contains
+      value: "format!(\"{{\\\"$regex\\\": \\\"{}\""
+      message: "NoSQL injection - user input in regex operators without escaping"
+    - pattern_type: contains
+      value: ".find(format!(\"{{\"username\": \"{}\"}}\""
+      message: "NoSQL injection - format!() used to build database query with user input"
+    - pattern_type: contains
+      value: "format!(\"{{\\\"_id\\\": \\\"{}\"}}\""
+      message: "NoSQL injection - user input used to build ObjectId queries"
+    - pattern_type: contains
+      value: "format!(\"{{\\\"$or\\\": ["
+      message: "NoSQL injection - user input in $or operator construction"
+
+- id: rust-graphql-injection
+  name: GraphQL Injection in Rust
+  description: Detects GraphQL injection where unsanitized input is used in GraphQL resolvers
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "format!(\"query {{"
+      message: "GraphQL injection - unsanitized input in GraphQL query construction"
+    - pattern_type: contains
+      value: "format!(\"mutation {{"
+      message: "GraphQL injection - unsanitized input in GraphQL mutation construction"
+    - pattern_type: contains
+      value: "format!(\"{{\\\"query\\\": \\\"query"
+      message: "GraphQL injection - user input directly embedded in GraphQL query string"
+    - pattern_type: contains
+      value: "user_input + \"}\""
+      message: "GraphQL injection - string concatenation with GraphQL query parts"
+    - pattern_type: contains
+      value: "format!(\"user(id: {})\""
+      message: "GraphQL injection - unsanitized input in GraphQL field arguments"
+    - pattern_type: contains
+      value: ".execute(&format!(\"{"
+      message: "GraphQL injection - dynamic GraphQL query execution with user input"
+    - pattern_type: contains
+      value: "graphql::execute("
+      message: "GraphQL injection risk - ensure proper input validation in GraphQL resolvers"
+    - pattern_type: contains
+      value: "async_graphql::Object"
+      message: "GraphQL injection risk - validate all inputs in GraphQL resolvers"
+
 - id: rust-open-redirect  
   name: Open Redirect in Rust
   description: Detects potential open redirect vulnerabilities
@@ -316,6 +427,15 @@
     - pattern_type: contains
       value: "redirect_to"
       message: "Open redirect risk - validate redirect parameter"
+    - pattern_type: contains
+      value: ".header(\"Location\", &"
+      message: "Unvalidated redirect - user input passed directly to Location header without validation"
+    - pattern_type: contains
+      value: "format!(\"Location: {}\""
+      message: "Unvalidated redirect - user input in Location header format string"
+    - pattern_type: contains
+      value: "HttpResponse::PermanentRedirect().header(\"Location\", url"
+      message: "Unvalidated redirect - ensure URL validation before redirect"
 
 - id: rust-mass-assignment
   name: Mass Assignment in Rust

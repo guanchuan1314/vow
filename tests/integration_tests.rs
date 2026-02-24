@@ -224,7 +224,8 @@ fn test_cli_flags_quiet_mode() {
         true,  // quiet
         10,    // max_file_size_mb
         10,    // max_depth
-        100    // max_issues
+        100,   // max_issues
+        false  // no_cache
     ).unwrap();
     
     assert_eq!(results.len(), 1);
@@ -243,7 +244,8 @@ fn test_cli_flags_verbose_mode() {
         false, // quiet
         10,    // max_file_size_mb
         10,    // max_depth
-        100    // max_issues
+        100,   // max_issues
+        false  // no_cache
     ).unwrap();
     
     assert_eq!(results.len(), 1);
@@ -267,7 +269,8 @@ fn test_cli_flags_max_file_size_limit() {
         true,  // quiet
         0,     // max_file_size_mb (0 means very small)
         10,    // max_depth
-        100    // max_issues
+        100,   // max_issues
+        false  // no_cache
     ).unwrap();
     
     // Both files should be skipped due to size limit being 0
@@ -295,7 +298,8 @@ fn test_cli_flags_max_depth_limit() {
         true,  // quiet
         10,    // max_file_size_mb
         2,     // max_depth (should exclude level3/level4/deep.py)
-        100    // max_issues
+        100,   // max_issues
+        false  // no_cache
     ).unwrap();
     
     // Should only find the root file, not the deeply nested one

@@ -14,6 +14,8 @@ use std::time::{Instant, Duration, SystemTime};
 use std::collections::HashMap;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher, Event, EventKind};
 use crossbeam_channel::{bounded, select, Receiver};
+use sha2::{Sha256, Digest};
+use std::fmt::Write;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalysisResult {
@@ -87,6 +89,28 @@ pub enum FilePriority {
     High,    // Code files (.py, .js, .ts, .rs, .java, etc.)
     Medium,  // Config files (.yaml, .json, .toml)
     Low,     // Text files (.md, .txt)
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CacheEntry {
+    pub content_hash: String,
+    pub mtime: SystemTime,
+    pub analysis_result: AnalysisResult,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Cache {
+    pub version: String,
+    pub entries: HashMap<PathBuf, CacheEntry>,
+}
+
+impl Cache {
+    pub fn new() -> Self {
+        Cache {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            entries: HashMap::new(),
+        }
+    }
 }
 
 impl FileType {
@@ -282,6 +306,7 @@ pub fn watch_files(
     max_file_size: u64,
     max_depth: usize,
     max_issues: usize,
+    no_cache: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
@@ -350,7 +375,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_output, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues)?;
+    run_single_analysis(&path, &final_output, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache)?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -571,6 +596,7 @@ fn run_single_analysis(
     max_file_size: u64,
     max_depth: usize,
     max_issues: usize,
+    no_cache: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Run regular analysis once
     let exit_code = check_input(
@@ -589,7 +615,8 @@ fn run_single_analysis(
         false, // Not hook mode
         max_file_size,
         max_depth,
-        max_issues
+        max_issues,
+        no_cache
     )?;
     
     if exit_code != 0 && verbose {
@@ -633,6 +660,7 @@ pub fn check_input(
     max_file_size: u64,
     max_depth: usize,
     max_issues: usize,
+    no_cache: bool,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -722,7 +750,7 @@ pub fn check_input(
             };
             (result, metrics)
         } else if path_buf.is_dir() {
-            analyze_directory_parallel(&path_buf, verbose, truly_quiet, max_file_size, max_depth, max_issues)?
+            analyze_directory_parallel(&path_buf, verbose, truly_quiet, max_file_size, max_depth, max_issues, no_cache)?
         } else {
             return Err(format!("Path does not exist: {}", path).into());
         }
@@ -958,6 +986,7 @@ pub fn analyze_directory_parallel(
     max_file_size_mb: u64,
     max_depth: usize,
     max_issues: usize,
+    no_cache: bool,
 ) -> Result<(Vec<AnalysisResult>, AnalysisMetrics), Box<dyn std::error::Error>> {
     let start_time = Instant::now();
     let mut file_candidates = Vec::new();
@@ -1006,6 +1035,15 @@ pub fn analyze_directory_parallel(
     if !quiet {
         println!("🔍 Scanning directory: {}", path.display());
     }
+    
+    // Load cache if enabled
+    let mut cache = if no_cache {
+        Cache::new()
+    } else {
+        load_cache(path).unwrap_or_else(|_| Cache::new())
+    };
+    
+    let mut cached_files = 0;
     
     // Phase 1: Collect all files and filter by size/type
     for result in walker.build() {
@@ -1061,75 +1099,112 @@ pub fn analyze_directory_parallel(
         println!("📋 Found {} files to analyze (skipped {})", file_candidates.len(), skipped_files);
     }
     
-    // Phase 3: Process files in parallel with progress reporting
+    // Phase 3: Check cache and process files in parallel
     let results = Arc::new(Mutex::new(Vec::new()));
+    let cached_count = Arc::new(Mutex::new(0usize));
     let processed_count = Arc::new(Mutex::new(0usize));
     let total_files = file_candidates.len();
+    let cache_arc = Arc::new(Mutex::new(cache));
     
-    // Use rayon to process files in parallel with optimized chunk size
+    // Use rayon to process files in parallel with cache checking
     file_candidates.into_par_iter().for_each(|(file_path, _priority)| {
         let file_start = Instant::now();
         
-        match analyze_file_with_limits_verbose(&file_path, max_issues, verbose) {
-            Ok(result) => {
-                let duration = file_start.elapsed();
-                
-                // Thread-safe result storage
-                {
+        // Check cache first
+        let cache_hit = if no_cache {
+            false
+        } else {
+            match check_cache(&cache_arc, &file_path) {
+                Ok(Some(cached_result)) => {
+                    // Cache hit - use cached result
                     if let Ok(mut results_lock) = results.lock() {
-                        results_lock.push(result);
+                        results_lock.push(cached_result);
                     }
-                }
-                
-                // Thread-safe progress reporting (respects quiet flag)
-                if !quiet {
+                    if let Ok(mut count) = cached_count.lock() {
+                        *count += 1;
+                    }
                     if let Ok(mut count) = processed_count.lock() {
                         *count += 1;
-                        let current_count = *count;
+                    }
                     
-                    if verbose || (current_count % 10 == 0) {
-                        let elapsed = start_time.elapsed();
-                        let files_per_sec = current_count as f32 / elapsed.as_secs_f32();
-                        let eta_seconds = if files_per_sec > 0.0 {
-                            (total_files - current_count) as f32 / files_per_sec
-                        } else {
-                            0.0
-                        };
+                    if verbose {
+                        println!("💾 Cached: {} (cache hit)", file_path.display());
+                    }
+                    true
+                }
+                Ok(None) => false, // Cache miss
+                Err(_) => false,   // Cache error, proceed with analysis
+            }
+        };
+        
+        if !cache_hit {
+            // Cache miss - analyze file
+            match analyze_file_with_limits_verbose(&file_path, max_issues, verbose) {
+                Ok(result) => {
+                    let duration = file_start.elapsed();
+                    
+                    // Update cache with new result
+                    if !no_cache {
+                        let _ = update_cache(&cache_arc, &file_path, &result);
+                    }
+                    
+                    // Thread-safe result storage
+                    {
+                        if let Ok(mut results_lock) = results.lock() {
+                            results_lock.push(result);
+                        }
+                    }
+                    
+                    // Thread-safe progress reporting (respects quiet flag)
+                    if !quiet {
+                        if let Ok(mut count) = processed_count.lock() {
+                            *count += 1;
+                            let current_count = *count;
                         
-                        println!("📊 Progress: {}/{} files ({:.1}f/s, ETA: {:.0}s) - {} in {:.2}s", 
-                               current_count, total_files, files_per_sec, eta_seconds,
-                               file_path.file_name().unwrap_or_default().to_string_lossy(),
-                               duration.as_secs_f32());
+                        if verbose || (current_count % 10 == 0) {
+                            let elapsed = start_time.elapsed();
+                            let files_per_sec = current_count as f32 / elapsed.as_secs_f32();
+                            let eta_seconds = if files_per_sec > 0.0 {
+                                (total_files - current_count) as f32 / files_per_sec
+                            } else {
+                                0.0
+                            };
+                            
+                            println!("📊 Progress: {}/{} files ({:.1}f/s, ETA: {:.0}s) - {} in {:.2}s", 
+                                   current_count, total_files, files_per_sec, eta_seconds,
+                                   file_path.file_name().unwrap_or_default().to_string_lossy(),
+                                   duration.as_secs_f32());
+                        }
+                        }
+                    } else {
+                        // Still need to increment counter for final metrics, even in quiet mode
+                        if let Ok(mut count) = processed_count.lock() {
+                            *count += 1;
+                        }
                     }
+                    
+                    if verbose && duration.as_secs() > 3 {
+                        println!("⏳ WARNING: File {} took {:.1}s (target: <3s)", 
+                               file_path.display(), duration.as_secs_f32());
                     }
-                } else {
-                    // Still need to increment counter for final metrics, even in quiet mode
-                    if let Ok(mut count) = processed_count.lock() {
-                        *count += 1;
+                },
+                Err(e) => {
+                    if verbose {
+                        eprintln!("❌ Failed to analyze {}: {}", file_path.display(), e);
                     }
-                }
-                
-                if verbose && duration.as_secs() > 3 {
-                    println!("⏳ WARNING: File {} took {:.1}s (target: <3s)", 
-                           file_path.display(), duration.as_secs_f32());
-                }
-            },
-            Err(e) => {
-                if verbose {
-                    eprintln!("❌ Failed to analyze {}: {}", file_path.display(), e);
-                }
-                
-                // Still increment counter for progress
-                if !quiet {
-                    if let Ok(mut count) = processed_count.lock() {
-                        *count += 1;
+                    
+                    // Still increment counter for progress
+                    if !quiet {
+                        if let Ok(mut count) = processed_count.lock() {
+                            *count += 1;
+                        }
+                    } else {
+                        if let Ok(mut count) = processed_count.lock() {
+                            *count += 1;
+                        }
                     }
-                } else {
-                    if let Ok(mut count) = processed_count.lock() {
-                        *count += 1;
-                    }
-                }
-            },
+                },
+            }
         }
     });
     
@@ -1139,14 +1214,28 @@ pub fn analyze_directory_parallel(
         .into_inner()
         .map_err(|_| "Failed to unwrap results Mutex")?;
     let files_processed = final_results.len();
+    let cached_hits = Arc::try_unwrap(cached_count)
+        .map_err(|_| "Failed to unwrap cached_count Arc")?
+        .into_inner()
+        .map_err(|_| "Failed to unwrap cached_count Mutex")?;
+    let analyzed_files = files_processed - cached_hits;
     
-    // Enhanced performance summary (always show in quiet mode, this is the summary)
+    // Save cache if not disabled
+    if !no_cache {
+        let final_cache = Arc::try_unwrap(cache_arc)
+            .map_err(|_| "Failed to unwrap cache Arc")?
+            .into_inner()
+            .map_err(|_| "Failed to unwrap cache Mutex")?;
+        let _ = save_cache(path, &final_cache);
+    }
+    
+    // Enhanced performance summary with cache statistics
     if !quiet {
-        println!("✅ Analysis complete: {} files in {:.1}s ({:.2}f/s, {} skipped)", 
+        println!("✅ Analysis complete: {} files in {:.1}s ({} cached, {} analyzed)", 
                 files_processed, 
                 total_duration.as_secs_f32(),
-                files_processed as f32 / total_duration.as_secs_f32(),
-                skipped_files);
+                cached_hits,
+                analyzed_files);
         
         if total_duration > std::time::Duration::from_secs(5) {
             println!("⚠️  Analysis took longer than 5-second target!");
@@ -2001,7 +2090,8 @@ javascript:
             true,  // quiet
             1,     // max_file_size_mb
             10,    // max_depth
-            100    // max_issues
+            100,   // max_issues
+            false  // no_cache
         ).unwrap();
         
         // Should skip the large file
@@ -2149,15 +2239,21 @@ javascript:
         // Test that watch mode rejects stdin
         let result = watch_files(
             "-".to_string(),
-            "terminal".to_string(),
+            Some("terminal".to_string()),
+            None,
+            None,
+            None,
+            Some(true), // quiet mode for tests
+            None,
+            false,
             None,
             None,
             false,
             false,
-            true, // quiet mode for tests
             10,
             20,
-            100
+            100,
+            false // no_cache
         );
         
         assert!(result.is_err());
@@ -2170,15 +2266,21 @@ javascript:
         // Test that watch mode rejects non-existent paths
         let result = watch_files(
             "/nonexistent/path".to_string(),
-            "terminal".to_string(),
+            Some("terminal".to_string()),
+            None,
+            None,
+            None,
+            Some(true), // quiet mode for tests
+            None,
+            false,
             None,
             None,
             false,
             false,
-            true, // quiet mode for tests
             10,
             20,
-            100
+            100,
+            false // no_cache
         );
         
         assert!(result.is_err());
@@ -2248,4 +2350,103 @@ javascript:
         let max_size_bytes = 10 * 1024 * 1024; // 10MB
         assert!(metadata.len() <= max_size_bytes);
     }
+}
+
+/// Calculate SHA-256 hash of file content
+fn calculate_file_hash(file_path: &Path) -> Result<String, Box<dyn std::error::Error>> {
+    let content = fs::read(file_path)?;
+    let mut hasher = Sha256::new();
+    hasher.update(&content);
+    let result = hasher.finalize();
+    
+    let mut hash_string = String::with_capacity(64);
+    for byte in result.iter() {
+        write!(hash_string, "{:02x}", byte)?;
+    }
+    Ok(hash_string)
+}
+
+/// Load cache from .vow/cache.json
+fn load_cache(project_root: &Path) -> Result<Cache, Box<dyn std::error::Error>> {
+    let cache_path = project_root.join(".vow").join("cache.json");
+    
+    if !cache_path.exists() {
+        return Ok(Cache::new());
+    }
+    
+    let cache_content = fs::read_to_string(&cache_path)?;
+    let cache: Cache = serde_json::from_str(&cache_content)?;
+    
+    // Check if cache version matches current version
+    if cache.version != env!("CARGO_PKG_VERSION") {
+        // Version mismatch - return new cache
+        return Ok(Cache::new());
+    }
+    
+    Ok(cache)
+}
+
+/// Save cache to .vow/cache.json
+fn save_cache(project_root: &Path, cache: &Cache) -> Result<(), Box<dyn std::error::Error>> {
+    let vow_dir = project_root.join(".vow");
+    if !vow_dir.exists() {
+        fs::create_dir_all(&vow_dir)?;
+    }
+    
+    let cache_path = vow_dir.join("cache.json");
+    let cache_content = serde_json::to_string_pretty(cache)?;
+    fs::write(&cache_path, cache_content)?;
+    
+    Ok(())
+}
+
+/// Check cache for a file and return cached result if valid
+fn check_cache(cache_arc: &Arc<Mutex<Cache>>, file_path: &Path) -> Result<Option<AnalysisResult>, Box<dyn std::error::Error>> {
+    let metadata = fs::metadata(file_path)?;
+    let mtime = metadata.modified()?;
+    
+    if let Ok(cache_guard) = cache_arc.lock() {
+        if let Some(entry) = cache_guard.entries.get(file_path) {
+            // Check if mtime matches
+            if entry.mtime == mtime {
+                // Calculate current hash to double-check
+                let current_hash = calculate_file_hash(file_path)?;
+                if entry.content_hash == current_hash {
+                    return Ok(Some(entry.analysis_result.clone()));
+                }
+            }
+        }
+    }
+    
+    Ok(None)
+}
+
+/// Update cache with new analysis result
+fn update_cache(cache_arc: &Arc<Mutex<Cache>>, file_path: &Path, result: &AnalysisResult) -> Result<(), Box<dyn std::error::Error>> {
+    let metadata = fs::metadata(file_path)?;
+    let mtime = metadata.modified()?;
+    let content_hash = calculate_file_hash(file_path)?;
+    
+    if let Ok(mut cache_guard) = cache_arc.lock() {
+        let entry = CacheEntry {
+            content_hash,
+            mtime,
+            analysis_result: result.clone(),
+        };
+        cache_guard.entries.insert(file_path.to_path_buf(), entry);
+    }
+    
+    Ok(())
+}
+
+/// Clear cache for a project
+pub fn clear_cache(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let project_root = PathBuf::from(path);
+    let cache_path = project_root.join(".vow").join("cache.json");
+    
+    if cache_path.exists() {
+        fs::remove_file(&cache_path)?;
+    }
+    
+    Ok(())
 }

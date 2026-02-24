@@ -1,6 +1,7 @@
 pub mod analyzers;
 pub mod rules;
 pub mod report;
+pub mod baseline;
 // pub mod scanner; // Temporarily disabled - requires async networking
 
 use std::path::{Path, PathBuf};
@@ -309,6 +310,7 @@ pub fn watch_files(
     max_issues: usize,
     no_cache: bool,
     summary: bool,
+    baseline: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
@@ -385,7 +387,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary)?;
+    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline)?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -608,6 +610,7 @@ fn run_single_analysis(
     max_issues: usize,
     no_cache: bool,
     summary: bool,
+    baseline: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Run regular analysis once
     let exit_code = check_input(
@@ -629,7 +632,8 @@ fn run_single_analysis(
         max_depth,
         max_issues,
         no_cache,
-        summary
+        summary,
+        baseline
     )?;
     
     if exit_code != 0 && verbose {
@@ -676,6 +680,7 @@ pub fn check_input(
     max_issues: usize,
     no_cache: bool,
     summary: bool,
+    baseline: bool,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -796,6 +801,38 @@ pub fn check_input(
     for mut result in results {
         result = apply_rules_to_result(result, &rules)?;
         final_results.push(result);
+    }
+    
+    // Apply baseline filtering if requested
+    if baseline {
+        let project_root = if path == "-" {
+            PathBuf::from(".")
+        } else {
+            let path_buf = PathBuf::from(&path);
+            if path_buf.is_file() {
+                path_buf.parent().unwrap_or(Path::new(".")).to_path_buf()
+            } else {
+                path_buf
+            }
+        };
+        
+        if let Some(baseline_data) = baseline::load_baseline(&project_root)? {
+            if verbose {
+                println!("📋 Applying baseline filter with {} known issues", baseline_data.fingerprints.len());
+            }
+            final_results = baseline::filter_baseline_issues(final_results, &baseline_data)?;
+            
+            if !truly_quiet && !verbose {
+                let remaining_issues: usize = final_results.iter().map(|r| r.issues.len()).sum();
+                if remaining_issues == 0 {
+                    println!("✅ No new issues found (all issues match baseline)");
+                }
+            }
+        } else {
+            if verbose {
+                println!("⚠️  No baseline found at {}/.vow/baseline.json", project_root.display());
+            }
+        }
     }
     
     // Calculate project summary with metrics
@@ -1398,8 +1435,8 @@ fn apply_rules_to_result(
     Ok(result)
 }
 
-/// Calculate trust score from issues
-fn calculate_trust_score(issues: &[Issue]) -> u8 {
+/// Calculate trust score from issues (public for baseline module)
+pub fn calculate_trust_score(issues: &[Issue]) -> u8 {
     let mut score = 100u8;
     
     for issue in issues {
@@ -2514,7 +2551,8 @@ javascript:
             20, // max_depth
             100, // max_issues
             false, // no_cache
-            false  // summary
+            false, // summary
+            false  // baseline
         );
         
         assert!(result.is_err());
@@ -2543,7 +2581,8 @@ javascript:
             20, // max_depth
             100, // max_issues
             false, // no_cache
-            false  // summary
+            false, // summary
+            false  // baseline
         );
         
         assert!(result.is_err());
@@ -2709,6 +2748,98 @@ pub fn clear_cache(path: &str) -> Result<(), Box<dyn std::error::Error>> {
     
     if cache_path.exists() {
         fs::remove_file(&cache_path)?;
+    }
+    
+    Ok(())
+}
+
+/// Create a baseline from current analysis results
+pub fn baseline_create(
+    path: String,
+    analyzers: Option<Vec<String>>,
+    exclude: Option<Vec<String>>,
+    allowlists: Option<Vec<PathBuf>>,
+    no_config: bool,
+    rules: Option<PathBuf>,
+    verbose: bool,
+    max_file_size: u64,
+    max_depth: usize,
+    max_issues: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Load and merge config
+    let config = if no_config {
+        Config::default()
+    } else {
+        let start_path = if path == "-" {
+            PathBuf::from(".")
+        } else {
+            PathBuf::from(&path)
+        };
+        load_config(&start_path).unwrap_or_else(|e| {
+            if verbose {
+                eprintln!("Warning: Failed to load config: {}", e);
+            }
+            Config::default()
+        })
+    };
+    
+    let path_buf = PathBuf::from(&path);
+    let (results, _metrics) = if path == "-" {
+        return Err("Baseline creation from stdin is not supported. Please specify a file or directory.".into());
+    } else if path_buf.is_file() {
+        let result = vec![analyze_file_with_limits(&path_buf, max_issues)?];
+        let metrics = AnalysisMetrics {
+            total_time_seconds: 0.0,
+            files_skipped: 0,
+            skipped_reasons: std::collections::HashMap::new(),
+        };
+        (result, metrics)
+    } else if path_buf.is_dir() {
+        analyze_directory_parallel(&path_buf, verbose, false, max_file_size, max_depth, max_issues, true)?
+    } else {
+        return Err(format!("Path does not exist: {}", path).into());
+    };
+    
+    // Apply rules to all results
+    let mut final_results = Vec::new();
+    for mut result in results {
+        result = apply_rules_to_result(result, &rules)?;
+        final_results.push(result);
+    }
+    
+    // Generate baseline from results
+    let baseline = baseline::generate_baseline_from_results(&final_results)?;
+    
+    // Save baseline
+    let project_root = if path_buf.is_file() {
+        path_buf.parent().unwrap_or(Path::new(".")).to_path_buf()
+    } else {
+        path_buf
+    };
+    
+    baseline::save_baseline(&project_root, &baseline)?;
+    
+    let issue_count = baseline.fingerprints.len();
+    println!("✅ Baseline created with {} issue fingerprints", issue_count);
+    println!("   Saved to: {}/.vow/baseline.json", project_root.display());
+    
+    if issue_count > 0 {
+        println!("   Run 'vow check --baseline' to ignore these known issues");
+    }
+    
+    Ok(())
+}
+
+/// Clear the baseline file
+pub fn baseline_clear(path: String) -> Result<(), Box<dyn std::error::Error>> {
+    let project_root = PathBuf::from(path);
+    let baseline_path = project_root.join(".vow").join("baseline.json");
+    
+    if baseline_path.exists() {
+        baseline::clear_baseline(&project_root)?;
+        println!("✅ Baseline file removed: {}", baseline_path.display());
+    } else {
+        println!("ℹ️  No baseline file found at: {}", baseline_path.display());
     }
     
     Ok(())

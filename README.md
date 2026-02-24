@@ -376,6 +376,7 @@ Minimum score: 0%, Maximum score: 100%
 vow init [PATH]                 Initialize Vow project
 vow check <PATH|-> [OPTIONS]    Analyze files or stdin
 vow scan <TARGET> [OPTIONS]     Scan network ports for security issues
+vow baseline <ACTION> [OPTIONS] Manage baseline of known issues
 
 Check Options:
   -f, --format <FORMAT>         Output format: terminal, json, sarif
@@ -387,6 +388,7 @@ Check Options:
       --max-file-size <MB>     Maximum file size to process in MB (default: 10)
       --max-depth <N>          Maximum directory depth to scan (default: 20)
       --max-issues <N>         Maximum issues per file before moving on (default: 100)
+      --baseline               Use baseline to ignore known issues
 
 Scan Options:
   -p, --ports <PORTS>          Port range (e.g., 1-1000, 22,80,443)
@@ -394,9 +396,70 @@ Scan Options:
       --timeout <MS>           Connection timeout in milliseconds
   -c, --concurrency <NUM>      Number of concurrent scans
       --issues-only           Only show security issues
+
+Baseline Commands:
+  vow baseline create [PATH]   Create baseline from current analysis results
+  vow baseline clear [PATH]    Remove baseline file (.vow/baseline.json)
 ```
 
 ## Advanced Features
+
+### 📋 **Baseline Support (Ignore Known Issues)**
+
+Use baselines to focus on new issues while ignoring known problems in legacy code:
+
+#### Create a Baseline
+```bash
+# Analyze current code and create baseline
+vow baseline create
+
+# Create baseline for specific directory
+vow baseline create src/
+
+# Baseline with custom settings
+vow baseline create --verbose --max-issues 50
+```
+
+#### Use Baseline to Filter Issues
+```bash
+# Check for new issues only (ignore baseline)
+vow check --baseline
+
+# CI mode with baseline (only fail on new issues)
+vow check --baseline --ci --threshold 80
+```
+
+#### Manage Baseline
+```bash
+# Remove baseline file
+vow baseline clear
+
+# View baseline location
+ls .vow/baseline.json
+```
+
+#### How Baselines Work
+- Creates fingerprints of each issue: `file path + rule + line content hash`
+- Stored in `.vow/baseline.json` (version control friendly)
+- When using `--baseline`, only shows issues NOT in the baseline
+- Fixed issues are automatically ignored (no longer detected)
+- Deterministic and sorted JSON output for reliable diffs
+
+#### Example Workflow
+```bash
+# Step 1: Create baseline from current codebase
+vow baseline create
+# ✅ Baseline created with 127 issue fingerprints
+
+# Step 2: Check only shows new issues  
+vow check --baseline
+# ✅ No new issues found (all issues match baseline)
+
+# Step 3: After code changes, see only new problems
+vow check --baseline
+# ⚠️  Found 2 new issues:
+#   src/new_file.py: Hardcoded API key detected
+```
 
 ### 🗂️ **File Filtering (.vowignore)**
 

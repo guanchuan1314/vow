@@ -83,6 +83,9 @@ enum Commands {
         /// Summary mode: show compact one-line-per-file report
         #[arg(long)]
         summary: bool,
+        /// Use baseline to ignore known issues
+        #[arg(long)]
+        baseline: bool,
     },
     /// Scan network ports and evaluate security
     Scan {
@@ -109,6 +112,11 @@ enum Commands {
         #[command(subcommand)]
         action: HookAction,
     },
+    /// Manage baseline of known issues
+    Baseline {
+        #[command(subcommand)]
+        action: BaselineAction,
+    },
 }
 
 #[derive(Subcommand)]
@@ -119,6 +127,49 @@ enum HookAction {
     Uninstall,
 }
 
+#[derive(Subcommand)]
+enum BaselineAction {
+    /// Create baseline from current analysis results
+    Create {
+        /// Path to analyze (file or directory)
+        #[arg(default_value = ".")]
+        path: String,
+        /// Analyzers to enable (code, text, security)
+        #[arg(short = 'a', long, value_delimiter = ',', value_name = "ANALYZER")]
+        analyzers: Option<Vec<String>>,
+        /// Files/dirs to exclude
+        #[arg(short, long, value_delimiter = ',', value_name = "PATTERN")]
+        exclude: Option<Vec<String>>,
+        /// Custom allowlist paths
+        #[arg(long, value_delimiter = ',', value_name = "PATH")]
+        allowlists: Option<Vec<PathBuf>>,
+        /// Skip config file loading
+        #[arg(long)]
+        no_config: bool,
+        /// Rule file or directory
+        #[arg(short, long)]
+        rules: Option<PathBuf>,
+        /// Verbose output
+        #[arg(short, long)]
+        verbose: bool,
+        /// Maximum file size to process in MB
+        #[arg(long, default_value = "10")]
+        max_file_size: u64,
+        /// Maximum directory depth to scan
+        #[arg(long, default_value = "20")]
+        max_depth: usize,
+        /// Maximum issues per file before moving on
+        #[arg(long, default_value = "100")]
+        max_issues: usize,
+    },
+    /// Remove baseline file
+    Clear {
+        /// Path to project (default: current directory)
+        #[arg(default_value = ".")]
+        path: String,
+    },
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
@@ -126,7 +177,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Init { path } => {
             vow::init_project(path)?;
         }
-        Commands::Check { path, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, watch, max_file_size, max_depth, max_issues, no_cache, clear_cache, summary } => {
+        Commands::Check { path, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, watch, max_file_size, max_depth, max_issues, no_cache, clear_cache, summary, baseline } => {
             let path_str = if hook_mode {
                 "-".to_string() // In hook mode, we read from stdin
             } else {
@@ -142,9 +193,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             
             if watch {
                 // Watch mode - never exits unless interrupted
-                vow::watch_files(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, max_file_size, max_depth, max_issues, no_cache, summary)?;
+                vow::watch_files(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, max_file_size, max_depth, max_issues, no_cache, summary, baseline)?;
             } else {
-                let exit_code = vow::check_input(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, max_file_size, max_depth, max_issues, no_cache, summary)?;
+                let exit_code = vow::check_input(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, max_file_size, max_depth, max_issues, no_cache, summary, baseline)?;
                 std::process::exit(exit_code);
             }
         }
@@ -159,6 +210,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 HookAction::Uninstall => {
                     vow::hooks_uninstall()?;
+                }
+            }
+        }
+        Commands::Baseline { action } => {
+            match action {
+                BaselineAction::Create { path, analyzers, exclude, allowlists, no_config, rules, verbose, max_file_size, max_depth, max_issues } => {
+                    vow::baseline_create(path, analyzers, exclude, allowlists, no_config, rules, verbose, max_file_size, max_depth, max_issues)?;
+                }
+                BaselineAction::Clear { path } => {
+                    vow::baseline_clear(path)?;
                 }
             }
         }

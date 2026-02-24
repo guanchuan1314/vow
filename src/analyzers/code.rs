@@ -302,7 +302,7 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
     // Issue #14: SQL injection in Rust
     SecurityPattern {
         name: "rust_sql_injection_format",
-        regex: Regex::new(r#"(?i)(format!\s*\(\s*["'][^"']*SELECT[^"']*["']\s*,[^)]*\))"#).unwrap(),
+        regex: Regex::new(r#"(?i)format!\s*\(\s*["'][^"']*SELECT[^"']*["']"#).unwrap(),
         severity: Severity::High,
         message: "Potential SQL injection in Rust - format! macro with user input in SQL query",
     },
@@ -414,7 +414,7 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
     // Issue #26: CSRF in Actix 
     SecurityPattern {
         name: "rust_actix_csrf_missing",
-        regex: Regex::new(r"(?i)(pub\s+async\s+fn\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\([^)]*web::(Form|Json)[^)]*\)\s*->[^{]*\{[^}]*(?:delete|update|transfer|change))").unwrap(),
+        regex: Regex::new(r"(?i)(pub\s+async\s+fn\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\([^)]*web::(Form|Json)[^)]*\)\s*->[^{]*\{[^}]*(delete|update|transfer|change))").unwrap(),
         severity: Severity::Medium,
         message: "Potential CSRF vulnerability in Actix - state-changing endpoint without CSRF protection",
     },

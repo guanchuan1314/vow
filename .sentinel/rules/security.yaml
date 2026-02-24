@@ -1,6 +1,531 @@
 # Vow Security Rules
 # These rules detect potential security issues and AI hallucinations
 
+# Rust/Actix-specific security rules for issues #155-#179
+
+- id: rust-sql-injection
+  name: SQL Injection in Rust
+  description: Detects potential SQL injection vulnerabilities in Rust code
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "format!(\"SELECT"
+      message: "SQL injection risk - avoid using format! with user input in SQL queries"
+    - pattern_type: contains
+      value: "format!(\"INSERT"
+      message: "SQL injection risk - avoid using format! with user input in SQL queries"
+    - pattern_type: contains
+      value: "format!(\"UPDATE"
+      message: "SQL injection risk - avoid using format! with user input in SQL queries"
+    - pattern_type: contains
+      value: "format!(\"DELETE"
+      message: "SQL injection risk - avoid using format! with user input in SQL queries"
+    - pattern_type: contains
+      value: "SELECT * FROM"
+      message: "SQL injection risk - raw SQL query detected, ensure proper parameterization"
+    - pattern_type: contains
+      value: "INSERT INTO"
+      message: "SQL injection risk - raw SQL query detected, ensure proper parameterization"
+    - pattern_type: contains
+      value: ".to_string() + &"
+      message: "SQL injection risk - avoid string concatenation with user input for SQL"
+
+- id: rust-xss
+  name: Cross-Site Scripting in Rust
+  description: Detects potential XSS vulnerabilities in Rust HTML generation
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "format!(\"<"
+      message: "XSS risk - avoid using format! with user input in HTML templates"
+    - pattern_type: contains
+      value: ".content_type(\"text/html\")"
+      message: "XSS risk - ensure user input is properly escaped when serving HTML"
+    - pattern_type: contains
+      value: "format!(\"<script"
+      message: "XSS risk - embedding user data in script tags is dangerous"
+    - pattern_type: contains
+      value: ".to_string() + \"<"
+      message: "XSS risk - avoid string concatenation with HTML tags"
+
+- id: rust-command-injection
+  name: Command Injection in Rust
+  description: Detects potential command injection vulnerabilities in Rust
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "Command::new(\"sh\")"
+      message: "Command injection risk - avoid executing shell commands with user input"
+    - pattern_type: contains
+      value: ".arg(\"-c\")"
+      message: "Command injection risk - shell -c flag allows arbitrary command execution"
+    - pattern_type: contains
+      value: "Command::new(&"
+      message: "Command injection risk - avoid dynamic command names from user input"
+    - pattern_type: contains
+      value: ".args(&["
+      message: "Command injection risk - ensure command arguments are properly sanitized"
+
+- id: rust-path-traversal
+  name: Path Traversal in Rust
+  description: Detects potential path traversal vulnerabilities in Rust
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "format!(\"/uploads/{}\""
+      message: "Path traversal risk - validate file paths to prevent directory traversal"
+    - pattern_type: contains
+      value: "format!(\"./{}\"" 
+      message: "Path traversal risk - avoid constructing file paths with user input"
+    - pattern_type: contains
+      value: ".to_string() + &"
+      message: "Path traversal risk - avoid string concatenation for file paths"
+    - pattern_type: contains
+      value: "Path::new("
+      message: "Path traversal risk - ensure path construction is safe from traversal attacks"
+
+- id: rust-ssrf
+  name: Server-Side Request Forgery in Rust  
+  description: Detects potential SSRF vulnerabilities in Rust HTTP requests
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "reqwest::get(&"
+      message: "SSRF risk - validate URLs before making HTTP requests"
+    - pattern_type: contains
+      value: ".get(&url)"
+      message: "SSRF risk - ensure URL validation before external requests"
+    - pattern_type: contains
+      value: ".post(&"
+      message: "SSRF risk - validate destination URLs in HTTP requests"
+    - pattern_type: contains
+      value: "format!(\"http://"
+      message: "SSRF risk - avoid constructing URLs with user input"
+
+- id: rust-hardcoded-secrets
+  name: Hardcoded Secrets in Rust
+  description: Detects hardcoded API keys, passwords, and secrets in Rust code
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "const API_KEY"
+      message: "Hardcoded API key detected - use environment variables instead"
+    - pattern_type: contains
+      value: "const SECRET"
+      message: "Hardcoded secret detected - use secure configuration management"
+    - pattern_type: contains
+      value: "DATABASE_PASSWORD"
+      message: "Hardcoded database password detected - use environment variables"
+    - pattern_type: contains
+      value: "JWT_SECRET"
+      message: "Hardcoded JWT secret detected - use secure key management"
+    - pattern_type: contains
+      value: "sk-"
+      message: "Hardcoded API key pattern detected (sk- prefix commonly used for secrets)"
+    - pattern_type: contains
+      value: "AKIA"
+      message: "Hardcoded AWS access key detected"
+
+- id: rust-csrf
+  name: CSRF Vulnerability in Rust/Actix
+  description: Detects missing CSRF protection in state-changing endpoints
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "pub async fn delete_"
+      message: "CSRF risk - DELETE endpoints should have CSRF protection"
+    - pattern_type: contains
+      value: "pub async fn update_"
+      message: "CSRF risk - UPDATE endpoints should have CSRF protection"
+    - pattern_type: contains
+      value: "transfer_money"
+      message: "CSRF risk - financial operations must have CSRF protection"
+    - pattern_type: contains
+      value: "change_password"
+      message: "CSRF risk - password changes must have CSRF protection"
+
+- id: rust-unsafe-memory
+  name: Unsafe Memory Operations in Rust
+  description: Detects potentially dangerous unsafe memory operations
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "Box::from_raw(ptr)"
+      message: "Memory safety risk - potential use after free or double free"
+    - pattern_type: contains
+      value: ".offset("
+      message: "Memory safety risk - pointer arithmetic can cause buffer overflows"
+    - pattern_type: contains
+      value: "assume_init()"
+      message: "Memory safety risk - using uninitialized memory"
+    - pattern_type: contains
+      value: "transmute("
+      message: "Memory safety risk - transmute can cause type confusion"
+    - pattern_type: contains
+      value: "static mut"
+      message: "Memory safety risk - global mutable state can cause race conditions"
+
+- id: rust-integer-overflow
+  name: Integer Overflow in Rust
+  description: Detects potential integer overflow vulnerabilities
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "wrapping_add("
+      message: "Integer overflow risk - consider using checked arithmetic operations"
+    - pattern_type: contains
+      value: "as u8"
+      message: "Integer overflow risk - casting to smaller integer types can truncate values"
+    - pattern_type: contains
+      value: "255 + 1"
+      message: "Integer overflow risk - arithmetic near type limits"
+
+- id: rust-weak-crypto
+  name: Weak Cryptography in Rust
+  description: Detects use of weak or deprecated cryptographic functions
+  severity: medium  
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "md5::"
+      message: "Weak cryptography - MD5 is cryptographically broken"
+    - pattern_type: contains
+      value: "sha1::"
+      message: "Weak cryptography - SHA1 is deprecated for security use"
+    - pattern_type: contains
+      value: "rand::random()"
+      message: "Weak randomness - use cryptographically secure random number generation"
+
+- id: rust-insecure-deserialization
+  name: Insecure Deserialization in Rust
+  description: Detects potentially unsafe deserialization patterns
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "bincode::deserialize("
+      message: "Deserialization risk - validate data before deserializing binary formats"
+    - pattern_type: contains
+      value: "ron::from_str("
+      message: "Deserialization risk - validate RON input to prevent injection"
+    - pattern_type: contains
+      value: "serde_json::from_str(&"
+      message: "Deserialization risk - validate JSON input structure and size limits"
+
+- id: rust-race-conditions
+  name: Race Conditions in Rust
+  description: Detects potential race condition vulnerabilities
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "RefCell::new("
+      message: "Concurrency risk - RefCell is not thread-safe, use Mutex for shared state"
+    - pattern_type: contains
+      value: "Cell::new("
+      message: "Concurrency risk - Cell is not thread-safe for complex operations"
+    - pattern_type: contains
+      value: "unsafe { COUNTER"
+      message: "Race condition risk - global mutable state without synchronization"
+
+- id: rust-weak-authentication  
+  name: Weak Authentication in Rust
+  description: Detects weak authentication patterns in Rust/Actix applications
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "password == \""
+      message: "Weak authentication - avoid plain text password comparison"
+    - pattern_type: contains
+      value: "if token.is_empty()"
+      message: "Weak authentication - insufficient token validation"
+    - pattern_type: contains 
+      value: "admin_check"
+      message: "Authentication bypass risk - ensure proper admin authorization"
+
+- id: rust-jwt-weakness
+  name: JWT Security Issues in Rust
+  description: Detects potential JWT implementation weaknesses
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "Algorithm::None"
+      message: "JWT vulnerability - 'none' algorithm allows unsigned tokens"
+    - pattern_type: contains
+      value: "decode_header("
+      message: "JWT risk - ensure proper signature verification"
+    - pattern_type: contains
+      value: "jwt::encode("
+      message: "JWT risk - ensure secure key management and algorithm choice"
+
+- id: rust-xxe
+  name: XML External Entity (XXE) in Rust
+  description: Detects potential XXE vulnerabilities in XML processing
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "quick_xml::"
+      message: "XXE risk - ensure XML parser disables external entity processing"
+    - pattern_type: contains
+      value: "xmlparser::"
+      message: "XXE risk - configure XML parser to prevent external entity attacks"
+    - pattern_type: contains
+      value: "from_str(&xml"
+      message: "XXE risk - validate XML input and disable external entities"
+
+- id: rust-open-redirect  
+  name: Open Redirect in Rust
+  description: Detects potential open redirect vulnerabilities
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "HttpResponse::Found()"
+      message: "Open redirect risk - validate redirect URLs against whitelist"
+    - pattern_type: contains
+      value: ".header(\"Location\","
+      message: "Open redirect risk - ensure redirect destinations are validated"
+    - pattern_type: contains
+      value: "redirect_to"
+      message: "Open redirect risk - validate redirect parameter"
+
+- id: rust-mass-assignment
+  name: Mass Assignment in Rust
+  description: Detects potential mass assignment vulnerabilities
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "serde(flatten)"
+      message: "Mass assignment risk - flattened deserialization can allow unintended field updates"
+    - pattern_type: contains
+      value: "web::Json<"
+      message: "Mass assignment risk - ensure JSON input validation and field restrictions"
+    - pattern_type: contains
+      value: "#[serde(default)]"
+      message: "Mass assignment risk - default values may expose internal fields"
+
+- id: rust-idor
+  name: Insecure Direct Object Reference (IDOR) in Rust
+  description: Detects potential IDOR vulnerabilities
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "web::Path<u32>"
+      message: "IDOR risk - ensure authorization checks before accessing resources by ID"
+    - pattern_type: contains
+      value: "get_user_by_id("
+      message: "IDOR risk - verify user has permission to access requested resource"
+    - pattern_type: contains
+      value: "/users/{id}"
+      message: "IDOR risk - implement proper access control for resource endpoints"
+
+- id: rust-missing-rate-limiting
+  name: Missing Rate Limiting in Rust/Actix
+  description: Detects endpoints that may need rate limiting
+  severity: low
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "pub async fn login("
+      message: "Rate limiting needed - login endpoints should have rate limiting"
+    - pattern_type: contains
+      value: "pub async fn register("
+      message: "Rate limiting needed - registration endpoints should have rate limiting"
+    - pattern_type: contains
+      value: "pub async fn forgot_password("
+      message: "Rate limiting needed - password reset endpoints should have rate limiting"
+
+- id: rust-insufficient-logging
+  name: Insufficient Security Logging in Rust
+  description: Detects security-sensitive operations without logging
+  severity: low
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "delete_user("
+      message: "Logging needed - security-sensitive operations should be logged"
+    - pattern_type: contains
+      value: "admin_action("
+      message: "Logging needed - administrative actions should be logged"
+    - pattern_type: contains
+      value: "privilege_escalation"
+      message: "Logging needed - privilege changes should be logged"
+
+- id: rust-improper-error-handling
+  name: Improper Error Handling in Rust
+  description: Detects potentially unsafe error handling patterns
+  severity: low
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: ".unwrap()"
+      message: "Error handling risk - unwrap() can cause panics, use proper error handling"
+    - pattern_type: contains
+      value: ".expect(\"Failed"
+      message: "Error handling risk - expect() can expose sensitive information in panics"
+    - pattern_type: contains
+      value: "panic!(\"Error:"
+      message: "Error handling risk - panic messages may expose sensitive information"
+
+- id: rust-memory-leak
+  name: Memory Leak Risk in Rust
+  description: Detects patterns that may cause memory leaks
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "Box::leak("
+      message: "Memory leak risk - leaked memory is never freed"
+    - pattern_type: contains
+      value: "forget("
+      message: "Memory leak risk - mem::forget prevents cleanup"
+    - pattern_type: contains
+      value: "into_raw("
+      message: "Memory leak risk - ensure raw pointers are properly managed"
+
+- id: rust-null-pointer-dereference
+  name: Null Pointer Dereference in Rust
+  description: Detects potential null pointer dereferences in unsafe code
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "*ptr"
+      message: "Null pointer risk - ensure pointer validity before dereferencing"
+    - pattern_type: contains
+      value: "as_mut().unwrap()"
+      message: "Null pointer risk - unsafe pointer conversion without null check"
+    - pattern_type: contains
+      value: "NonNull::new_unchecked("
+      message: "Null pointer risk - unchecked pointer creation can lead to null dereference"
+
+- id: rust-deadlock
+  name: Deadlock Risk in Rust
+  description: Detects potential deadlock patterns in concurrent code
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: ".lock().unwrap()"
+      message: "Deadlock risk - multiple locks can cause deadlocks, ensure consistent lock ordering"
+    - pattern_type: contains
+      value: "RwLock::write("
+      message: "Deadlock risk - write locks can cause deadlocks with other locks"
+    - pattern_type: contains
+      value: "Mutex::lock("
+      message: "Deadlock risk - ensure proper lock ordering to prevent deadlocks"
+
+- id: rust-uncontrolled-recursion
+  name: Uncontrolled Recursion in Rust
+  description: Detects recursive functions without depth limits
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "fn recursive_"
+      message: "Stack overflow risk - implement recursion depth limits"
+    - pattern_type: contains
+      value: "self.process(self"
+      message: "Stack overflow risk - recursive calls without depth checking"
+
+- id: rust-http-request-smuggling
+  name: HTTP Request Smuggling in Rust
+  description: Detects potential HTTP request smuggling vulnerabilities
+  severity: high
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "Content-Length:"
+      message: "HTTP smuggling risk - ensure proper header validation"
+    - pattern_type: contains
+      value: "Transfer-Encoding:"
+      message: "HTTP smuggling risk - validate transfer encoding headers"
+
+- id: rust-websocket-hijacking
+  name: WebSocket Hijacking in Rust
+  description: Detects WebSocket endpoints without proper origin validation
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "actix_web_actors::ws"
+      message: "WebSocket security risk - implement origin validation and authentication"
+    - pattern_type: contains
+      value: "ws::start("
+      message: "WebSocket security risk - ensure proper authentication and origin checks"
+
+- id: rust-oauth-misconfiguration
+  name: OAuth Misconfiguration in Rust
+  description: Detects potential OAuth implementation issues
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "oauth2::"
+      message: "OAuth security risk - ensure proper state validation and PKCE implementation"
+    - pattern_type: contains
+      value: "redirect_uri"
+      message: "OAuth security risk - validate redirect URIs against whitelist"
+
+- id: rust-dos-resource-exhaustion
+  name: DoS via Resource Exhaustion in Rust
+  description: Detects patterns that could lead to resource exhaustion
+  severity: medium
+  file_types:
+    - rs
+  patterns:
+    - pattern_type: contains
+      value: "Vec::with_capacity("
+      message: "DoS risk - validate capacity limits to prevent memory exhaustion"
+    - pattern_type: contains
+      value: "HashMap::new()"
+      message: "DoS risk - consider size limits for user-controlled collections"
+    - parameter_type: contains
+      value: "loop {"
+      message: "DoS risk - ensure loops have termination conditions and limits"
+
 - id: dangerous-eval
   name: Dangerous eval() Usage  
   description: Detects potentially dangerous eval() function calls

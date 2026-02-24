@@ -5,7 +5,7 @@ patterns:
   - type: "regex"
     pattern: "web::resource\\([^)]*\\)[^.]*\\.route\\(web::(get|post|put|delete)\\(\\)\\)(?!.*guard)"
   - type: "regex"
-    pattern: "#\\[actix_web::(get|post|put|delete)\\([^)]*\\)]\\s*async\\s+fn\\s+[^(]*\\([^)]*req:\\s*HttpRequest"
+    pattern: "async fn.*HttpRequest"
   - type: "contains"
     pattern: "// BYPASS: skip auth check"
   - type: "contains"

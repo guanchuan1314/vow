@@ -3,7 +3,7 @@ description: "Detect lack of proper logging and monitoring in Rust/Actix web app
 severity: "medium"
 patterns:
   - type: "regex"
-    pattern: "#\\[actix_web::(post|put|delete)\\([^)]*\\)]\\s*async\\s+fn\\s+[^{]*\\{[^{}]*(?!.*log::)"
+    pattern: "#[actix_web::"
   - type: "regex"
     pattern: "#\\[(post|put|delete)\\([^)]*\\)]\\s*async\\s+fn\\s+[^{]*\\{[^{}]*(?!.*log::)"
   - type: "regex"

@@ -3,7 +3,7 @@ description: "Detect lack of rate limiting in Rust/Actix web applications"
 severity: "high"
 patterns:
   - type: "regex"
-    pattern: "#\\[actix_web::(post|put|delete)\\([^)]*\\)]\\s*async\\s+fn\\s+[^{]*\\{[^{}]*(?!.*rate|.*limit|.*throttle)"
+    pattern: "#[actix_web::"
   - type: "regex"
     pattern: "#\\[(post|put|delete)\\([^)]*\\)]\\s*async\\s+fn\\s+[^{]*\\{[^{}]*(?!.*rate|.*limit|.*throttle)"
   - type: "regex"

@@ -9,7 +9,7 @@ patterns:
   - type: "regex"
     pattern: "std::process::Command::new\\([^)]*\\)[^.]*\\.spawn\\(\\)(?!.*wait|.*kill)"
   - type: "regex"
-    pattern: "thread::spawn\\([^)]*\\)(?!.*join)"
+    pattern: "thread::spawn("
   - type: "regex"
     pattern: "Box::leak\\("
   - type: "regex"

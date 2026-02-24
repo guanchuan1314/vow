@@ -23,5 +23,5 @@ patterns:
   - type: "contains"
     pattern: "std::sync::atomic::Ordering::Relaxed"
   - type: "regex"
-    pattern: "thread::spawn\\([^)]*\\)\\s*;(?!.*join)"
+    pattern: "thread::spawn("
 file_types: ["rs"]

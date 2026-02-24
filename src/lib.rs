@@ -307,6 +307,7 @@ pub fn watch_files(
     max_depth: usize,
     max_issues: usize,
     no_cache: bool,
+    summary: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
@@ -375,7 +376,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_output, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache)?;
+    run_single_analysis(&path, &final_output, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary)?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -597,6 +598,7 @@ fn run_single_analysis(
     max_depth: usize,
     max_issues: usize,
     no_cache: bool,
+    summary: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Run regular analysis once
     let exit_code = check_input(
@@ -616,7 +618,8 @@ fn run_single_analysis(
         max_file_size,
         max_depth,
         max_issues,
-        no_cache
+        no_cache,
+        summary
     )?;
     
     if exit_code != 0 && verbose {
@@ -661,6 +664,7 @@ pub fn check_input(
     max_depth: usize,
     max_issues: usize,
     no_cache: bool,
+    summary: bool,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -772,7 +776,7 @@ pub fn check_input(
     );
     
     // Generate report
-    generate_report(&project_results, &final_format)?;
+    generate_report(&project_results, &final_format, summary)?;
     
     // Check thresholds for exit code
     let mut should_exit_failure = false;
@@ -1494,12 +1498,20 @@ fn validate_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
 fn generate_report(
     results: &ProjectResults,
     format: &str,
+    summary: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    match format {
-        "terminal" => report::terminal::print_terminal_report(results),
-        "json" => report::json::print_json_report(results)?,
-        "sarif" => report::sarif::print_sarif_report(results)?,
-        _ => return Err(format!("Unsupported format: {}", format).into()),
+    if summary {
+        match format {
+            "json" => report::summary::print_json_summary_report(results)?,
+            _ => report::summary::print_summary_report(results),
+        }
+    } else {
+        match format {
+            "terminal" => report::terminal::print_terminal_report(results),
+            "json" => report::json::print_json_report(results)?,
+            "sarif" => report::sarif::print_sarif_report(results)?,
+            _ => return Err(format!("Unsupported format: {}", format).into()),
+        }
     }
     
     Ok(())
@@ -2253,7 +2265,8 @@ javascript:
             10,
             20,
             100,
-            false // no_cache
+            false, // no_cache
+            false  // summary
         );
         
         assert!(result.is_err());
@@ -2280,7 +2293,8 @@ javascript:
             10,
             20,
             100,
-            false // no_cache
+            false, // no_cache
+            false  // summary
         );
         
         assert!(result.is_err());

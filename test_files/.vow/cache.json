@@ -1,0 +1,379 @@
+{
+  "version": "0.1.0",
+  "entries": {
+    "test_files/test.html": {
+      "content_hash": "ec474c67c3ab475aebd885108ca6540df111546c1cd0cf5544a57a31c61e2fcd",
+      "mtime": {
+        "secs_since_epoch": 1771883192,
+        "nanos_since_epoch": 586880708
+      },
+      "analysis_result": {
+        "path": "test_files/test.html",
+        "file_type": "HTML",
+        "issues": [
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <center> found. Use CSS text-align: center instead",
+            "line": 7,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <font> found. Use CSS for styling instead",
+            "line": 8,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <marquee> found. Use CSS animations instead",
+            "line": 10,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <blink> found. Use CSS animations instead",
+            "line": 13,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <strike> found. Use CSS text-decoration: line-through instead",
+            "line": 14,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <applet> found. Use <object> or modern web technologies instead",
+            "line": 15,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "Medium",
+            "message": "HTML element missing lang attribute for accessibility",
+            "line": 2,
+            "rule": "missing_html_lang"
+          },
+          {
+            "severity": "High",
+            "message": "Image missing alt attribute for accessibility",
+            "line": 9,
+            "rule": "missing_img_alt"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated example.com placeholder URL",
+            "line": 9,
+            "rule": "ai_generated_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated Lorem Ipsum placeholder text",
+            "line": 11,
+            "rule": "ai_generated_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated TODO comments",
+            "line": 12,
+            "rule": "ai_generated_pattern"
+          }
+        ],
+        "trust_score": 20
+      }
+    },
+    "test_files/test.css": {
+      "content_hash": "c69a55fcf8210f02ed0c3d33817ea6eb473e51437bff1c4ceb76823ec2006b46",
+      "mtime": {
+        "secs_since_epoch": 1771883203,
+        "nanos_since_epoch": 929995548
+      },
+      "analysis_result": {
+        "path": "test_files/test.css",
+        "file_type": "CSS",
+        "issues": [
+          {
+            "severity": "High",
+            "message": "Unknown or hallucinated CSS property: 'non-existent-property'",
+            "line": 3,
+            "rule": "hallucinated_css_property"
+          },
+          {
+            "severity": "High",
+            "message": "Unknown or hallucinated CSS property: 'fake-property'",
+            "line": 7,
+            "rule": "hallucinated_css_property"
+          },
+          {
+            "severity": "High",
+            "message": "Unknown or hallucinated CSS property: 'box-shadow-direction'",
+            "line": 11,
+            "rule": "hallucinated_css_property"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated TODO comments in CSS",
+            "line": 9,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated placeholder comments",
+            "line": 9,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated placeholder comments",
+            "line": 20,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Placeholder CSS selector (example, test, demo, sample) found",
+            "line": 2,
+            "rule": "placeholder_css_selector"
+          }
+        ],
+        "trust_score": 43
+      }
+    },
+    "test_files/example.html": {
+      "content_hash": "05748a3616085ed0de0535750cd8ab30e4fb82e47d8483f0bf67598ff54d7683",
+      "mtime": {
+        "secs_since_epoch": 1771882880,
+        "nanos_since_epoch": 875065641
+      },
+      "analysis_result": {
+        "path": "test_files/example.html",
+        "file_type": "HTML",
+        "issues": [
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <center> found. Use CSS text-align: center instead",
+            "line": 7,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <font> found. Use CSS for styling instead",
+            "line": 8,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "Medium",
+            "message": "Deprecated HTML tag <marquee> found. Use CSS animations instead",
+            "line": 14,
+            "rule": "deprecated_html_tag"
+          },
+          {
+            "severity": "High",
+            "message": "Nested <p> tags are invalid - paragraphs cannot contain other paragraphs",
+            "line": 10,
+            "rule": "invalid_html_nesting"
+          },
+          {
+            "severity": "Medium",
+            "message": "HTML element missing lang attribute for accessibility",
+            "line": 2,
+            "rule": "missing_html_lang"
+          },
+          {
+            "severity": "High",
+            "message": "Image missing alt attribute for accessibility",
+            "line": 9,
+            "rule": "missing_img_alt"
+          },
+          {
+            "severity": "Medium",
+            "message": "Table missing header cells (<th>) for accessibility",
+            "line": 16,
+            "rule": "table_missing_headers"
+          },
+          {
+            "severity": "High",
+            "message": "Input element missing associated label for accessibility",
+            "line": 19,
+            "rule": "missing_input_label"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated Lorem Ipsum placeholder text",
+            "line": 11,
+            "rule": "ai_generated_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated example.com placeholder URL",
+            "line": 11,
+            "rule": "ai_generated_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Generic 'container' class name - consider more specific naming",
+            "line": 12,
+            "rule": "ai_generated_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated TODO comments",
+            "line": 13,
+            "rule": "ai_generated_pattern"
+          },
+          {
+            "severity": "High",
+            "message": "Unknown or hallucinated HTML tag: <fakelement>",
+            "line": 20,
+            "rule": "hallucinated_html_tag"
+          },
+          {
+            "severity": "High",
+            "message": "Unknown or hallucinated HTML tag: <fakelement>",
+            "line": 20,
+            "rule": "hallucinated_html_tag"
+          }
+        ],
+        "trust_score": 0
+      }
+    },
+    "test_files/example.css": {
+      "content_hash": "2e7ad3a3fe6be5180d58dd6a2bd0fee6eed937a93b1fa02c5f8d6c0aac850fbe",
+      "mtime": {
+        "secs_since_epoch": 1771882893,
+        "nanos_since_epoch": 233161937
+      },
+      "analysis_result": {
+        "path": "test_files/example.css",
+        "file_type": "CSS",
+        "issues": [
+          {
+            "severity": "High",
+            "message": "Unknown or hallucinated CSS property: 'text-color'",
+            "line": 6,
+            "rule": "hallucinated_css_property"
+          },
+          {
+            "severity": "High",
+            "message": "Unknown or hallucinated CSS property: 'fake-property'",
+            "line": 7,
+            "rule": "hallucinated_css_property"
+          },
+          {
+            "severity": "High",
+            "message": "Unknown or hallucinated CSS property: 'background-horizontal'",
+            "line": 23,
+            "rule": "hallucinated_css_property"
+          },
+          {
+            "severity": "High",
+            "message": "Invalid color format - should be #RGB, #RRGGBB, or valid color name",
+            "line": 5,
+            "rule": "invalid_css_value"
+          },
+          {
+            "severity": "High",
+            "message": "Extremely high z-index value (>999) may indicate AI-generated content",
+            "line": 10,
+            "rule": "invalid_css_value"
+          },
+          {
+            "severity": "High",
+            "message": "Invalid position value - 'center' and 'middle' are not valid position values",
+            "line": 17,
+            "rule": "invalid_css_value"
+          },
+          {
+            "severity": "High",
+            "message": "Invalid color format - should be #RGB, #RRGGBB, or valid color name",
+            "line": 22,
+            "rule": "invalid_css_value"
+          },
+          {
+            "severity": "Low",
+            "message": "Suspicious color value that may be AI-generated placeholder",
+            "line": 5,
+            "rule": "ai_generated_color"
+          },
+          {
+            "severity": "Medium",
+            "message": "Element with display:none and visibility:visible (line 14 and line 15)",
+            "line": 15,
+            "rule": "contradictory_css_declarations"
+          },
+          {
+            "severity": "Low",
+            "message": "Property 'width' declared multiple times with different values (lines: 24, 25)",
+            "line": 25,
+            "rule": "duplicate_property_different_values"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated TODO comments in CSS",
+            "line": 1,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "AI-generated placeholder comments",
+            "line": 1,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Generic CSS class names that may indicate AI-generated code",
+            "line": 2,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Suspicious round number values that may be AI-generated",
+            "line": 3,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Round margin/padding values that may be AI-generated - consider using rem or more specific values",
+            "line": 4,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Generic border declarations commonly used by AI",
+            "line": 8,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Suspicious round number values that may be AI-generated",
+            "line": 16,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Suspicious round number values that may be AI-generated",
+            "line": 24,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Suspicious round number values that may be AI-generated",
+            "line": 25,
+            "rule": "ai_generated_css_pattern"
+          },
+          {
+            "severity": "Low",
+            "message": "Placeholder CSS selector (example, test, demo, sample) found",
+            "line": 13,
+            "rule": "placeholder_css_selector"
+          },
+          {
+            "severity": "Low",
+            "message": "Placeholder CSS selector (example, test, demo, sample) found",
+            "line": 21,
+            "rule": "placeholder_css_selector"
+          }
+        ],
+        "trust_score": 0
+      }
+    }
+  }
+}

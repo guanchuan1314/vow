@@ -230,7 +230,36 @@ jq '.summary.files_per_second' vow-results.json
 ## Configuration
 
 ### Project Config (`.vow/config.yaml`)
+
+Vow supports configuration files that are automatically discovered by walking up the directory tree from the current working directory to the filesystem root.
+
 ```yaml
+# Default analyzers to enable
+analyzers:
+  - code
+  - text
+  - security
+
+# Default output format
+output: table  # table | json | sarif
+
+# Files/dirs to exclude
+exclude:
+  - node_modules
+  - dist
+  - "*.min.js"
+
+# Custom allowlist paths
+allowlists:
+  - .vow/allowlist.txt
+
+# Quiet mode
+quiet: false
+
+# Fail threshold (exit 1 if issues >= threshold)
+fail_threshold: 1
+
+# Legacy compatibility
 threshold: 70
 enabled_analyzers:
   - code
@@ -238,6 +267,29 @@ enabled_analyzers:
   - rules
 custom_rule_dirs:
   - ./custom-rules
+```
+
+#### Config File Precedence
+
+1. CLI flags always override config values
+2. Config file is discovered by walking up from current directory
+3. Default values are used if no config is found
+4. Use `--no-config` to skip config file loading
+
+#### Examples
+
+```bash
+# Use config defaults
+vow check src/
+
+# Override config with CLI flags
+vow check src/ --output json --quiet true --fail-threshold 5
+
+# Skip config file entirely  
+vow check src/ --no-config --output json
+
+# Initialize with default config
+vow init .  # Creates .vow/config.yaml
 ```
 
 ### Custom Rules (`.vow/rules/security.yaml`)

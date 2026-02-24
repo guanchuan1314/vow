@@ -130,8 +130,22 @@ pub struct AnalysisMetrics {
     pub skipped_reasons: std::collections::HashMap<String, usize>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Config {
+    /// Default analyzers to enable
+    pub analyzers: Option<Vec<String>>,
+    /// Default output format
+    pub output: Option<String>,
+    /// Files/dirs to exclude
+    pub exclude: Option<Vec<String>>,
+    /// Custom allowlist paths
+    pub allowlists: Option<Vec<String>>,
+    /// Quiet mode
+    pub quiet: Option<bool>,
+    /// Fail threshold (exit 1 if issues >= threshold)
+    pub fail_threshold: Option<u32>,
+    
+    // Legacy fields for backward compatibility
     pub threshold: Option<u8>,
     pub enabled_analyzers: Option<Vec<String>>,
     pub custom_rule_dirs: Option<Vec<PathBuf>>,
@@ -144,8 +158,21 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
+            // New config format
+            analyzers: Some(vec!["code".to_string(), "text".to_string(), "security".to_string()]),
+            output: Some("table".to_string()),
+            exclude: Some(vec![
+                "node_modules".to_string(),
+                "dist".to_string(),
+                "*.min.js".to_string(),
+            ]),
+            allowlists: Some(vec![".vow/allowlist.txt".to_string()]),
+            quiet: Some(false),
+            fail_threshold: Some(1),
+            
+            // Legacy fields
             threshold: Some(70),
-            enabled_analyzers: Some(vec!["code".to_string(), "text".to_string(), "rules".to_string()]),
+            enabled_analyzers: None,
             custom_rule_dirs: None,
             max_file_size_mb: Some(10),
             max_directory_depth: Some(20),
@@ -162,9 +189,32 @@ pub fn init_project(path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     // Create .vow directory
     fs::create_dir_all(&vow_dir)?;
     
-    // Create config.yaml
-    let config = Config::default();
-    let config_content = serde_yaml::to_string(&config)?;
+    // Create config.yaml with new format
+    let config_content = r#"# Default analyzers to enable
+analyzers:
+  - code
+  - text
+  - security
+
+# Default output format
+output: table  # table | json | sarif
+
+# Files/dirs to exclude
+exclude:
+  - node_modules
+  - dist
+  - "*.min.js"
+
+# Custom allowlist paths
+allowlists:
+  - .vow/allowlist.txt
+
+# Quiet mode
+quiet: false
+
+# Fail threshold (exit 1 if issues >= threshold)
+fail_threshold: 1
+"#;
     fs::write(vow_dir.join("config.yaml"), config_content)?;
     
     // Create rules directory with example rules
@@ -218,12 +268,17 @@ target/
 /// Watch mode: continuously monitor for file changes and re-analyze
 pub fn watch_files(
     path: String,
-    format: String,
+    output: Option<String>,
+    analyzers: Option<Vec<String>>,
+    exclude: Option<Vec<String>>,
+    allowlists: Option<Vec<PathBuf>>,
+    quiet: Option<bool>,
+    fail_threshold: Option<u32>,
+    no_config: bool,
     rules: Option<PathBuf>,
     threshold: Option<u8>,
     ci: bool,
     verbose: bool,
-    quiet: bool,
     max_file_size: u64,
     max_depth: usize,
     max_issues: usize,
@@ -236,6 +291,22 @@ pub fn watch_files(
     if !watch_path.exists() {
         return Err(format!("Path does not exist: {}", path).into());
     }
+
+    // Load and merge config
+    let config = if no_config {
+        Config::default()
+    } else {
+        load_config(&watch_path).unwrap_or_else(|e| {
+            if verbose {
+                eprintln!("Warning: Failed to load config: {}", e);
+            }
+            Config::default()
+        })
+    };
+    
+    // Merge CLI flags with config (CLI takes precedence)
+    let final_output = output.or(config.output).unwrap_or_else(|| "terminal".to_string());
+    let final_quiet = quiet.or(config.quiet).unwrap_or(false);
 
     // Set up signal handling for graceful shutdown
     let (shutdown_tx, shutdown_rx) = bounded::<()>(1);
@@ -265,27 +336,27 @@ pub fn watch_files(
     // Start watching
     if watch_path.is_file() {
         watcher.watch(&watch_path, RecursiveMode::NonRecursive)?;
-        if !quiet {
+        if !final_quiet {
             println!("👁️ Watching file: {}", watch_path.display());
         }
     } else {
         watcher.watch(&watch_path, RecursiveMode::Recursive)?;
-        if !quiet {
+        if !final_quiet {
             println!("👁️ Watching directory: {}", watch_path.display());
         }
     }
 
     // Run initial analysis
-    if !quiet {
+    if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &format, &rules, threshold, ci, verbose, quiet, max_file_size, max_depth, max_issues)?;
+    run_single_analysis(&path, &final_output, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues)?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
     let debounce_duration = Duration::from_millis(200);
 
-    if !quiet {
+    if !final_quiet {
         println!("\n✅ Watch mode started. Press Ctrl+C to stop.\n");
     }
 
@@ -293,7 +364,7 @@ pub fn watch_files(
     loop {
         select! {
             recv(shutdown_rx) -> _ => {
-                if !quiet {
+                if !final_quiet {
                     println!("👋 Watch mode stopped");
                 }
                 break;
@@ -306,12 +377,12 @@ pub fn watch_files(
                             &mut last_events, 
                             debounce_duration,
                             &path,
-                            &format,
+                            &final_output,
                             &rules,
                             threshold,
                             ci,
                             verbose,
-                            quiet,
+                            final_quiet,
                             max_file_size,
                             max_depth,
                             max_issues
@@ -504,12 +575,17 @@ fn run_single_analysis(
     // Run regular analysis once
     let exit_code = check_input(
         path.to_string(),
-        format.to_string(),
+        Some(format.to_string()), // output
+        None, // analyzers
+        None, // exclude
+        None, // allowlists
+        Some(quiet), // quiet
+        None, // fail_threshold
+        false, // no_config - keep config loading for watch mode
         rules.clone(),
         threshold,
         ci,
         verbose,
-        quiet,
         false, // Not hook mode
         max_file_size,
         max_depth,
@@ -542,18 +618,49 @@ pub fn scan_ports(
 /// Main entry point for checking input (file, directory, or stdin)
 pub fn check_input(
     path: String,
-    format: String,
+    output: Option<String>,
+    analyzers: Option<Vec<String>>,
+    exclude: Option<Vec<String>>,
+    allowlists: Option<Vec<PathBuf>>,
+    quiet: Option<bool>,
+    fail_threshold: Option<u32>,
+    no_config: bool,
     rules: Option<PathBuf>,
     threshold: Option<u8>,
     ci: bool,
     verbose: bool,
-    quiet: bool,
     hook_mode: bool,
     max_file_size: u64,
     max_depth: usize,
     max_issues: usize,
 ) -> Result<i32, Box<dyn std::error::Error>> {
-    let mut final_format = format.clone();
+    // Load and merge config
+    let config = if no_config {
+        Config::default()
+    } else {
+        let start_path = if path == "-" {
+            PathBuf::from(".")
+        } else {
+            PathBuf::from(&path)
+        };
+        load_config(&start_path).unwrap_or_else(|e| {
+            if verbose {
+                eprintln!("Warning: Failed to load config: {}", e);
+            }
+            Config::default()
+        })
+    };
+    
+    // Merge CLI flags with config (CLI takes precedence)
+    let final_output = output.or(config.output).unwrap_or_else(|| "table".to_string());
+    let final_quiet = quiet.or(config.quiet).unwrap_or(false);
+    let final_fail_threshold = fail_threshold.or(config.fail_threshold).unwrap_or(1);
+    
+    // Map "table" to "terminal" for backwards compatibility
+    let mut final_format = match final_output.as_str() {
+        "table" => "terminal".to_string(),
+        _ => final_output.clone(),
+    };
     
     // CI mode implies JSON output
     if ci {
@@ -561,7 +668,7 @@ pub fn check_input(
     }
     
     // SARIF format needs to be truly quiet (no performance summaries)
-    let truly_quiet = quiet || format == "sarif";
+    let truly_quiet = final_quiet || final_format == "sarif";
     
     let (results, metrics) = if hook_mode {
         // Hook mode: read file paths from stdin
@@ -578,7 +685,7 @@ pub fn check_input(
                 match analyze_file_with_limits(&path_buf, max_issues) {
                     Ok(result) => results.push(result),
                     Err(e) => {
-                        if !quiet {
+                        if !final_quiet {
                             eprintln!("Warning: Failed to analyze {}: {}", file_path, e);
                         }
                     }
@@ -621,9 +728,6 @@ pub fn check_input(
         }
     };
     
-    // Load config
-    let config = load_config(&PathBuf::from(".")).unwrap_or_default();
-    
     // Apply rules to all results
     let mut final_results = Vec::new();
     for mut result in results {
@@ -642,9 +746,22 @@ pub fn check_input(
     // Generate report
     generate_report(&project_results, &final_format)?;
     
-    // Check threshold for exit code
-    let effective_threshold = threshold.or(config.threshold).unwrap_or(70);
-    if project_results.summary.avg_score < effective_threshold {
+    // Check thresholds for exit code
+    let mut should_exit_failure = false;
+    
+    // Check fail_threshold (number of issues)
+    if project_results.summary.total_issues >= final_fail_threshold as usize {
+        should_exit_failure = true;
+    }
+    
+    // Check legacy trust score threshold if provided
+    if let Some(trust_threshold) = threshold.or(config.threshold) {
+        if project_results.summary.avg_score < trust_threshold {
+            should_exit_failure = true;
+        }
+    }
+    
+    if should_exit_failure {
         Ok(1) // Exit code 1 for failure
     } else {
         Ok(0) // Exit code 0 for success
@@ -1217,16 +1334,71 @@ fn calculate_project_summary_with_metrics(
     }
 }
 
-/// Load configuration from .vow/config.yaml
-fn load_config(project_root: &Path) -> Result<Config, Box<dyn std::error::Error>> {
-    let config_path = project_root.join(".vow/config.yaml");
-    if config_path.exists() {
-        let content = fs::read_to_string(config_path)?;
-        let config: Config = serde_yaml::from_str(&content)?;
-        Ok(config)
-    } else {
-        Ok(Config::default())
+/// Load configuration from .vow/config.yaml, walking up the directory tree
+fn load_config(start_path: &Path) -> Result<Config, Box<dyn std::error::Error>> {
+    let mut current_path = start_path;
+    
+    loop {
+        let config_path = current_path.join(".vow/config.yaml");
+        if config_path.exists() {
+            let content = fs::read_to_string(&config_path)?;
+            let mut config: Config = serde_yaml::from_str(&content)
+                .map_err(|e| format!("Invalid config file {}: {}", config_path.display(), e))?;
+            
+            // Validate config
+            validate_config(&config)?;
+            
+            // Normalize relative paths to be relative to config file location
+            if let Some(ref mut allowlists) = config.allowlists {
+                for allowlist in allowlists.iter_mut() {
+                    if !allowlist.starts_with('/') && !allowlist.starts_with("./") && !allowlist.starts_with("../") {
+                        *allowlist = current_path.join(&allowlist).to_string_lossy().to_string();
+                    }
+                }
+            }
+            
+            return Ok(config);
+        }
+        
+        // Move to parent directory
+        match current_path.parent() {
+            Some(parent) => current_path = parent,
+            None => break, // Reached filesystem root
+        }
     }
+    
+    // No config found, use default
+    Ok(Config::default())
+}
+
+/// Validate configuration values
+fn validate_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+    // Validate output format
+    if let Some(ref output) = config.output {
+        match output.as_str() {
+            "table" | "terminal" | "json" | "sarif" => {},
+            _ => return Err(format!("Invalid output format '{}'. Valid options: table, json, sarif", output).into()),
+        }
+    }
+    
+    // Validate analyzers
+    if let Some(ref analyzers) = config.analyzers {
+        for analyzer in analyzers {
+            match analyzer.as_str() {
+                "code" | "text" | "security" => {},
+                _ => return Err(format!("Invalid analyzer '{}'. Valid options: code, text, security", analyzer).into()),
+            }
+        }
+    }
+    
+    // Validate fail_threshold
+    if let Some(threshold) = config.fail_threshold {
+        if threshold > 1000 {
+            return Err("fail_threshold cannot exceed 1000".into());
+        }
+    }
+    
+    Ok(())
 }
 
 /// Generate report in specified format

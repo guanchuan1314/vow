@@ -1,6 +1,24 @@
-threshold: 70
-enabled_analyzers:
-- code
-- text
-- rules
-custom_rule_dirs: null
+# Default analyzers to enable
+analyzers:
+  - code
+  - text
+  - security
+
+# Default output format
+output: table  # table | json | sarif
+
+# Files/dirs to exclude
+exclude:
+  - node_modules
+  - dist
+  - "*.min.js"
+
+# Custom allowlist paths
+allowlists:
+  - .vow/allowlist.txt
+
+# Quiet mode
+quiet: false
+
+# Fail threshold (exit 1 if issues >= threshold)
+fail_threshold: 20

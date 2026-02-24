@@ -23,9 +23,27 @@ enum Commands {
     Check {
         /// Path to analyze (file or directory), or "-" for stdin
         path: Option<String>,
-        /// Output format (terminal, json, sarif)
-        #[arg(short, long, default_value = "terminal")]
-        format: String,
+        /// Output format (table, json, sarif)
+        #[arg(short = 'o', long, value_name = "FORMAT")]
+        output: Option<String>,
+        /// Analyzers to enable (code, text, security)
+        #[arg(short = 'a', long, value_delimiter = ',', value_name = "ANALYZER")]
+        analyzers: Option<Vec<String>>,
+        /// Files/dirs to exclude  
+        #[arg(short, long, value_delimiter = ',', value_name = "PATTERN")]
+        exclude: Option<Vec<String>>,
+        /// Custom allowlist paths
+        #[arg(long, value_delimiter = ',', value_name = "PATH")]
+        allowlists: Option<Vec<PathBuf>>,
+        /// Quiet mode (errors only)
+        #[arg(short, long)]
+        quiet: Option<bool>,
+        /// Fail threshold (exit 1 if issues >= threshold)
+        #[arg(long, value_name = "COUNT")]
+        fail_threshold: Option<u32>,
+        /// Skip config file loading
+        #[arg(long)]
+        no_config: bool,
         /// Rule file or directory
         #[arg(short, long)]
         rules: Option<PathBuf>,
@@ -38,9 +56,6 @@ enum Commands {
         /// Verbose output
         #[arg(short, long)]
         verbose: bool,
-        /// Quiet output (errors only)
-        #[arg(short, long)]
-        quiet: bool,
         /// Hook mode: accept file list via stdin
         #[arg(long)]
         hook_mode: bool,
@@ -99,7 +114,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Init { path } => {
             vow::init_project(path)?;
         }
-        Commands::Check { path, format, rules, threshold, ci, verbose, quiet, hook_mode, watch, max_file_size, max_depth, max_issues } => {
+        Commands::Check { path, output, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, watch, max_file_size, max_depth, max_issues } => {
             let path_str = if hook_mode {
                 "-".to_string() // In hook mode, we read from stdin
             } else {
@@ -108,9 +123,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             
             if watch {
                 // Watch mode - never exits unless interrupted
-                vow::watch_files(path_str, format, rules, threshold, ci, verbose, quiet, max_file_size, max_depth, max_issues)?;
+                vow::watch_files(path_str, output, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, max_file_size, max_depth, max_issues)?;
             } else {
-                let exit_code = vow::check_input(path_str, format, rules, threshold, ci, verbose, quiet, hook_mode, max_file_size, max_depth, max_issues)?;
+                let exit_code = vow::check_input(path_str, output, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, max_file_size, max_depth, max_issues)?;
                 std::process::exit(exit_code);
             }
         }

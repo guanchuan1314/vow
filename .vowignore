@@ -1,0 +1,20 @@
+# Example .vowignore file
+# Ignore test files
+**/test/**
+**/tests/**
+**/__tests__/**
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Ignore build artifacts
+node_modules/
+dist/
+build/
+out/
+target/
+
+# Ignore temporary files
+*.tmp
+*.temp

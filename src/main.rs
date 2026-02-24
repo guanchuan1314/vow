@@ -23,9 +23,12 @@ enum Commands {
     Check {
         /// Path to analyze (file or directory), or "-" for stdin
         path: Option<String>,
-        /// Output format (table, json, sarif)
-        #[arg(short = 'o', long, value_name = "FORMAT")]
-        output: Option<String>,
+        /// Output format(s) - single format: table, json, sarif; multiple formats: text,json,sarif
+        #[arg(short = 'f', long, value_name = "FORMAT", value_delimiter = ',')]
+        format: Option<Vec<String>>,
+        /// Output directory for multi-format reports (required when multiple formats specified)
+        #[arg(long, value_name = "DIR")]
+        output_dir: Option<std::path::PathBuf>,
         /// Analyzers to enable (code, text, security)
         #[arg(short = 'a', long, value_delimiter = ',', value_name = "ANALYZER")]
         analyzers: Option<Vec<String>>,
@@ -123,7 +126,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Init { path } => {
             vow::init_project(path)?;
         }
-        Commands::Check { path, output, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, watch, max_file_size, max_depth, max_issues, no_cache, clear_cache, summary } => {
+        Commands::Check { path, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, watch, max_file_size, max_depth, max_issues, no_cache, clear_cache, summary } => {
             let path_str = if hook_mode {
                 "-".to_string() // In hook mode, we read from stdin
             } else {
@@ -139,9 +142,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             
             if watch {
                 // Watch mode - never exits unless interrupted
-                vow::watch_files(path_str, output, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, max_file_size, max_depth, max_issues, no_cache, summary)?;
+                vow::watch_files(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, max_file_size, max_depth, max_issues, no_cache, summary)?;
             } else {
-                let exit_code = vow::check_input(path_str, output, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, max_file_size, max_depth, max_issues, no_cache, summary)?;
+                let exit_code = vow::check_input(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, max_file_size, max_depth, max_issues, no_cache, summary)?;
                 std::process::exit(exit_code);
             }
         }

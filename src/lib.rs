@@ -292,7 +292,8 @@ target/
 /// Watch mode: continuously monitor for file changes and re-analyze
 pub fn watch_files(
     path: String,
-    output: Option<String>,
+    format: Option<Vec<String>>,
+    output_dir: Option<std::path::PathBuf>,
     analyzers: Option<Vec<String>>,
     exclude: Option<Vec<String>>,
     allowlists: Option<Vec<PathBuf>>,
@@ -330,8 +331,16 @@ pub fn watch_files(
         })
     };
     
-    // Merge CLI flags with config (CLI takes precedence)
-    let final_output = output.or(config.output).unwrap_or_else(|| "terminal".to_string());
+    // For watch mode, only use the first format if multiple formats provided
+    let final_format = if let Some(formats) = format {
+        if formats.len() > 1 {
+            return Err("Watch mode only supports single format output. Use a single format like --format terminal or --format json.".into());
+        }
+        formats.first().cloned().unwrap_or_else(|| "terminal".to_string())
+    } else {
+        config.output.unwrap_or_else(|| "terminal".to_string())
+    };
+    
     let final_quiet = quiet.or(config.quiet).unwrap_or(false);
 
     // Set up signal handling for graceful shutdown
@@ -376,7 +385,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_output, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary)?;
+    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary)?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -403,7 +412,7 @@ pub fn watch_files(
                             &mut last_events, 
                             debounce_duration,
                             &path,
-                            &final_output,
+                            &final_format,
                             &rules,
                             threshold,
                             ci,
@@ -603,7 +612,8 @@ fn run_single_analysis(
     // Run regular analysis once
     let exit_code = check_input(
         path.to_string(),
-        Some(format.to_string()), // output
+        Some(vec![format.to_string()]), // format
+        None, // output_dir
         None, // analyzers
         None, // exclude
         None, // allowlists
@@ -648,7 +658,8 @@ pub fn scan_ports(
 /// Main entry point for checking input (file, directory, or stdin)
 pub fn check_input(
     path: String,
-    output: Option<String>,
+    format: Option<Vec<String>>,
+    output_dir: Option<std::path::PathBuf>,
     analyzers: Option<Vec<String>>,
     exclude: Option<Vec<String>>,
     allowlists: Option<Vec<PathBuf>>,
@@ -683,24 +694,44 @@ pub fn check_input(
         })
     };
     
-    // Merge CLI flags with config (CLI takes precedence)
-    let final_output = output.or(config.output).unwrap_or_else(|| "table".to_string());
+    // Handle multi-format processing
+    let formats = format.unwrap_or_else(|| {
+        vec![config.output.unwrap_or_else(|| "table".to_string())]
+    });
+    
+    // Validation: if multiple formats, output_dir must be specified
+    if formats.len() > 1 && output_dir.is_none() {
+        return Err("Multiple formats require --output-dir. Example: vow check src/ --format text,json --output-dir reports/".into());
+    }
+    
+    // Validation: ensure all formats are valid
+    for fmt in &formats {
+        match fmt.as_str() {
+            "table" | "terminal" | "json" | "sarif" => {},
+            _ => return Err(format!("Invalid format '{}'. Valid options: table, terminal, json, sarif", fmt).into()),
+        }
+    }
+    
     let final_quiet = quiet.or(config.quiet).unwrap_or(false);
     let final_fail_threshold = fail_threshold.or(config.fail_threshold).unwrap_or(1);
     
-    // Map "table" to "terminal" for backwards compatibility
-    let mut final_format = match final_output.as_str() {
-        "table" => "terminal".to_string(),
-        _ => final_output.clone(),
+    // CI mode overrides format to JSON if not specified
+    let final_formats = if ci && formats.len() == 1 && formats[0] == "table" {
+        vec!["json".to_string()]
+    } else {
+        formats.clone()
     };
     
-    // CI mode implies JSON output
-    if ci {
-        final_format = "json".to_string();
-    }
+    // Map "table" to "terminal" for backwards compatibility
+    let processed_formats: Vec<String> = final_formats.iter()
+        .map(|f| match f.as_str() {
+            "table" => "terminal".to_string(),
+            _ => f.clone()
+        })
+        .collect();
     
     // SARIF format needs to be truly quiet (no performance summaries)
-    let truly_quiet = final_quiet || final_format == "sarif";
+    let truly_quiet = final_quiet || processed_formats.contains(&"sarif".to_string());
     
     let (results, metrics) = if hook_mode {
         // Hook mode: read file paths from stdin
@@ -775,8 +806,8 @@ pub fn check_input(
         metrics.skipped_reasons,
     );
     
-    // Generate report
-    generate_report(&project_results, &final_format, summary)?;
+    // Generate reports
+    generate_reports(&project_results, &processed_formats, &output_dir, summary)?;
     
     // Check thresholds for exit code
     let mut should_exit_failure = false;
@@ -1517,6 +1548,222 @@ fn generate_report(
     Ok(())
 }
 
+/// Generate reports in multiple formats, optionally writing to files
+fn generate_reports(
+    results: &ProjectResults,
+    formats: &[String],
+    output_dir: &Option<PathBuf>,
+    summary: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if formats.len() == 1 && output_dir.is_none() {
+        // Single format to stdout (existing behavior)
+        return generate_report(results, &formats[0], summary);
+    }
+    
+    if let Some(dir) = output_dir {
+        // Create output directory if it doesn't exist
+        fs::create_dir_all(dir)?;
+        
+        for format in formats {
+            let filename = match format.as_str() {
+                "terminal" => "vow-report.txt",
+                "json" => "vow-report.json", 
+                "sarif" => "vow-report.sarif",
+                _ => return Err(format!("Unsupported format for file output: {}", format).into()),
+            };
+            
+            let filepath = dir.join(filename);
+            generate_report_to_file(results, format, summary, &filepath)?;
+            println!("Report written to: {}", filepath.display());
+        }
+    } else {
+        return Err("Multiple formats require --output-dir parameter".into());
+    }
+    
+    Ok(())
+}
+
+/// Generate a single report and write to file
+fn generate_report_to_file(
+    results: &ProjectResults,
+    format: &str,
+    summary: bool,
+    filepath: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let content = if summary {
+        match format {
+            "json" => {
+                serde_json::to_string_pretty(&results.summary)?
+            },
+            "terminal" => {
+                // Capture terminal output to string
+                capture_terminal_summary_report(results)
+            },
+            _ => {
+                capture_terminal_summary_report(results)
+            },
+        }
+    } else {
+        match format {
+            "terminal" => {
+                // Capture terminal output to string  
+                capture_terminal_report(results)
+            },
+            "json" => {
+                serde_json::to_string_pretty(results)?
+            },
+            "sarif" => {
+                capture_sarif_report(results)?
+            },
+            _ => return Err(format!("Unsupported format: {}", format).into()),
+        }
+    };
+    
+    fs::write(filepath, content)?;
+    Ok(())
+}
+
+/// Capture terminal report output as a string
+fn capture_terminal_report(results: &ProjectResults) -> String {
+    use std::fmt::Write;
+    
+    let mut output = String::new();
+    
+    writeln!(output, "{}", "Vow Analysis Report").unwrap();
+    writeln!(output, "{}", "=".repeat(50)).unwrap();
+    writeln!(output).unwrap();
+    
+    // Print overall summary
+    writeln!(output, "{}", "Project Summary").unwrap();
+    writeln!(output, "  Files analyzed: {}", results.summary.total_files).unwrap();
+    writeln!(output, "  Average trust score: {}%", results.summary.avg_score).unwrap();
+    writeln!(output, "  Total issues found: {}", results.summary.total_issues).unwrap();
+    
+    // Print performance metrics if available
+    if results.summary.total_time_seconds > 0.0 {
+        writeln!(output, "  Analysis time: {:.1}s", results.summary.total_time_seconds).unwrap();
+        writeln!(output, "  Processing speed: {:.2} files/second", results.summary.files_per_second).unwrap();
+    }
+    
+    if results.summary.files_skipped > 0 {
+        writeln!(output, "  Files skipped: {}", results.summary.files_skipped).unwrap();
+    }
+    
+    writeln!(output).unwrap();
+    
+    // Print severity breakdown
+    if !results.summary.issues_by_severity.is_empty() {
+        writeln!(output, "{}", "Issues by Severity").unwrap();
+        for (severity, count) in &results.summary.issues_by_severity {
+            writeln!(output, "  {}: {}", severity.to_uppercase(), count).unwrap();
+        }
+        writeln!(output).unwrap();
+    }
+    
+    // Print file details
+    for file_result in &results.files {
+        if file_result.issues.is_empty() {
+            writeln!(output, "✅ {} - Trust Score: {}%", 
+                   file_result.path.display(), file_result.trust_score).unwrap();
+        } else {
+            writeln!(output, "⚠️ {} - Trust Score: {}% ({} issues)", 
+                   file_result.path.display(), file_result.trust_score, file_result.issues.len()).unwrap();
+            
+            for issue in &file_result.issues {
+                if let Some(line) = issue.line {
+                    writeln!(output, "  Line {}: {}", line, issue.message).unwrap();
+                } else {
+                    writeln!(output, "  {}", issue.message).unwrap();
+                }
+            }
+            writeln!(output).unwrap();
+        }
+    }
+    
+    output
+}
+
+/// Capture terminal summary report as string
+fn capture_terminal_summary_report(results: &ProjectResults) -> String {
+    use std::fmt::Write;
+    let mut output = String::new();
+    
+    writeln!(output, "Files: {}, Avg Score: {}%, Issues: {}, Time: {:.1}s", 
+             results.summary.total_files,
+             results.summary.avg_score,
+             results.summary.total_issues,
+             results.summary.total_time_seconds).unwrap();
+    
+    output
+}
+
+/// Capture SARIF report as string
+fn capture_sarif_report(results: &ProjectResults) -> Result<String, Box<dyn std::error::Error>> {
+    // This needs to match the SARIF format generation
+    // For now, let's use JSON serialization of a SARIF structure
+    let sarif_report = create_sarif_structure(results)?;
+    Ok(serde_json::to_string_pretty(&sarif_report)?)
+}
+
+/// Create SARIF structure from project results
+fn create_sarif_structure(results: &ProjectResults) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    // This is a basic SARIF structure - ideally this would be in the SARIF module
+    use serde_json::json;
+    
+    let mut runs = Vec::new();
+    let mut sarif_results = Vec::new();
+    
+    for file_result in &results.files {
+        for issue in &file_result.issues {
+            let severity_level = match issue.severity {
+                crate::Severity::Critical => "error",
+                crate::Severity::High => "error", 
+                crate::Severity::Medium => "warning",
+                crate::Severity::Low => "note",
+            };
+            
+            let result_obj = json!({
+                "ruleId": issue.rule.as_ref().unwrap_or(&"unknown".to_string()),
+                "level": severity_level,
+                "message": {
+                    "text": issue.message
+                },
+                "locations": [{
+                    "physicalLocation": {
+                        "artifactLocation": {
+                            "uri": file_result.path.to_string_lossy()
+                        },
+                        "region": {
+                            "startLine": issue.line.unwrap_or(1)
+                        }
+                    }
+                }]
+            });
+            
+            sarif_results.push(result_obj);
+        }
+    }
+    
+    let run = json!({
+        "tool": {
+            "driver": {
+                "name": "Vow",
+                "version": env!("CARGO_PKG_VERSION"),
+                "informationUri": "https://github.com/example/vow"
+            }
+        },
+        "results": sarif_results
+    });
+    
+    runs.push(run);
+    
+    Ok(json!({
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": runs
+    }))
+}
+
 // Scan report generation temporarily disabled
 // fn generate_scan_report(...) -> ... { ... }
 
@@ -2251,20 +2498,21 @@ javascript:
         // Test that watch mode rejects stdin
         let result = watch_files(
             "-".to_string(),
-            Some("terminal".to_string()),
-            None,
-            None,
-            None,
+            Some(vec!["terminal".to_string()]),
+            None, // output_dir
+            None, // analyzers
+            None, // exclude
+            None, // allowlists
             Some(true), // quiet mode for tests
-            None,
-            false,
-            None,
-            None,
-            false,
-            false,
-            10,
-            20,
-            100,
+            None, // fail_threshold
+            false, // no_config
+            None, // rules
+            None, // threshold
+            false, // ci
+            false, // verbose
+            10, // max_file_size
+            20, // max_depth
+            100, // max_issues
             false, // no_cache
             false  // summary
         );
@@ -2279,20 +2527,21 @@ javascript:
         // Test that watch mode rejects non-existent paths
         let result = watch_files(
             "/nonexistent/path".to_string(),
-            Some("terminal".to_string()),
-            None,
-            None,
-            None,
+            Some(vec!["terminal".to_string()]),
+            None, // output_dir
+            None, // analyzers
+            None, // exclude
+            None, // allowlists
             Some(true), // quiet mode for tests
-            None,
-            false,
-            None,
-            None,
-            false,
-            false,
-            10,
-            20,
-            100,
+            None, // fail_threshold
+            false, // no_config
+            None, // rules
+            None, // threshold
+            false, // ci
+            false, // verbose
+            10, // max_file_size
+            20, // max_depth
+            100, // max_issues
             false, // no_cache
             false  // summary
         );

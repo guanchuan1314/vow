@@ -1,0 +1,19 @@
+name: "swift_ldap_injection"
+description: "Detect potential LDAP injection vulnerabilities in Swift"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: '"(cn=\\(.*)"'
+  - type: "contains"
+    pattern: '"(uid=\\(.*)"'
+  - type: "contains"
+    pattern: '"(objectClass=\\(.*)"'
+  - type: "contains"
+    pattern: "ldap.*query.*\\(.*)"
+  - type: "contains"
+    pattern: "search.*filter.*\\(.*)"
+  - type: "contains"
+    pattern: "LDAP.*search.*userInput"
+  - type: "contains"
+    pattern: "filter.*\\(userInput)"
+file_types: ["swift"]

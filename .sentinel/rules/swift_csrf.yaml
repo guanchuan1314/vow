@@ -1,0 +1,15 @@
+name: "swift_csrf"
+description: "Detect potential CSRF vulnerabilities in Swift/Vapor applications"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "routes.post("
+  - type: "contains"
+    pattern: "router.post("
+  - type: "contains"
+    pattern: ".post(.*, use:"
+  - type: "contains"
+    pattern: "POST.*without.*csrf"
+  - type: "contains"
+    pattern: "grouped().post("
+file_types: ["swift"]

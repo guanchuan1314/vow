@@ -1,0 +1,19 @@
+name: "swift_sql_injection"
+description: "Detect potential SQL injection vulnerabilities in Swift code"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: '"SELECT \(.*)"'
+  - type: "contains"
+    pattern: '"INSERT INTO \(.*)"'
+  - type: "contains"
+    pattern: '"UPDATE \(.*)"'
+  - type: "contains"
+    pattern: '"DELETE FROM \(.*)"'
+  - type: "contains"
+    pattern: "\"\\(.*) + \"SELECT"
+  - type: "contains"
+    pattern: "String(format: \"SELECT"
+  - type: "contains"
+    pattern: "\\(userInput)"
+file_types: ["swift"]

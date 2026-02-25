@@ -1,0 +1,19 @@
+name: "swift_xss"
+description: "Detect potential XSS vulnerabilities in Swift web applications"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: '"<.*\\(.*)"'
+  - type: "contains"
+    pattern: '"<script.*\\(.*)"'
+  - type: "contains"
+    pattern: "innerHTML = \"\\(.*)\""
+  - type: "contains"
+    pattern: "render(.*\\(.*)"
+  - type: "contains"
+    pattern: "Response(.*, content: \"\\(.*)"
+  - type: "contains"
+    pattern: '"<html>.*\\(.*)"'
+  - type: "contains"
+    pattern: "template.*context.*\\(.*)"
+file_types: ["swift", "leaf"]

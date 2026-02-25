@@ -1,0 +1,17 @@
+name: "swift_template_injection"
+description: "Detect potential template injection vulnerabilities in Swift applications"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "render.*context.*\\(.*)"
+  - type: "contains"
+    pattern: "template.*\\(userInput)"
+  - type: "contains"
+    pattern: "Leaf.*render.*\\(.*)"
+  - type: "contains"
+    pattern: "view.*context.*\\(.*)"
+  - type: "contains"
+    pattern: "template.*interpolation.*\\(.*)"
+  - type: "contains"
+    pattern: "\\\"\\(.*)\\\""
+file_types: ["swift", "leaf"]

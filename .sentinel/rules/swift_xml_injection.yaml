@@ -1,0 +1,19 @@
+name: "swift_xml_injection"
+description: "Detect potential XML injection vulnerabilities in Swift"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: '"<\\(.*)"'
+  - type: "contains"
+    pattern: '"</\\(.*)"'
+  - type: "contains"
+    pattern: "xml.*\\(userInput)"
+  - type: "contains"
+    pattern: "<tag.*\\(.*)"
+  - type: "contains"
+    pattern: "XML.*content.*\\(.*)"
+  - type: "contains"
+    pattern: "xmlString.*\\(.*)"
+  - type: "contains"
+    pattern: "setAttribute.*\\(.*)"
+file_types: ["swift"]

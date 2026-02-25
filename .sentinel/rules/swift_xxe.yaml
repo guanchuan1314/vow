@@ -1,0 +1,17 @@
+name: "swift_xxe"
+description: "Detect potential XXE vulnerabilities in Swift XML parsing"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "XMLParser("
+  - type: "contains"
+    pattern: "XMLDocument("
+  - type: "contains"
+    pattern: "shouldResolveExternalEntities = true"
+  - type: "contains"
+    pattern: "XMLParser.*external.*entities"
+  - type: "contains"
+    pattern: "NSXMLParser"
+  - type: "contains"
+    pattern: "XMLParserDelegate"
+file_types: ["swift"]

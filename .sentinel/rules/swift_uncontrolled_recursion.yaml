@@ -1,0 +1,17 @@
+name: "swift_uncontrolled_recursion"
+description: "Detect potential uncontrolled recursion in Swift functions"
+severity: "medium"
+patterns:
+  - type: "contains"
+    pattern: "func.*\\(.*\\).*\\{.*\\1\\(.*\\)"
+  - type: "contains"
+    pattern: "self\\(.*\\)"
+  - type: "contains"
+    pattern: "recursion.*without.*base"
+  - type: "contains"
+    pattern: "recursive.*call.*no.*condition"
+  - type: "contains"
+    pattern: "func.*recursive.*no.*guard"
+  - type: "contains"
+    pattern: "infinite.*recursion"
+file_types: ["swift"]

@@ -646,6 +646,497 @@
       value: "loop {"
       message: "DoS risk - ensure loops have termination conditions and limits"
 
+# C#/ASP.NET-specific security rules for issues #215-#239
+
+- id: csharp-sql-injection
+  name: SQL Injection in C#
+  description: Detects potential SQL injection vulnerabilities in C# code
+  severity: high
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "string.Format(\"SELECT"
+      message: "SQL injection risk - avoid string formatting with user input in SQL queries"
+    - pattern_type: contains
+      value: "\"SELECT * FROM \" +"
+      message: "SQL injection risk - avoid string concatenation with user input for SQL"
+    - pattern_type: contains
+      value: "$\"SELECT"
+      message: "SQL injection risk - avoid string interpolation with user input in SQL queries"
+    - pattern_type: contains
+      value: "CommandText ="
+      message: "SQL injection risk - use parameterized queries instead of dynamic SQL"
+    - pattern_type: contains
+      value: ".ExecuteScalar(\"SELECT"
+      message: "SQL injection risk - use parameterized queries"
+    - pattern_type: contains
+      value: ".Query<"
+      message: "SQL injection risk - ensure Dapper queries use parameters, not string concatenation"
+
+- id: csharp-xss
+  name: Cross-Site Scripting in C#
+  description: Detects potential XSS vulnerabilities in C# web applications
+  severity: high
+  file_types:
+    - cs
+    - aspx
+    - cshtml
+  patterns:
+    - pattern_type: contains
+      value: "@Html.Raw("
+      message: "XSS risk - Raw HTML output bypasses encoding, validate and sanitize input"
+    - pattern_type: contains
+      value: "innerHTML ="
+      message: "XSS risk - setting innerHTML with user data can execute scripts"
+    - pattern_type: contains
+      value: "Response.Write("
+      message: "XSS risk - ensure user input is properly encoded before output"
+    - pattern_type: contains
+      value: "<%="
+      message: "XSS risk - classic ASP.NET output without encoding"
+    - pattern_type: contains
+      value: ".InnerHtml ="
+      message: "XSS risk - setting InnerHtml can execute malicious scripts"
+
+- id: csharp-xxe
+  name: XML External Entity (XXE) in C#
+  description: Detects potential XXE vulnerabilities in XML processing
+  severity: high
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "XmlDocument("
+      message: "XXE risk - XmlDocument enables external entities by default, disable DTD processing"
+    - pattern_type: contains
+      value: "XmlReader.Create("
+      message: "XXE risk - configure XmlReaderSettings to disable external entity processing"
+    - pattern_type: contains
+      value: "XPathDocument("
+      message: "XXE risk - XPathDocument may process external entities, use safe settings"
+    - pattern_type: contains
+      value: "XmlSerializer("
+      message: "XXE risk - ensure XML input is validated and external entities are disabled"
+
+- id: csharp-xml-injection
+  name: XML Injection in C#
+  description: Detects XML injection where user input is interpolated into XML
+  severity: high
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "string.Format(\"<{0}>\""
+      message: "XML injection - user input directly interpolated into XML elements"
+    - pattern_type: contains
+      value: "$\"<{user"
+      message: "XML injection - string interpolation with user input in XML tags"
+    - pattern_type: contains
+      value: "\"<response>\" + user"
+      message: "XML injection - string concatenation with XML tags and user input"
+    - pattern_type: contains
+      value: ".InnerXml ="
+      message: "XML injection risk - setting InnerXml with user input can inject malicious XML"
+
+- id: csharp-crlf-injection
+  name: CRLF Injection in C#
+  description: Detects CRLF injection in HTTP headers
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "Response.AddHeader("
+      message: "CRLF injection risk - validate header values to prevent header injection"
+    - pattern_type: contains
+      value: "Response.Headers.Add("
+      message: "CRLF injection risk - ensure header values don't contain CRLF characters"
+    - pattern_type: contains
+      value: "HttpContext.Response.Headers["
+      message: "CRLF injection risk - sanitize header values to prevent response splitting"
+
+- id: csharp-ssrf
+  name: Server-Side Request Forgery in C#
+  description: Detects potential SSRF vulnerabilities in C# HTTP requests
+  severity: high
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "HttpClient.GetAsync("
+      message: "SSRF risk - validate URLs before making HTTP requests"
+    - pattern_type: contains
+      value: "WebRequest.Create("
+      message: "SSRF risk - ensure URL validation before external requests"
+    - pattern_type: contains
+      value: "HttpWebRequest("
+      message: "SSRF risk - validate destination URLs to prevent internal network access"
+    - pattern_type: contains
+      value: "RestClient("
+      message: "SSRF risk - validate base URLs and endpoints before requests"
+
+- id: csharp-open-redirect
+  name: Open Redirect in C#
+  description: Detects potential open redirect and unvalidated redirect vulnerabilities
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "Response.Redirect("
+      message: "Open redirect risk - validate redirect URLs against whitelist"
+    - pattern_type: contains
+      value: "Redirect(returnUrl"
+      message: "Unvalidated redirect - ensure returnUrl parameter is validated"
+    - pattern_type: contains
+      value: "RedirectToAction(url"
+      message: "Unvalidated redirect - validate URL parameter before redirect"
+    - pattern_type: contains
+      value: "RedirectResult("
+      message: "Open redirect risk - ensure redirect destination is validated"
+
+- id: csharp-csrf
+  name: CSRF Vulnerability in C#
+  description: Detects missing CSRF protection in state-changing actions
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "[HttpPost]"
+      message: "CSRF risk - POST actions should have [ValidateAntiForgeryToken] attribute"
+    - pattern_type: contains
+      value: "[HttpDelete]"
+      message: "CSRF risk - DELETE actions should have CSRF protection"
+    - pattern_type: contains
+      value: "[HttpPut]"
+      message: "CSRF risk - PUT actions should have CSRF protection"
+    - pattern_type: contains
+      value: "public ActionResult Delete"
+      message: "CSRF risk - state-changing actions need anti-forgery token validation"
+
+- id: csharp-hardcoded-secrets
+  name: Hardcoded Secrets in C#
+  description: Detects hardcoded API keys, passwords, and secrets in C# code
+  severity: high
+  file_types:
+    - cs
+    - config
+  patterns:
+    - pattern_type: contains
+      value: "const string API_KEY"
+      message: "Hardcoded API key detected - use configuration or environment variables"
+    - pattern_type: contains
+      value: "private string password = \""
+      message: "Hardcoded password detected - use secure configuration management"
+    - pattern_type: contains
+      value: "ConnectionString = \"Server="
+      message: "Hardcoded connection string detected - use configuration files"
+    - pattern_type: contains
+      value: "static readonly string SECRET"
+      message: "Hardcoded secret detected - use secure key management"
+
+- id: csharp-weak-cryptography
+  name: Weak Cryptography in C#
+  description: Detects use of weak or deprecated cryptographic functions
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "MD5.Create()"
+      message: "Weak cryptography - MD5 is cryptographically broken, use SHA256 or better"
+    - pattern_type: contains
+      value: "SHA1.Create()"
+      message: "Weak cryptography - SHA1 is deprecated for security use"
+    - pattern_type: contains
+      value: "DESCryptoServiceProvider"
+      message: "Weak cryptography - DES encryption is insecure, use AES"
+    - pattern_type: contains
+      value: "RC2CryptoServiceProvider"
+      message: "Weak cryptography - RC2 is vulnerable, use AES encryption"
+    - pattern_type: contains
+      value: "new Random()"
+      message: "Weak randomness - use RNGCryptoServiceProvider for cryptographic operations"
+
+- id: csharp-weak-authentication
+  name: Weak Authentication in C#
+  description: Detects weak authentication patterns in C# applications
+  severity: high
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "password == request.Password"
+      message: "Weak authentication - avoid plain text password comparison"
+    - pattern_type: contains
+      value: "FormsAuthentication.SetAuthCookie("
+      message: "Weak authentication - ensure proper password verification before authentication"
+    - pattern_type: contains
+      value: "User.Identity.IsAuthenticated"
+      message: "Authentication bypass risk - ensure proper authorization checks"
+    - pattern_type: contains
+      value: "if (token.Length > 0)"
+      message: "Weak authentication - insufficient token validation"
+
+- id: csharp-insecure-deserialization
+  name: Insecure Deserialization in C#
+  description: Detects potentially unsafe deserialization patterns
+  severity: high
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "BinaryFormatter"
+      message: "Insecure deserialization - BinaryFormatter is unsafe, use safe alternatives"
+    - pattern_type: contains
+      value: "JavaScriptSerializer"
+      message: "Deserialization risk - ensure type validation with JavaScriptSerializer"
+    - pattern_type: contains
+      value: "XmlSerializer.Deserialize("
+      message: "Deserialization risk - validate XML input before deserialization"
+    - pattern_type: contains
+      value: "JsonConvert.DeserializeObject<object>("
+      message: "Insecure deserialization - deserializing to object allows arbitrary types"
+
+- id: csharp-unsafe-reflection
+  name: Unsafe Reflection in C#
+  description: Detects potentially dangerous reflection operations
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "Type.GetType(userInput"
+      message: "Unsafe reflection - user input used to load types can execute arbitrary code"
+    - pattern_type: contains
+      value: "Assembly.LoadFrom("
+      message: "Unsafe reflection - loading assemblies from user paths is dangerous"
+    - pattern_type: contains
+      value: "Activator.CreateInstance("
+      message: "Unsafe reflection - ensure type validation before object instantiation"
+    - pattern_type: contains
+      value: "MethodInfo.Invoke("
+      message: "Unsafe reflection - validate methods before dynamic invocation"
+
+- id: csharp-insecure-file-permissions
+  name: Insecure File Permissions in C#
+  description: Detects insecure file permission settings
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "FileAccess.ReadWrite"
+      message: "File permission risk - ensure minimal necessary file permissions"
+    - pattern_type: contains
+      value: "File.Create("
+      message: "File permission risk - validate file paths and set appropriate permissions"
+    - pattern_type: contains
+      value: "Directory.CreateDirectory("
+      message: "File permission risk - ensure secure directory permissions"
+    - pattern_type: contains
+      value: "FileSystemRights.FullControl"
+      message: "Insecure file permissions - FullControl grants excessive permissions"
+
+- id: csharp-unrestricted-file-upload
+  name: Unrestricted File Upload in C#
+  description: Detects unrestricted file upload vulnerabilities
+  severity: high
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "SaveAs("
+      message: "File upload risk - validate file type, size, and name before saving"
+    - pattern_type: contains
+      value: "HttpPostedFile"
+      message: "File upload risk - implement file type and size validation"
+    - pattern_type: contains
+      value: "IFormFile"
+      message: "File upload risk - validate uploaded files before processing"
+    - pattern_type: contains
+      value: "File.WriteAllBytes("
+      message: "File upload risk - ensure file content validation and secure storage"
+
+- id: csharp-buffer-overflow
+  name: Buffer Overflow in C#
+  description: Detects potential buffer overflow vulnerabilities in unsafe code
+  severity: high
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "fixed ("
+      message: "Buffer overflow risk - ensure bounds checking in fixed buffer operations"
+    - pattern_type: contains
+      value: "Marshal.Copy("
+      message: "Buffer overflow risk - validate array bounds in Marshal operations"
+    - pattern_type: contains
+      value: "unsafe {"
+      message: "Buffer overflow risk - unsafe code requires careful memory management"
+    - pattern_type: contains
+      value: "stackalloc"
+      message: "Buffer overflow risk - validate allocation size in stack allocation"
+
+- id: csharp-race-condition
+  name: Race Condition in C#
+  description: Detects potential race condition vulnerabilities
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "static int counter"
+      message: "Race condition risk - static variables need thread synchronization"
+    - pattern_type: contains
+      value: "if (Instance == null)"
+      message: "Race condition risk - singleton pattern needs thread-safe initialization"
+    - pattern_type: contains
+      value: "++counter"
+      message: "Race condition risk - increment operations need atomic operations or locking"
+    - pattern_type: contains
+      value: "Dictionary<"
+      message: "Race condition risk - generic collections are not thread-safe"
+
+- id: csharp-integer-overflow
+  name: Integer Overflow in C#
+  description: Detects potential integer overflow vulnerabilities
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "int.MaxValue + 1"
+      message: "Integer overflow risk - arithmetic near type limits can overflow"
+    - pattern_type: contains
+      value: "(byte)intValue"
+      message: "Integer overflow risk - casting to smaller types can lose data"
+    - pattern_type: contains
+      value: "unchecked("
+      message: "Integer overflow risk - unchecked arithmetic ignores overflow exceptions"
+    - pattern_type: contains
+      value: "Convert.ToInt32("
+      message: "Integer overflow risk - validate input ranges before conversion"
+
+- id: csharp-memory-leak
+  name: Memory Leak Risk in C#
+  description: Detects patterns that may cause memory leaks
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "event +="
+      message: "Memory leak risk - ensure event handlers are properly unsubscribed"
+    - pattern_type: contains
+      value: "Timer("
+      message: "Memory leak risk - dispose timers to prevent memory leaks"
+    - pattern_type: contains
+      value: "FileStream"
+      message: "Memory leak risk - ensure streams are properly disposed using 'using' statements"
+    - pattern_type: contains
+      value: "GC.SuppressFinalize"
+      message: "Memory leak risk - incorrect finalization can cause memory leaks"
+
+- id: csharp-null-pointer-dereference
+  name: Null Pointer Dereference in C#
+  description: Detects potential null reference exceptions
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: ".Value)"
+      message: "Null reference risk - check nullable values before accessing .Value"
+    - pattern_type: contains
+      value: "as string)"
+      message: "Null reference risk - cast operations can return null, add null checks"
+    - pattern_type: contains
+      value: ".First()"
+      message: "Null reference risk - use FirstOrDefault() and check for null"
+    - pattern_type: contains
+      value: "[0]"
+      message: "Null reference risk - validate array/collection before accessing elements"
+
+- id: csharp-deadlock
+  name: Deadlock Risk in C#
+  description: Detects potential deadlock patterns in concurrent code
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "lock (lock1)"
+      message: "Deadlock risk - multiple locks can cause deadlocks, ensure consistent lock ordering"
+    - pattern_type: contains
+      value: ".Result"
+      message: "Deadlock risk - .Result on async operations can cause deadlocks"
+    - pattern_type: contains
+      value: ".Wait()"
+      message: "Deadlock risk - .Wait() on async operations can cause deadlocks in UI contexts"
+    - pattern_type: contains
+      value: "Monitor.Enter("
+      message: "Deadlock risk - ensure Monitor.Exit is called in finally block"
+
+- id: csharp-uncontrolled-recursion
+  name: Uncontrolled Recursion in C#
+  description: Detects recursive methods without depth limits
+  severity: medium
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "public void Recursive"
+      message: "Stack overflow risk - implement recursion depth limits"
+    - pattern_type: contains
+      value: "return Recursive("
+      message: "Stack overflow risk - recursive calls without depth checking can cause stack overflow"
+    - pattern_type: contains
+      value: "this.Process(this"
+      message: "Stack overflow risk - self-recursive calls need depth control"
+
+- id: csharp-insufficient-logging
+  name: Insufficient Security Logging in C#
+  description: Detects security-sensitive operations without logging
+  severity: low
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "public ActionResult DeleteUser("
+      message: "Logging needed - user deletion should be logged for security auditing"
+    - pattern_type: contains
+      value: "RoleManager.AddToRole("
+      message: "Logging needed - role changes should be logged"
+    - pattern_type: contains
+      value: "FormsAuthentication.SignOut("
+      message: "Logging needed - logout events should be logged"
+    - pattern_type: contains
+      value: "[Authorize(Roles = \"Admin\")]"
+      message: "Logging needed - admin actions should be logged"
+
+- id: csharp-improper-error-handling
+  name: Improper Error Handling in C#
+  description: Detects potentially unsafe error handling patterns
+  severity: low
+  file_types:
+    - cs
+  patterns:
+    - pattern_type: contains
+      value: "catch (Exception ex)"
+      message: "Error handling risk - catching generic Exception can hide specific errors"
+    - pattern_type: contains
+      value: "throw ex"
+      message: "Error handling risk - 'throw ex' loses stack trace, use 'throw' instead"
+    - pattern_type: contains
+      value: "Response.Write(ex.Message)"
+      message: "Error handling risk - exposing exception details can leak sensitive information"
+    - pattern_type: contains
+      value: "catch { }"
+      message: "Error handling risk - empty catch blocks hide errors"
+
 - id: dangerous-eval
   name: Dangerous eval() Usage  
   description: Detects potentially dangerous eval() function calls

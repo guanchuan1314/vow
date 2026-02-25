@@ -1,0 +1,13 @@
+name: "csharp_file_upload"
+description: "Detect unrestricted file upload vulnerabilities in C#"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "SaveAs("
+  - type: "contains"
+    pattern: "HttpPostedFile"
+  - type: "contains"
+    pattern: "IFormFile"
+  - type: "contains"
+    pattern: "File.WriteAllBytes("
+file_types: ["cs"]

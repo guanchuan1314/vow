@@ -642,7 +642,7 @@
     - pattern_type: contains
       value: "HashMap::new()"
       message: "DoS risk - consider size limits for user-controlled collections"
-    - parameter_type: contains
+    - pattern_type: contains
       value: "loop {"
       message: "DoS risk - ensure loops have termination conditions and limits"
 

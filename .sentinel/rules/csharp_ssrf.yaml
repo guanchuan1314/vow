@@ -1,0 +1,13 @@
+name: "csharp_ssrf"
+description: "Detect potential SSRF vulnerabilities in C# HTTP requests"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "HttpClient.GetAsync("
+  - type: "contains"
+    pattern: "WebRequest.Create("
+  - type: "contains"
+    pattern: "HttpWebRequest("
+  - type: "contains"
+    pattern: "RestClient("
+file_types: ["cs"]

@@ -1,0 +1,13 @@
+name: "csharp_unsafe_reflection"
+description: "Detect potentially dangerous reflection operations in C#"
+severity: "medium"
+patterns:
+  - type: "contains"
+    pattern: "Type.GetType(userInput"
+  - type: "contains"
+    pattern: "Assembly.LoadFrom("
+  - type: "contains"
+    pattern: "Activator.CreateInstance("
+  - type: "contains"
+    pattern: "MethodInfo.Invoke("
+file_types: ["cs"]

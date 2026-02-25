@@ -1,0 +1,13 @@
+name: "csharp_sql_injection"
+description: "Detect potential SQL injection vulnerabilities in C# code"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "string.Format(\"SELECT"
+  - type: "contains"
+    pattern: "\"SELECT * FROM \" +"
+  - type: "contains"
+    pattern: "$\"SELECT"
+  - type: "contains"
+    pattern: "CommandText ="
+file_types: ["cs"]

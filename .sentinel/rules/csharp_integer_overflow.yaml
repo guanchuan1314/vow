@@ -1,0 +1,13 @@
+name: "csharp_integer_overflow"
+description: "Detect potential integer overflow vulnerabilities in C#"
+severity: "medium"
+patterns:
+  - type: "contains"
+    pattern: "int.MaxValue + 1"
+  - type: "contains"
+    pattern: "(byte)intValue"
+  - type: "contains"
+    pattern: "unchecked("
+  - type: "contains"
+    pattern: "Convert.ToInt32("
+file_types: ["cs"]

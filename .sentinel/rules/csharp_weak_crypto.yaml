@@ -1,0 +1,15 @@
+name: "csharp_weak_crypto"
+description: "Detect use of weak or deprecated cryptographic functions in C#"
+severity: "medium"
+patterns:
+  - type: "contains"
+    pattern: "MD5.Create()"
+  - type: "contains"
+    pattern: "SHA1.Create()"
+  - type: "contains"
+    pattern: "DESCryptoServiceProvider"
+  - type: "contains"
+    pattern: "RC2CryptoServiceProvider"
+  - type: "contains"
+    pattern: "new Random()"
+file_types: ["cs"]

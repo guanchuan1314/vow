@@ -1,0 +1,13 @@
+name: "csharp_open_redirect"
+description: "Detect potential open redirect and unvalidated redirect vulnerabilities in C#"
+severity: "medium"
+patterns:
+  - type: "contains"
+    pattern: "Response.Redirect("
+  - type: "contains"
+    pattern: "Redirect(returnUrl"
+  - type: "contains"
+    pattern: "RedirectToAction(url"
+  - type: "contains"
+    pattern: "RedirectResult("
+file_types: ["cs"]

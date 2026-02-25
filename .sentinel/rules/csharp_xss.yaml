@@ -1,0 +1,13 @@
+name: "csharp_xss"
+description: "Detect potential XSS vulnerabilities in C# web applications"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "@Html.Raw("
+  - type: "contains"
+    pattern: "Response.Write("
+  - type: "contains"
+    pattern: ".InnerHtml ="
+  - type: "contains"
+    pattern: "innerHTML ="
+file_types: ["cs", "aspx", "cshtml"]

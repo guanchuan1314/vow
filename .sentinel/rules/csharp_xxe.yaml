@@ -1,0 +1,13 @@
+name: "csharp_xxe"
+description: "Detect potential XXE vulnerabilities in C# XML processing"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "XmlDocument("
+  - type: "contains"
+    pattern: "XmlReader.Create("
+  - type: "contains"
+    pattern: "XPathDocument("
+  - type: "contains"
+    pattern: "XmlSerializer("
+file_types: ["cs"]

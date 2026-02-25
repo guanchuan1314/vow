@@ -1,0 +1,11 @@
+name: "csharp_crlf_injection"
+description: "Detect CRLF injection in C# HTTP headers"
+severity: "medium"
+patterns:
+  - type: "contains"
+    pattern: "Response.AddHeader("
+  - type: "contains"
+    pattern: "Response.Headers.Add("
+  - type: "contains"
+    pattern: "HttpContext.Response.Headers["
+file_types: ["cs"]

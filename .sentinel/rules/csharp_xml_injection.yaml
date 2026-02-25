@@ -1,0 +1,13 @@
+name: "csharp_xml_injection"
+description: "Detect XML injection where user input is interpolated into XML in C#"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "string.Format(\"<{0}>\""
+  - type: "contains"
+    pattern: "$\"<{user"
+  - type: "contains"
+    pattern: "\"<response>\" + user"
+  - type: "contains"
+    pattern: ".InnerXml ="
+file_types: ["cs"]

@@ -1,0 +1,13 @@
+name: "csharp_csrf"
+description: "Detect missing CSRF protection in C# state-changing actions"
+severity: "medium"
+patterns:
+  - type: "contains"
+    pattern: "[HttpPost]"
+  - type: "contains"
+    pattern: "[HttpDelete]"
+  - type: "contains"
+    pattern: "[HttpPut]"
+  - type: "contains"
+    pattern: "public ActionResult Delete"
+file_types: ["cs"]

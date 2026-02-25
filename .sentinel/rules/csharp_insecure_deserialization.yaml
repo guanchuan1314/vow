@@ -1,0 +1,13 @@
+name: "csharp_insecure_deserialization"
+description: "Detect potentially unsafe deserialization patterns in C#"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "BinaryFormatter"
+  - type: "contains"
+    pattern: "JavaScriptSerializer"
+  - type: "contains"
+    pattern: "XmlSerializer.Deserialize("
+  - type: "contains"
+    pattern: "JsonConvert.DeserializeObject<object>("
+file_types: ["cs"]

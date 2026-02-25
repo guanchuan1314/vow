@@ -1,0 +1,13 @@
+name: "csharp_buffer_overflow"
+description: "Detect potential buffer overflow vulnerabilities in unsafe C# code"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "fixed ("
+  - type: "contains"
+    pattern: "Marshal.Copy("
+  - type: "contains"
+    pattern: "unsafe {"
+  - type: "contains"
+    pattern: "stackalloc"
+file_types: ["cs"]

@@ -2,6 +2,7 @@ pub mod analyzers;
 pub mod rules;
 pub mod report;
 pub mod baseline;
+pub mod diff;
 // pub mod scanner; // Temporarily disabled - requires async networking
 
 use std::path::{Path, PathBuf};
@@ -311,9 +312,14 @@ pub fn watch_files(
     no_cache: bool,
     summary: bool,
     baseline: bool,
+    diff: Option<Option<String>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
+    }
+    
+    if diff.is_some() {
+        return Err("Watch mode doesn't support diff mode. Diff mode is for one-time analysis of changed files.".into());
     }
     
     let watch_path = PathBuf::from(&path);
@@ -387,7 +393,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline)?;
+    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None)?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -611,6 +617,7 @@ fn run_single_analysis(
     no_cache: bool,
     summary: bool,
     baseline: bool,
+    diff: Option<Option<String>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Run regular analysis once
     let exit_code = check_input(
@@ -633,7 +640,8 @@ fn run_single_analysis(
         max_issues,
         no_cache,
         summary,
-        baseline
+        baseline,
+        diff
     )?;
     
     if exit_code != 0 && verbose {
@@ -681,6 +689,7 @@ pub fn check_input(
     no_cache: bool,
     summary: bool,
     baseline: bool,
+    diff: Option<Option<String>>,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -738,7 +747,83 @@ pub fn check_input(
     // SARIF format needs to be truly quiet (no performance summaries)
     let truly_quiet = final_quiet || processed_formats.contains(&"sarif".to_string());
     
-    let (results, metrics) = if hook_mode {
+    let (results, metrics) = if let Some(diff_range_str) = diff {
+        if path == "-" {
+            return Err("Diff mode is not compatible with stdin input. Please specify a file or directory.".into());
+        }
+        
+        if hook_mode {
+            return Err("Diff mode is not compatible with hook mode. Use either --diff or --hook-mode, not both.".into());
+        }
+        
+        // Parse diff range
+        let diff_range = diff::DiffRange::parse(diff_range_str)?;
+        
+        // Determine project root for git operations
+        let project_root = if path == "-" {
+            PathBuf::from(".")
+        } else {
+            let path_buf = PathBuf::from(&path);
+            if path_buf.is_file() {
+                path_buf.parent().unwrap_or(Path::new(".")).to_path_buf()
+            } else {
+                path_buf
+            }
+        };
+        
+        // Get changed files from git
+        let changed_files = diff::get_changed_files(&diff_range, &project_root)?;
+        
+        if changed_files.is_empty() {
+            if !truly_quiet {
+                println!("✅ No changed files to analyze");
+            }
+            return Ok(0);
+        }
+        
+        if verbose {
+            println!("📋 Diff mode: analyzing {} changed files", changed_files.len());
+            for file in &changed_files {
+                println!("  📁 {}", file.display());
+            }
+        }
+        
+        // Filter changed files to only include supported files
+        let supported_changed_files: Vec<PathBuf> = changed_files
+            .into_iter()
+            .filter(|file| is_supported_file(file))
+            .collect();
+        
+        if supported_changed_files.is_empty() {
+            if !truly_quiet {
+                println!("✅ No supported changed files to analyze");
+            }
+            return Ok(0);
+        }
+        
+        // Analyze only the changed files
+        let start_time = std::time::Instant::now();
+        let mut results = Vec::new();
+        
+        for file_path in supported_changed_files {
+            match analyze_file_with_limits(&file_path, max_issues) {
+                Ok(result) => results.push(result),
+                Err(e) => {
+                    if !final_quiet {
+                        eprintln!("Warning: Failed to analyze {}: {}", file_path.display(), e);
+                    }
+                }
+            }
+        }
+        
+        let metrics = AnalysisMetrics {
+            total_time_seconds: start_time.elapsed().as_secs_f32(),
+            files_skipped: 0,
+            skipped_reasons: std::collections::HashMap::new(),
+        };
+        
+        (results, metrics)
+    } else if hook_mode {
         // Hook mode: read file paths from stdin
         let mut buffer = String::new();
         io::stdin().read_to_string(&mut buffer)?;
@@ -2552,7 +2637,8 @@ javascript:
             100, // max_issues
             false, // no_cache
             false, // summary
-            false  // baseline
+            false, // baseline
+            None   // diff
         );
         
         assert!(result.is_err());
@@ -2582,7 +2668,8 @@ javascript:
             100, // max_issues
             false, // no_cache
             false, // summary
-            false  // baseline
+            false, // baseline
+            None   // diff
         );
         
         assert!(result.is_err());

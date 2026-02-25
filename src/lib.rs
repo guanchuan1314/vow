@@ -721,8 +721,8 @@ pub fn check_input(
     // Validation: ensure all formats are valid
     for fmt in &formats {
         match fmt.as_str() {
-            "table" | "terminal" | "json" | "sarif" => {},
-            _ => return Err(format!("Invalid format '{}'. Valid options: table, terminal, json, sarif", fmt).into()),
+            "table" | "terminal" | "json" | "sarif" | "html" => {},
+            _ => return Err(format!("Invalid format '{}'. Valid options: table, terminal, json, sarif, html", fmt).into()),
         }
     }
     
@@ -1622,8 +1622,8 @@ fn validate_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
     // Validate output format
     if let Some(ref output) = config.output {
         match output.as_str() {
-            "table" | "terminal" | "json" | "sarif" => {},
-            _ => return Err(format!("Invalid output format '{}'. Valid options: table, json, sarif", output).into()),
+            "table" | "terminal" | "json" | "sarif" | "html" => {},
+            _ => return Err(format!("Invalid output format '{}'. Valid options: table, json, sarif, html", output).into()),
         }
     }
     
@@ -1663,6 +1663,7 @@ fn generate_report(
             "terminal" => report::terminal::print_terminal_report(results),
             "json" => report::json::print_json_report(results)?,
             "sarif" => report::sarif::print_sarif_report(results)?,
+            "html" => report::html::print_html_report(results)?,
             _ => return Err(format!("Unsupported format: {}", format).into()),
         }
     }
@@ -1691,6 +1692,7 @@ fn generate_reports(
                 "terminal" => "vow-report.txt",
                 "json" => "vow-report.json", 
                 "sarif" => "vow-report.sarif",
+                "html" => "vow-report.html",
                 _ => return Err(format!("Unsupported format for file output: {}", format).into()),
             };
             
@@ -1736,6 +1738,9 @@ fn generate_report_to_file(
             },
             "sarif" => {
                 capture_sarif_report(results)?
+            },
+            "html" => {
+                crate::report::html::generate_html_report(results)?
             },
             _ => return Err(format!("Unsupported format: {}", format).into()),
         }

@@ -39,6 +39,7 @@ Vow is a local-first AI output verification engine that analyzes code and text t
 - **Terminal**: Colorized, human-readable reports
 - **JSON**: Machine-readable for integration
 - **SARIF 2.1.0**: GitHub/GitLab code scanning integration
+- **HTML**: Self-contained interactive reports with dark/light mode
 
 ### 🔧 **CI/CD Integration**
 - **Exit Code Support**: Non-zero exit for failures
@@ -106,9 +107,13 @@ vow check . --format json --max-issues 10 > analysis.json
 vow check . --ci --threshold 80 --quiet
 echo "Exit code: $?"  # 0 = pass, 1 = fail
 
-# Save structured results
+# Save structured results  
 vow check . --format json > vow-results.json
 vow check . --format sarif > vow-results.sarif
+
+# Generate interactive HTML report
+vow check . --format html > report.html
+vow check . --format html --output-dir reports/
 
 # Quick security scan of changed files
 git diff --name-only | grep -E '\.(py|js|ts)$' | xargs vow check --ci
@@ -227,6 +232,74 @@ jq -r '.files[] | select(.issues | length > 0) | .path' vow-results.json
 jq '.summary.files_per_second' vow-results.json
 ```
 
+### Interactive HTML Report
+
+The HTML format generates a self-contained, interactive report perfect for sharing and presentation:
+
+```bash
+# Generate HTML report to stdout
+vow check . --format html > security-report.html
+
+# Save HTML report to file
+vow check . --format html --output-dir reports/
+# Creates: reports/vow-report.html
+```
+
+#### HTML Report Features
+- **🎨 Modern Interface**: Clean, professional design with hover effects
+- **🌓 Dark/Light Mode**: Toggle with persistent localStorage preference  
+- **📱 Responsive Design**: Works on desktop, tablet, and mobile
+- **📂 Collapsible Files**: Click file headers to expand/collapse issue details
+- **🔍 Auto-Expand**: Files with issues automatically expand for quick review
+- **📊 Visual Summary**: Color-coded severity badges and trust score indicators
+- **⚡ Self-Contained**: No external dependencies - works offline
+- **🚀 Performance**: Inline CSS and JavaScript for fast loading
+
+#### HTML Report Layout
+```
+┌─────────────────────────────────────┐
+│ 🔍 Vow Analysis Report      🌙 Dark │ ← Header with theme toggle
+├─────────────────────────────────────┤
+│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐     │
+│ │Files│ │Trust│ │Total│ │Time │     │ ← Summary cards
+│ │  5  │ │ 73% │ │  12 │ │1.2s │     │
+│ └─────┘ └─────┘ └─────┘ └─────┘     │
+├─────────────────────────────────────┤
+│ 🚨 CRITICAL 2  ⚠️ HIGH 4  ℹ️ MEDIUM 6  │ ← Severity breakdown
+├─────────────────────────────────────┤
+│ 📁 File Analysis Results            │
+│ ┌─ main.py (Python) ────── 45% ─ ▶ │ ← Clickable file headers
+│ └─ utils.js (JavaScript) ── 89% ─ ▼ │
+│    ├ 🚨 CRITICAL: Hardcoded secret   │ ← Issue details
+│    │  Line 23 • Rule: hardcoded_keys│
+│    └ ⚠️ HIGH: SQL injection risk     │
+│       Line 45 • Rule: sql_injection │
+└─────────────────────────────────────┘
+```
+
+#### Use Cases for HTML Reports
+- **📈 Executive Summaries**: Share security posture with stakeholders
+- **👥 Team Reviews**: Interactive format for code review meetings  
+- **📋 Audit Documentation**: Self-contained reports for compliance
+- **🎓 Security Training**: Visual examples of security issues
+- **📧 Email Reports**: Attach to automated security emails
+
+#### Integration Examples
+```bash
+# Automated security reporting
+vow check . --format html --output-dir reports/
+cat reports/vow-report.html | mail -a "Content-Type: text/html" \
+    -s "Daily Security Report" security-team@company.com
+
+# CI/CD artifact generation  
+vow check . --format html --output-dir dist/
+# Upload dist/vow-report.html as build artifact
+
+# Multi-format reporting
+vow check . --format terminal,json,html --output-dir results/
+# Creates: results/vow-report.txt, vow-report.json, vow-report.html
+```
+
 ## Configuration
 
 ### Project Config (`.vow/config.yaml`)
@@ -241,7 +314,7 @@ analyzers:
   - security
 
 # Default output format
-output: table  # table | json | sarif
+output: table  # table | json | sarif | html
 
 # Files/dirs to exclude
 exclude:
@@ -379,7 +452,7 @@ vow scan <TARGET> [OPTIONS]     Scan network ports for security issues
 vow baseline <ACTION> [OPTIONS] Manage baseline of known issues
 
 Check Options:
-  -f, --format <FORMAT>         Output format: terminal, json, sarif
+  -f, --format <FORMAT>         Output format: terminal, json, sarif, html
   -r, --rules <PATH>           Custom rules directory
       --threshold <SCORE>       Minimum trust score (0-100)
       --ci                     CI mode (JSON output, exit on failure)

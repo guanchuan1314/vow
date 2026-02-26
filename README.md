@@ -35,6 +35,12 @@ Vow is a local-first AI output verification engine that analyzes code and text t
 - **File Type Filtering**: Apply rules to specific file extensions
 - **Severity Levels**: Critical, High, Medium, Low
 
+### 🔧 **Auto-Fix Suggestions**
+- **Smart Suggestions**: Automated fixes for common issues like hallucinated imports, security vulnerabilities
+- **Safe Application**: Only applies fixes that are well-understood and safe
+- **Preview Mode**: `--suggest` flag shows potential fixes without applying them
+- **Extensible**: Rules can define their own fix templates for custom patterns
+
 ### 📊 **Multiple Output Formats**
 - **Terminal**: Colorized, human-readable reports
 - **JSON**: Machine-readable for integration
@@ -92,6 +98,14 @@ vow check . --ci
 # Port scanning and security analysis
 vow scan 192.168.1.1 --ports 22,80,443
 vow scan example.com --ports 1-1000 --issues-only
+
+# Auto-fix suggestions
+vow check suspicious.py --suggest  # Show fix suggestions without applying
+vow check suspicious.py --fix       # Apply fixes automatically
+
+# Example: Fix common security issues
+vow check code.py --fix   # Removes hallucinated imports, fixes insecure patterns
+vow check *.js --suggest # Preview JavaScript fixes before applying
 
 # Advanced usage examples
 vow check . --verbose --max-file-size 5 --max-depth 3
@@ -476,6 +490,64 @@ Baseline Commands:
 ```
 
 ## Advanced Features
+
+### 🔧 **Auto-Fix Suggestions**
+
+Vow can automatically suggest and apply fixes for many common issues:
+
+#### Preview Fix Suggestions
+```bash
+# Show all available fixes without applying them
+vow check suspicious_code.py --suggest
+
+# Example output:
+# 📁 suspicious_code.py
+#   🟠 Line 3: Potentially hallucinated package import: 'nonexistent_package'
+#     💡 Suggestion: REMOVE_LINE
+#
+#   🔴 Line 7: Hardcoded API key detected
+#     💡 Suggestion: Move to environment variables or secure config
+#
+# 💡 Found 2 fix suggestions. Use --fix to apply them.
+```
+
+#### Apply Fixes Automatically
+```bash
+# Apply all safe fixes to a file
+vow check suspicious_code.py --fix
+
+# Apply fixes to entire directory (be careful!)
+vow check src/ --fix
+
+# Example output:
+# 🔧 Applied 2 fixes across 1 files
+#   🗑️ Removed line 3
+#   🔄 Modified line 7: Move to environment variables or secure config
+```
+
+#### Supported Fix Types
+- **REMOVE_LINE**: Removes entire line (e.g., hallucinated imports)
+- **REPLACE: old → new**: Direct text replacement (e.g., `MD5 → SHA256`)
+- **REPLACE_WITH: new_code**: Replace line with new code
+- **WRAP_TRY_CATCH**: Wrap dangerous operations in error handling
+
+#### Safety Features
+- Only well-understood, safe fixes are applied automatically
+- Original files are backed up before modification
+- Verbose mode shows exactly what changes are made
+- Dry-run capability with `--suggest` flag
+
+#### Example Use Cases
+```bash
+# Remove hallucinated Python imports
+vow check *.py --fix  # Removes imports that don't exist on PyPI
+
+# Fix security vulnerabilities
+vow check app.js --fix  # Replaces insecure patterns with secure alternatives
+
+# Clean up generated code
+vow check ai_generated.py --suggest  # Preview all suggested improvements
+```
 
 ### 📋 **Baseline Support (Ignore Known Issues)**
 

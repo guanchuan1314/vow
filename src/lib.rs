@@ -3,6 +3,7 @@ pub mod rules;
 pub mod report;
 pub mod baseline;
 pub mod diff;
+pub mod fix;
 // pub mod scanner; // Temporarily disabled - requires async networking
 
 use std::path::{Path, PathBuf};
@@ -33,6 +34,7 @@ pub struct Issue {
     pub message: String,
     pub line: Option<usize>,
     pub rule: Option<String>,
+    pub suggestion: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -112,6 +114,39 @@ impl Cache {
             version: env!("CARGO_PKG_VERSION").to_string(),
             entries: HashMap::new(),
         }
+    }
+}
+
+/// Helper function to create an issue with an optional suggestion
+pub fn create_issue(
+    severity: Severity,
+    message: String,
+    line: Option<usize>,
+    rule: Option<String>,
+    suggestion: Option<String>,
+) -> Issue {
+    Issue {
+        severity,
+        message,
+        line,
+        rule,
+        suggestion,
+    }
+}
+
+/// Helper function to create an issue without a suggestion
+pub fn create_simple_issue(
+    severity: Severity,
+    message: String,
+    line: Option<usize>,
+    rule: Option<String>,
+) -> Issue {
+    Issue {
+        severity,
+        message,
+        line,
+        rule,
+        suggestion: None,
     }
 }
 
@@ -313,6 +348,8 @@ pub fn watch_files(
     summary: bool,
     baseline: bool,
     diff: Option<Option<String>>,
+    fix: bool,
+    suggest: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
@@ -393,7 +430,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None)?;
+    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None, fix, suggest)?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -618,6 +655,8 @@ fn run_single_analysis(
     summary: bool,
     baseline: bool,
     diff: Option<Option<String>>,
+    fix: bool,
+    suggest: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Run regular analysis once
     let exit_code = check_input(
@@ -641,7 +680,9 @@ fn run_single_analysis(
         no_cache,
         summary,
         baseline,
-        diff
+        diff,
+        fix,
+        suggest
     )?;
     
     if exit_code != 0 && verbose {
@@ -690,6 +731,8 @@ pub fn check_input(
     summary: bool,
     baseline: bool,
     diff: Option<Option<String>>,
+    fix: bool,
+    suggest: bool,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -888,6 +931,38 @@ pub fn check_input(
         final_results.push(result);
     }
     
+    // Handle fix/suggest logic before baseline filtering
+    if fix {
+        // Validation: --fix only works on single files or directories (not stdin)
+        if path == "-" {
+            return Err("--fix mode cannot be used with stdin. Please specify a file or directory.".into());
+        }
+        
+        if hook_mode {
+            return Err("--fix mode cannot be used with hook mode. Please use on specific files only.".into());
+        }
+        
+        if verbose {
+            println!("🔧 Applying auto-fix suggestions...");
+        }
+        
+        match fix::engine::apply_fixes(&mut final_results, verbose) {
+            Ok(files_fixed) => {
+                if files_fixed == 0 && !truly_quiet {
+                    println!("ℹ️ No fixes applied");
+                }
+            }
+            Err(e) => {
+                eprintln!("❌ Error applying fixes: {}", e);
+                return Err(e);
+            }
+        }
+    } else if suggest {
+        if !truly_quiet {
+            fix::engine::show_suggestions(&final_results);
+        }
+    }
+
     // Apply baseline filtering if requested
     if baseline {
         let project_root = if path == "-" {
@@ -976,6 +1051,7 @@ pub fn analyze_content_with_limits_verbose(path: &Path, content: &str, max_issue
             message: format!("Analysis stopped after {} issues (max limit reached)", max_issues),
             line: None,
             rule: Some("max_issues_limit".to_string()),
+            suggestion: None,
         });
     }
     

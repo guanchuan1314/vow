@@ -11,6 +11,7 @@ pub struct Rule {
     pub severity: String,
     pub patterns: Vec<Pattern>,
     pub file_types: Option<Vec<String>>,
+    pub fix_suggestion: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -30,6 +31,7 @@ struct CompiledRule {
     severity: Severity,
     patterns: Vec<CompiledPattern>,
     file_types: Option<Vec<String>>,
+    fix_suggestion: Option<String>,
 }
 
 enum CompiledPattern {
@@ -108,6 +110,7 @@ impl RuleEngine {
             severity,
             patterns: compiled_patterns,
             file_types: rule.file_types,
+            fix_suggestion: rule.fix_suggestion,
         })
     }
     
@@ -161,6 +164,7 @@ impl RuleEngine {
                             message: format!("{}: Pattern '{}' found", rule.description, text),
                             line: Some(line_num + 1),
                             rule: Some(rule.name.clone()),
+                            suggestion: rule.fix_suggestion.clone(),
                         });
                     }
                 }
@@ -173,6 +177,7 @@ impl RuleEngine {
                             message: format!("{}: Line starts with '{}'", rule.description, text),
                             line: Some(line_num + 1),
                             rule: Some(rule.name.clone()),
+                            suggestion: rule.fix_suggestion.clone(),
                         });
                     }
                 }
@@ -185,6 +190,7 @@ impl RuleEngine {
                             message: format!("{}: Line ends with '{}'", rule.description, text),
                             line: Some(line_num + 1),
                             rule: Some(rule.name.clone()),
+                            suggestion: rule.fix_suggestion.clone(),
                         });
                     }
                 }
@@ -197,6 +203,7 @@ impl RuleEngine {
                             message: format!("{}: Regex pattern matched", rule.description),
                             line: Some(line_num + 1),
                             rule: Some(rule.name.clone()),
+                            suggestion: rule.fix_suggestion.clone(),
                         });
                     }
                 }

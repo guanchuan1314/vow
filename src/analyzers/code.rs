@@ -1151,6 +1151,7 @@ impl CodeAnalyzer {
                                 message: format!("Potentially hallucinated package import: '{}'", package),
                                 line: Some(line_num + 1),
                                 rule: Some("hallucinated_api".to_string()),
+                                suggestion: Some("REMOVE_LINE".to_string()),
                             });
                         }
                     }

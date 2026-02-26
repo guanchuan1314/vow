@@ -124,10 +124,18 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum HookAction {
-    /// Install git pre-commit hook
-    Install,
-    /// Uninstall git pre-commit hook
-    Uninstall,
+    /// Install git hooks
+    Install {
+        /// Install pre-push hook instead of pre-commit hook
+        #[arg(long)]
+        pre_push: bool,
+    },
+    /// Uninstall git hooks
+    Uninstall {
+        /// Uninstall pre-push hook instead of pre-commit hook
+        #[arg(long)]
+        pre_push: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -208,11 +216,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Commands::Hooks { action } => {
             match action {
-                HookAction::Install => {
-                    vow::hooks_install()?;
+                HookAction::Install { pre_push } => {
+                    if pre_push {
+                        vow::hooks_install_pre_push()?;
+                    } else {
+                        vow::hooks_install()?;
+                    }
                 }
-                HookAction::Uninstall => {
-                    vow::hooks_uninstall()?;
+                HookAction::Uninstall { pre_push } => {
+                    if pre_push {
+                        vow::hooks_uninstall_pre_push()?;
+                    } else {
+                        vow::hooks_uninstall()?;
+                    }
                 }
             }
         }

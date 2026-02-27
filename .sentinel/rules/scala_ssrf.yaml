@@ -1,0 +1,31 @@
+name: "scala_ssrf"
+description: "Detect potential SSRF vulnerabilities in Scala/Play HTTP requests"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "WS.url(s\""
+  - type: "contains"
+    pattern: 'WS.url(".*" + '
+  - type: "contains"
+    pattern: "ws.url(s\""
+  - type: "contains"
+    pattern: 'ws.url(".*" + '
+  - type: "contains"
+    pattern: "HttpClient.get(s\""
+  - type: "contains"
+    pattern: 'HttpClient.get(".*" + '
+  - type: "contains"
+    pattern: "ahc.url(s\""
+  - type: "contains"
+    pattern: 'ahc.url(".*" + '
+  - type: "contains"
+    pattern: "Http(s\""
+  - type: "contains"
+    pattern: 'Http(".*" + '
+  - type: "contains"
+    pattern: "play.api.libs.ws"
+  - type: "contains"
+    pattern: "scalaj.http.Http("
+  - type: "contains"
+    pattern: "requests.get(s\""
+file_types: ["scala"]

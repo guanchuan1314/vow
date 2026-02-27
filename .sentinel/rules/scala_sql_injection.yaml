@@ -1,0 +1,31 @@
+name: "scala_sql_injection"
+description: "Detect potential SQL injection vulnerabilities in Scala/Play code"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "s\"SELECT $"
+  - type: "contains"
+    pattern: "s\"INSERT INTO $"
+  - type: "contains"
+    pattern: "s\"UPDATE $"
+  - type: "contains"
+    pattern: "s\"DELETE FROM $"
+  - type: "contains"
+    pattern: '"SELECT " + '
+  - type: "contains"
+    pattern: '"INSERT INTO " + '
+  - type: "contains"
+    pattern: '"UPDATE " + '
+  - type: "contains"
+    pattern: '"DELETE FROM " + '
+  - type: "contains"
+    pattern: "Statement.execute(\""
+  - type: "contains"
+    pattern: "createStatement().execute"
+  - type: "contains"
+    pattern: "SQL(\"SELECT"
+  - type: "contains"
+    pattern: "SQL(s\"SELECT"
+  - type: "contains"
+    pattern: "DB.withConnection { implicit c => SQL(\""
+file_types: ["scala"]

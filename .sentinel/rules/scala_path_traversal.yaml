@@ -1,0 +1,31 @@
+name: "scala_path_traversal"
+description: "Detect potential path traversal vulnerabilities in Scala/Play code"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "s\"./uploads/$"
+  - type: "contains"
+    pattern: "s\"/uploads/$"
+  - type: "contains"
+    pattern: "s\"../uploads/$"
+  - type: "contains"
+    pattern: '"./uploads/" + '
+  - type: "contains"
+    pattern: '"/uploads/" + '
+  - type: "contains"
+    pattern: 'new File(s\"'
+  - type: "contains"
+    pattern: 'new File(".*" + '
+  - type: "contains"
+    pattern: "Paths.get(s\""
+  - type: "contains"
+    pattern: 'Paths.get(".*" + '
+  - type: "contains"
+    pattern: "File.separator"
+  - type: "contains"
+    pattern: "Files.readAllBytes(Paths.get("
+  - type: "contains"
+    pattern: "Source.fromFile("
+  - type: "contains"
+    pattern: "FileInputStream(s\""
+file_types: ["scala"]

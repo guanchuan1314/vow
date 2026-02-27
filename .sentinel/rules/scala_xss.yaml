@@ -1,0 +1,29 @@
+name: "scala_xss"
+description: "Detect potential XSS vulnerabilities in Scala/Play web applications"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "s\"<.*${"
+  - type: "contains"
+    pattern: "s\"<script.*${"
+  - type: "contains"
+    pattern: '"<.*" + '
+  - type: "contains"
+    pattern: '"<script.*" + '
+  - type: "contains"
+    pattern: "Html(s\""
+  - type: "contains"
+    pattern: "Html(\".*\" + "
+  - type: "contains"
+    pattern: "@Html("
+  - type: "contains"
+    pattern: "views.html.*("
+  - type: "contains"
+    pattern: "Ok(views.html"
+  - type: "contains"
+    pattern: "template.*content.*${"
+  - type: "contains"
+    pattern: "innerHTML = s\""
+  - type: "contains"
+    pattern: '"<div.*" + userInput'
+file_types: ["scala"]

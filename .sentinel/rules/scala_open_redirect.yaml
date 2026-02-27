@@ -1,0 +1,31 @@
+name: "scala_open_redirect"
+description: "Detect potential open redirect vulnerabilities in Scala/Play code"
+severity: "medium"
+patterns:
+  - type: "contains"
+    pattern: "Redirect(s\""
+  - type: "contains"
+    pattern: 'Redirect(".*" + '
+  - type: "contains"
+    pattern: "Found(s\""
+  - type: "contains"
+    pattern: 'Found(".*" + '
+  - type: "contains"
+    pattern: "MovedPermanently(s\""
+  - type: "contains"
+    pattern: 'MovedPermanently(".*" + '
+  - type: "contains"
+    pattern: "SeeOther(s\""
+  - type: "contains"
+    pattern: 'SeeOther(".*" + '
+  - type: "contains"
+    pattern: "TemporaryRedirect(s\""
+  - type: "contains"
+    pattern: 'TemporaryRedirect(".*" + '
+  - type: "contains"
+    pattern: "response.setHeader(\"Location\","
+  - type: "contains"
+    pattern: "request.getParameter(\"redirect\""
+  - type: "contains"
+    pattern: "request.getParameter(\"url\""
+file_types: ["scala"]

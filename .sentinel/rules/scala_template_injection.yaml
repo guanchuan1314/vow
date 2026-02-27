@@ -1,0 +1,31 @@
+name: "scala_template_injection"
+description: "Detect potential template injection vulnerabilities in Scala/Play templates"
+severity: "high"
+patterns:
+  - type: "contains"
+    pattern: "@(s\""
+  - type: "contains"
+    pattern: '@(".*" + '
+  - type: "contains"
+    pattern: "@{s\""
+  - type: "contains"
+    pattern: '@{".*" + '
+  - type: "contains"
+    pattern: "views.html.*(s\""
+  - type: "contains"
+    pattern: 'views.html.*(".*" + '
+  - type: "contains"
+    pattern: "Template.apply(s\""
+  - type: "contains"
+    pattern: 'Template.apply(".*" + '
+  - type: "contains"
+    pattern: "twirl.api.Html(s\""
+  - type: "contains"
+    pattern: 'twirl.api.Html(".*" + '
+  - type: "contains"
+    pattern: "@raw("
+  - type: "contains"
+    pattern: "Html.raw("
+  - type: "contains"
+    pattern: "@Html.raw("
+file_types: ["scala"]

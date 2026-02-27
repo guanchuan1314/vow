@@ -92,6 +92,9 @@ echo "print('Hello AI world')" | vow check -
 # Set trust score threshold
 vow check code.py --threshold 80
 
+# Filter by severity level (only show medium and above)
+vow check src/ --min-severity medium
+
 # JSON output for CI
 vow check . --ci
 
@@ -111,6 +114,11 @@ vow check *.js --suggest # Preview JavaScript fixes before applying
 vow check . --verbose --max-file-size 5 --max-depth 3
 vow check large-project/ --quiet --ci --threshold 90
 vow check . --format json --max-issues 10 > analysis.json
+
+# Severity filtering examples
+vow check src/ --min-severity high              # Only critical and high severity issues
+vow check . --min-severity critical --ci        # Only critical issues in CI mode
+vow check project/ --min-severity medium --fix  # Fix medium+ severity issues only
 ```
 
 ### Practical Examples
@@ -346,6 +354,11 @@ quiet: false
 # Fail threshold (exit 1 if issues >= threshold)
 fail_threshold: 1
 
+# Minimum severity threshold for reporting findings
+# Options: low, medium, high, critical
+# Uncomment to enable filtering (by default, all findings are shown)
+# min_severity: medium
+
 # Legacy compatibility
 threshold: 70
 enabled_analyzers:
@@ -469,6 +482,7 @@ Check Options:
   -f, --format <FORMAT>         Output format: terminal, json, sarif, html
   -r, --rules <PATH>           Custom rules directory
       --threshold <SCORE>       Minimum trust score (0-100)
+      --min-severity <LEVEL>   Only show findings at or above severity level (low, medium, high, critical)
       --ci                     CI mode (JSON output, exit on failure)
   -v, --verbose                Verbose output with per-analyzer timing
   -q, --quiet                  Quiet output (errors and summary only)

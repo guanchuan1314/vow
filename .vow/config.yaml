@@ -22,3 +22,8 @@ quiet: false
 
 # Fail threshold (exit 1 if issues >= threshold)
 fail_threshold: 20
+
+# Minimum severity threshold for reporting findings
+# Options: low, medium, high, critical
+# Uncomment to enable filtering (by default, all findings are shown)
+# min_severity: medium

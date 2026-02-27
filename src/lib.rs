@@ -69,7 +69,7 @@ pub enum FileType {
     Unknown,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Severity {
     Low,
     Medium,
@@ -84,6 +84,17 @@ impl Severity {
             Severity::High => 15,
             Severity::Medium => 8,
             Severity::Low => 3,
+        }
+    }
+
+    /// Parse a severity level from a string
+    pub fn from_str(s: &str) -> Result<Self, String> {
+        match s.to_lowercase().as_str() {
+            "low" => Ok(Severity::Low),
+            "medium" => Ok(Severity::Medium),
+            "high" => Ok(Severity::High),
+            "critical" => Ok(Severity::Critical),
+            _ => Err(format!("Invalid severity level '{}'. Valid options: low, medium, high, critical", s)),
         }
     }
 }
@@ -205,6 +216,8 @@ pub struct Config {
     pub quiet: Option<bool>,
     /// Fail threshold (exit 1 if issues >= threshold)
     pub fail_threshold: Option<u32>,
+    /// Minimum severity threshold for reporting findings
+    pub min_severity: Option<Severity>,
     
     // Legacy fields for backward compatibility
     pub threshold: Option<u8>,
@@ -230,6 +243,7 @@ impl Default for Config {
             allowlists: Some(vec![".vow/allowlist.txt".to_string()]),
             quiet: Some(false),
             fail_threshold: Some(1),
+            min_severity: None, // Default: show all findings (backwards compatible)
             
             // Legacy fields
             threshold: Some(70),
@@ -275,6 +289,11 @@ quiet: false
 
 # Fail threshold (exit 1 if issues >= threshold)
 fail_threshold: 1
+
+# Minimum severity threshold for reporting findings
+# Options: low, medium, high, critical
+# Uncomment to enable filtering (by default, all findings are shown)
+# min_severity: medium
 "#;
     fs::write(vow_dir.join("config.yaml"), config_content)?;
     
@@ -350,6 +369,7 @@ pub fn watch_files(
     diff: Option<Option<String>>,
     fix: bool,
     suggest: bool,
+    min_severity_str: Option<String>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
@@ -387,6 +407,15 @@ pub fn watch_files(
     };
     
     let final_quiet = quiet.or(config.quiet).unwrap_or(false);
+
+    // Parse and resolve severity threshold
+    let min_severity = if let Some(ref severity_str) = min_severity_str {
+        // CLI flag overrides config setting
+        Some(Severity::from_str(severity_str)?)
+    } else {
+        // Use config setting
+        config.min_severity.clone()
+    };
 
     // Set up signal handling for graceful shutdown
     let (shutdown_tx, shutdown_rx) = bounded::<()>(1);
@@ -430,7 +459,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None, fix, suggest)?;
+    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None, fix, suggest, min_severity_str.clone())?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -465,7 +494,8 @@ pub fn watch_files(
                             final_quiet,
                             max_file_size,
                             max_depth,
-                            max_issues
+                            max_issues,
+                            &min_severity
                         )?;
                     },
                     Err(e) => {
@@ -494,6 +524,7 @@ fn handle_watch_event(
     max_file_size: u64,
     _max_depth: usize,
     max_issues: usize,
+    min_severity: &Option<Severity>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     
     // Only handle write/create events for performance
@@ -538,7 +569,7 @@ fn handle_watch_event(
         }
 
         // Analyze the changed file
-        analyze_changed_file(&path, format, rules, threshold, ci, verbose, quiet, max_issues)?;
+        analyze_changed_file(&path, format, rules, threshold, ci, verbose, quiet, max_issues, min_severity)?;
     }
 
     Ok(())
@@ -554,6 +585,7 @@ fn analyze_changed_file(
     verbose: bool,
     quiet: bool,
     max_issues: usize,
+    min_severity: &Option<Severity>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let timestamp = chrono::Local::now().format("%H:%M:%S");
     
@@ -576,6 +608,13 @@ fn analyze_changed_file(
 
     // Apply rules if available
     result = apply_rules_to_result(result, rules)?;
+
+    // Apply severity filtering if specified
+    if let Some(ref min_sev) = min_severity {
+        result.issues.retain(|issue| issue.severity >= *min_sev);
+        // Recalculate trust score after filtering
+        result.trust_score = calculate_trust_score(&result.issues);
+    }
 
     let analysis_duration = analysis_start.elapsed();
 
@@ -657,6 +696,7 @@ fn run_single_analysis(
     diff: Option<Option<String>>,
     fix: bool,
     suggest: bool,
+    min_severity_str: Option<String>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Run regular analysis once
     let exit_code = check_input(
@@ -682,7 +722,8 @@ fn run_single_analysis(
         baseline,
         diff,
         fix,
-        suggest
+        suggest,
+        min_severity_str
     )?;
     
     if exit_code != 0 && verbose {
@@ -733,6 +774,7 @@ pub fn check_input(
     diff: Option<Option<String>>,
     fix: bool,
     suggest: bool,
+    min_severity_str: Option<String>,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -749,6 +791,15 @@ pub fn check_input(
             }
             Config::default()
         })
+    };
+    
+    // Parse and resolve severity threshold
+    let min_severity = if let Some(ref severity_str) = min_severity_str {
+        // CLI flag overrides config setting
+        Some(Severity::from_str(severity_str)?)
+    } else {
+        // Use config setting
+        config.min_severity.clone()
     };
     
     // Handle multi-format processing
@@ -960,6 +1011,29 @@ pub fn check_input(
     } else if suggest {
         if !truly_quiet {
             fix::engine::show_suggestions(&final_results);
+        }
+    }
+
+    // Apply severity filtering if specified
+    if let Some(ref min_sev) = min_severity {
+        if verbose {
+            let before_count: usize = final_results.iter().map(|r| r.issues.len()).sum();
+            
+            for result in &mut final_results {
+                result.issues.retain(|issue| issue.severity >= *min_sev);
+                // Recalculate trust score after filtering
+                result.trust_score = calculate_trust_score(&result.issues);
+            }
+            
+            let after_count: usize = final_results.iter().map(|r| r.issues.len()).sum();
+            println!("🎯 Severity filtering: {} issues filtered down to {} (min: {:?})", 
+                   before_count, after_count, min_sev);
+        } else {
+            for result in &mut final_results {
+                result.issues.retain(|issue| issue.severity >= *min_sev);
+                // Recalculate trust score after filtering
+                result.trust_score = calculate_trust_score(&result.issues);
+            }
         }
     }
 
@@ -3054,7 +3128,8 @@ javascript:
             false,
             false,
             true, // quiet mode for tests
-            100
+            100,
+            &None // no min severity filtering for basic test
         );
         
         assert!(result.is_ok());
@@ -3098,6 +3173,72 @@ javascript:
         // Test would skip files larger than max size
         let max_size_bytes = 10 * 1024 * 1024; // 10MB
         assert!(metadata.len() <= max_size_bytes);
+    }
+
+    #[test]
+    fn test_severity_filtering() {
+        // Test severity ordering
+        assert!(Severity::Low < Severity::Medium);
+        assert!(Severity::Medium < Severity::High);
+        assert!(Severity::High < Severity::Critical);
+        
+        // Test severity parsing
+        assert_eq!(Severity::from_str("low").unwrap(), Severity::Low);
+        assert_eq!(Severity::from_str("medium").unwrap(), Severity::Medium);
+        assert_eq!(Severity::from_str("high").unwrap(), Severity::High);
+        assert_eq!(Severity::from_str("critical").unwrap(), Severity::Critical);
+        
+        // Test case insensitivity
+        assert_eq!(Severity::from_str("LOW").unwrap(), Severity::Low);
+        assert_eq!(Severity::from_str("High").unwrap(), Severity::High);
+        
+        // Test invalid input
+        assert!(Severity::from_str("invalid").is_err());
+    }
+
+    #[test]
+    fn test_severity_filtering_behavior() {
+        let mut issues = vec![
+            Issue {
+                severity: Severity::Low,
+                message: "Low issue".to_string(),
+                line: Some(1),
+                rule: None,
+                suggestion: None,
+            },
+            Issue {
+                severity: Severity::Medium,
+                message: "Medium issue".to_string(),
+                line: Some(2),
+                rule: None,
+                suggestion: None,
+            },
+            Issue {
+                severity: Severity::High,
+                message: "High issue".to_string(),
+                line: Some(3),
+                rule: None,
+                suggestion: None,
+            },
+            Issue {
+                severity: Severity::Critical,
+                message: "Critical issue".to_string(),
+                line: Some(4),
+                rule: None,
+                suggestion: None,
+            },
+        ];
+        
+        // Test filtering with medium threshold
+        let min_severity = Severity::Medium;
+        issues.retain(|issue| issue.severity >= min_severity);
+        
+        // Should have 3 issues (medium, high, critical)
+        assert_eq!(issues.len(), 3);
+        assert!(issues.iter().any(|i| i.severity == Severity::Medium));
+        assert!(issues.iter().any(|i| i.severity == Severity::High));
+        assert!(issues.iter().any(|i| i.severity == Severity::Critical));
+        assert!(!issues.iter().any(|i| i.severity == Severity::Low));
     }
 }
 

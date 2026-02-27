@@ -442,6 +442,32 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::Low,
         message: "Potential timing side-channel attack in Rust - non-constant time comparison of secrets",
     },
+    
+    // Issue #308: Insecure file permissions in Dart/Flutter
+    SecurityPattern {
+        name: "dart_insecure_filemode_0777",
+        regex: Regex::new(r"FileMode\s*\(\s*0?777\s*\)").unwrap(),
+        severity: Severity::High,
+        message: "Insecure file permissions detected - FileMode(0777) grants world-writable access",
+    },
+    SecurityPattern {
+        name: "dart_insecure_filemode_world_write",
+        regex: Regex::new(r"FileMode\s*\(\s*0?[67][67][67]\s*\)").unwrap(),
+        severity: Severity::High,
+        message: "Insecure file permissions detected - world-writable FileMode",
+    },
+    SecurityPattern {
+        name: "dart_setPermissions_777",
+        regex: Regex::new(r"setPermissions\s*\(\s*FileMode\s*\(\s*0?777\s*\)\s*\)").unwrap(),
+        severity: Severity::High,
+        message: "Insecure file permissions detected - setPermissions with world-writable mode 777",
+    },
+    SecurityPattern {
+        name: "dart_setPermissions_world_write",
+        regex: Regex::new(r"setPermissions\s*\(\s*FileMode\s*\(\s*0?[67][67][67]\s*\)\s*\)").unwrap(),
+        severity: Severity::High,
+        message: "Insecure file permissions detected - setPermissions with world-writable permissions",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)
@@ -1071,6 +1097,11 @@ impl CodeAnalyzer {
             "java_xxe_documentbuilder" | "java_xxe_saxparser" | "java_xxe_xmlreader" | "java_xxe_transformer" => {
                 matches!(file_type, FileType::Java)
             },
+            // Dart/Flutter specific patterns
+            "dart_insecure_filemode_0777" | "dart_insecure_filemode_world_write" | 
+            "dart_setPermissions_777" | "dart_setPermissions_world_write" => {
+                matches!(file_type, FileType::Dart)
+            },
             // General patterns that apply to all code files
             _ => !matches!(file_type, FileType::Unknown)
         }
@@ -1091,7 +1122,8 @@ impl CodeAnalyzer {
                         message: pattern.message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some(pattern.name.to_string()),
-                    });
+                        suggestion: None,
+                });
                 }
             }
         }
@@ -1152,7 +1184,7 @@ impl CodeAnalyzer {
                                 line: Some(line_num + 1),
                                 rule: Some("hallucinated_api".to_string()),
                                 suggestion: Some("REMOVE_LINE".to_string()),
-                            });
+                });
                         }
                     }
                 }
@@ -1169,7 +1201,8 @@ impl CodeAnalyzer {
                         message: pattern.message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some(pattern.name.to_string()),
-                    });
+                        suggestion: None,
+                });
                 }
             }
         }
@@ -1188,7 +1221,8 @@ impl CodeAnalyzer {
                                 message: format!("{}: {}", pattern.message, line.trim()),
                                 line: Some(line_num + 1),
                                 rule: Some(pattern.name.to_string()),
-                            });
+                                suggestion: None,
+                });
                         }
                     }
                 }
@@ -1225,7 +1259,8 @@ impl CodeAnalyzer {
                         message: format!("Hallucinated method signature: {}. Correct usage: {}", pattern.message, pattern.correct_usage),
                         line: Some(line_num + 1),
                         rule: Some("hallucinated_signature".to_string()),
-                    });
+                        suggestion: None,
+                });
                 }
             }
             
@@ -1253,7 +1288,8 @@ impl CodeAnalyzer {
                         message: format!("Hallucinated method signature: {}. Correct usage: {}", pattern.message, pattern.correct_usage),
                         line: Some(line_num + 1),
                         rule: Some("hallucinated_signature".to_string()),
-                    });
+                        suggestion: None,
+                });
                 }
             }
             
@@ -1284,7 +1320,8 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on os.path{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                        });
+                            suggestion: None,
+                });
                     }
                 }
             }
@@ -1310,7 +1347,8 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on Python strings{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                        });
+                            suggestion: None,
+                });
                     }
                 }
             }
@@ -1336,7 +1374,8 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on Python lists{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                        });
+                            suggestion: None,
+                });
                     }
                 }
             }
@@ -1360,7 +1399,8 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on json module{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                        });
+                            suggestion: None,
+                });
                     }
                 }
             }
@@ -1439,7 +1479,8 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on {} module{}", method_name, module_name, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                        });
+                            suggestion: None,
+                });
                     }
                     // Method is valid for this module, so we're done - don't run generic checks
                     return;
@@ -1481,7 +1522,8 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on JavaScript Array{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                        });
+                            suggestion: None,
+                });
                     }
                 }
             }
@@ -1507,7 +1549,8 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on JavaScript String{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                        });
+                            suggestion: None,
+                });
                     }
                 }
             }
@@ -1520,7 +1563,8 @@ impl CodeAnalyzer {
                 message: "Object.keys/values/entries are static methods - use Object.keys(obj), not obj.keys()".to_string(),
                 line: Some(line_num + 1),
                 rule: Some("incorrect_static_method".to_string()),
-            });
+                suggestion: None,
+                });
         }
     }
 }

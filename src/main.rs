@@ -101,6 +101,9 @@ enum Commands {
         /// Strict mode: ignore inline vow-ignore comments
         #[arg(long)]
         strict: bool,
+        /// Custom plugin directory
+        #[arg(long, value_name = "DIR")]
+        plugin_dir: Option<PathBuf>,
     },
     /// Scan network ports and evaluate security
     Scan {
@@ -209,7 +212,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Init { path } => {
             vow::init_project(path)?;
         }
-        Commands::Check { path, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, watch, max_file_size, max_depth, max_issues, no_cache, clear_cache, summary, baseline, diff, fix, suggest, min_severity, strict } => {
+        Commands::Check { path, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, watch, max_file_size, max_depth, max_issues, no_cache, clear_cache, summary, baseline, diff, fix, suggest, min_severity, strict, plugin_dir } => {
             let path_str = if hook_mode {
                 "-".to_string() // In hook mode, we read from stdin
             } else {
@@ -225,9 +228,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             
             if watch {
                 // Watch mode - never exits unless interrupted
-                vow::watch_files(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, max_file_size, max_depth, max_issues, no_cache, summary, baseline, diff, fix, suggest, min_severity, strict)?;
+                vow::watch_files(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, max_file_size, max_depth, max_issues, no_cache, summary, baseline, diff, fix, suggest, min_severity, strict, plugin_dir)?;
             } else {
-                let exit_code = vow::check_input(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, max_file_size, max_depth, max_issues, no_cache, summary, baseline, diff, fix, suggest, min_severity, strict)?;
+                let exit_code = vow::check_input(path_str, format, output_dir, analyzers, exclude, allowlists, quiet, fail_threshold, no_config, rules, threshold, ci, verbose, hook_mode, max_file_size, max_depth, max_issues, no_cache, summary, baseline, diff, fix, suggest, min_severity, strict, plugin_dir)?;
                 std::process::exit(exit_code);
             }
         }

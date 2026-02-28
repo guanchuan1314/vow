@@ -1,0 +1,7 @@
+name = "simple-rule-plugin"
+version = "1.0.0"
+description = "A simple example plugin that demonstrates basic rule creation"
+author = "Vow Team <team@getvow.dev>"
+entry_point = "plugin.wasm"
+plugin_type = "wasm"
+supported_file_types = ["rs", "py", "js", "ts"]

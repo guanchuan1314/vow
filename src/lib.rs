@@ -6,6 +6,7 @@ pub mod diff;
 pub mod fix;
 pub mod stats;
 pub mod ignore;
+pub mod plugin;
 // pub mod scanner; // Temporarily disabled - requires async networking
 
 use std::path::{Path, PathBuf};
@@ -375,6 +376,7 @@ pub fn watch_files(
     suggest: bool,
     min_severity_str: Option<String>,
     strict: bool,
+    plugin_dir: Option<PathBuf>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
@@ -464,7 +466,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None, fix, suggest, min_severity_str.clone(), strict)?;
+    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None, fix, suggest, min_severity_str.clone(), strict, plugin_dir.clone())?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -501,7 +503,9 @@ pub fn watch_files(
                             max_depth,
                             max_issues,
                             &min_severity,
-                            strict
+                            strict,
+                            &plugin_dir,
+                            Path::new(&path)
                         )?;
                     },
                     Err(e) => {
@@ -532,6 +536,8 @@ fn handle_watch_event(
     max_issues: usize,
     min_severity: &Option<Severity>,
     strict: bool,
+    plugin_dir: &Option<PathBuf>,
+    project_root: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
     
     // Only handle write/create events for performance
@@ -576,7 +582,7 @@ fn handle_watch_event(
         }
 
         // Analyze the changed file
-        analyze_changed_file(&path, format, rules, threshold, ci, verbose, quiet, max_issues, min_severity, strict)?;
+        analyze_changed_file(&path, format, rules, threshold, ci, verbose, quiet, max_issues, min_severity, strict, plugin_dir, project_root)?;
     }
 
     Ok(())
@@ -594,6 +600,8 @@ fn analyze_changed_file(
     max_issues: usize,
     min_severity: &Option<Severity>,
     strict: bool,
+    plugin_dir: &Option<PathBuf>,
+    project_root: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let timestamp = chrono::Local::now().format("%H:%M:%S");
     
@@ -615,7 +623,7 @@ fn analyze_changed_file(
     };
 
     // Apply rules if available
-    result = apply_rules_to_result(result, rules)?;
+    result = apply_rules_to_result(result, rules, plugin_dir, project_root)?;
 
     // Apply severity filtering if specified
     if let Some(min_sev) = &min_severity {
@@ -714,6 +722,7 @@ fn run_single_analysis(
     suggest: bool,
     min_severity_str: Option<String>,
     strict: bool,
+    plugin_dir: Option<PathBuf>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Run regular analysis once
     let exit_code = check_input(
@@ -741,7 +750,8 @@ fn run_single_analysis(
         fix,
         suggest,
         min_severity_str,
-        strict
+        strict,
+        plugin_dir
     )?;
     
     if exit_code != 0 && verbose {
@@ -794,6 +804,7 @@ pub fn check_input(
     suggest: bool,
     min_severity_str: Option<String>,
     strict: bool,
+    plugin_dir: Option<PathBuf>,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -1007,10 +1018,22 @@ pub fn check_input(
         }
     };
     
+    // Determine project root for plugin discovery
+    let project_root = if path == "-" {
+        PathBuf::from(".")
+    } else {
+        let path_buf = PathBuf::from(&path);
+        if path_buf.is_file() {
+            path_buf.parent().unwrap_or(Path::new(".")).to_path_buf()
+        } else {
+            path_buf
+        }
+    };
+
     // Apply rules to all results
     let mut final_results = Vec::new();
     for mut result in results {
-        result = apply_rules_to_result(result, &rules)?;
+        result = apply_rules_to_result(result, &rules, &plugin_dir, &project_root)?;
         final_results.push(result);
     }
     
@@ -2028,18 +2051,57 @@ pub fn analyze_directory(path: &Path) -> Result<Vec<AnalysisResult>, Box<dyn std
 fn apply_rules_to_result(
     mut result: AnalysisResult,
     rules_path: &Option<PathBuf>,
+    plugin_dir: &Option<PathBuf>,
+    project_root: &Path,
 ) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
     let rules_dir = rules_path
         .clone()
         .or_else(|| Some(PathBuf::from(".vow/rules")))
         .unwrap();
     
+    // Initialize plugin system
+    let mut plugin_manager = plugin::PluginManager::new()
+        .map_err(|e| format!("Failed to initialize plugin manager: {}", e))?;
+        
+    // Add plugin directories
+    if let Some(custom_plugin_dir) = plugin_dir {
+        plugin_manager.add_plugin_dir(custom_plugin_dir);
+    }
+    
+    // Discover and add standard plugin directories
+    let discovered_dirs = plugin::discover_plugin_directories(project_root);
+    for dir in discovered_dirs {
+        plugin_manager.add_plugin_dir(dir);
+    }
+    
+    // Load plugins
+    if let Err(e) = plugin_manager.load_plugins() {
+        eprintln!("Warning: Failed to load plugins: {}", e);
+    }
+    
     if rules_dir.exists() {
         let mut rule_engine = rules::engine::RuleEngine::new();
-        let rule_issues = rule_engine.apply_rules(&rules_dir, &result.path, &fs::read_to_string(&result.path).unwrap_or_default())?;
+        
+        // Extend rules engine with plugin-provided rules
+        if let Err(e) = plugin_manager.extend_rules_engine(&mut rule_engine) {
+            eprintln!("Warning: Failed to extend rules with plugins: {}", e);
+        }
+        
+        let content = fs::read_to_string(&result.path).unwrap_or_default();
+        let rule_issues = rule_engine.apply_rules(&rules_dir, &result.path, &content)?;
         result.issues.extend(rule_issues);
         
-        // Recalculate trust score with rule results
+        // Apply plugin-based analysis
+        match plugin_manager.analyze_with_plugins(&result.path, &content) {
+            Ok(plugin_issues) => {
+                result.issues.extend(plugin_issues);
+            }
+            Err(e) => {
+                eprintln!("Warning: Plugin analysis failed: {}", e);
+            }
+        }
+        
+        // Recalculate trust score with rule results and plugin results
         result.trust_score = calculate_trust_score(&result.issues);
     }
     
@@ -3894,22 +3956,23 @@ pub fn baseline_create(
         return Err(format!("Path does not exist: {}", path).into());
     };
     
+    // Determine project root for baseline operations
+    let project_root = if path_buf.is_file() {
+        path_buf.parent().unwrap_or(Path::new(".")).to_path_buf()
+    } else {
+        path_buf.clone()
+    };
+
     // Apply rules to all results
     let mut final_results = Vec::new();
     for mut result in results {
-        result = apply_rules_to_result(result, &rules)?;
+        // For baseline creation, we don't have plugin_dir parameter, so pass None
+        result = apply_rules_to_result(result, &rules, &None, &project_root)?;
         final_results.push(result);
     }
     
     // Generate baseline from results
     let baseline = baseline::generate_baseline_from_results(&final_results)?;
-    
-    // Save baseline
-    let project_root = if path_buf.is_file() {
-        path_buf.parent().unwrap_or(Path::new(".")).to_path_buf()
-    } else {
-        path_buf
-    };
     
     baseline::save_baseline(&project_root, &baseline)?;
     

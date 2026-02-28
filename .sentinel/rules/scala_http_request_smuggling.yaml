@@ -1,0 +1,126 @@
+name: "scala_http_request_smuggling"
+description: "Detect HTTP request smuggling vulnerabilities in Scala/Play applications"
+severity: "high"
+patterns:
+  # Transfer-Encoding manipulation
+  - type: "contains"
+    pattern: "Transfer-Encoding.*s\""
+  - type: "contains"
+    pattern: 'Transfer-Encoding.*".*" + '
+  - type: "contains"
+    pattern: "setHeader.*Transfer-Encoding"
+  - type: "contains"
+    pattern: "addHeader.*Transfer-Encoding"
+  - type: "contains"
+    pattern: "withHeaders.*Transfer-Encoding"
+  
+  # Content-Length manipulation
+  - type: "contains"
+    pattern: "Content-Length.*s\""
+  - type: "contains"
+    pattern: 'Content-Length.*".*" + '
+  - type: "contains"
+    pattern: "setHeader.*Content-Length"
+  - type: "contains"
+    pattern: "addHeader.*Content-Length"
+  - type: "contains"
+    pattern: "withHeaders.*Content-Length"
+  
+  # Chunked encoding patterns
+  - type: "contains"
+    pattern: '"chunked".*s\""'
+  - type: "contains"
+    pattern: '"chunked".*+.*userInput'
+  - type: "contains"
+    pattern: "chunked.*encoding.*s\""
+  - type: "contains"
+    pattern: "ChunkedTransferEncoding"
+  
+  # Akka HTTP patterns
+  - type: "contains"
+    pattern: "HttpEntity.Chunked"
+  - type: "contains"
+    pattern: "entity.withSizeLimit.*s\""
+  - type: "contains"
+    pattern: "withSizeLimit.*userInput"
+  - type: "contains"
+    pattern: "HttpEntity.withSizeLimit.*s\""
+  
+  # Play Framework patterns
+  - type: "contains"
+    pattern: "request.body.asRaw.*size"
+  - type: "contains"
+    pattern: "rawBuffer.*size.*s\""
+  - type: "contains"
+    pattern: "contentLength.*s\""
+  - type: "contains"
+    pattern: 'request.contentType.*".*" + '
+  
+  # HTTP/1.1 request splitting
+  - type: "contains"
+    pattern: 's".*HTTP/1.1.*$'
+  - type: "contains"
+    pattern: '".*HTTP/1.1.*" + '
+  - type: "contains"
+    pattern: 's".*\\r\\n.*HTTP/1.1.*$'
+  - type: "contains"
+    pattern: 's".*\\n.*HTTP/1.1.*$'
+  
+  # Proxy header manipulation
+  - type: "contains"
+    pattern: "X-Forwarded-For.*s\""
+  - type: "contains"
+    pattern: 'X-Forwarded-For.*".*" + '
+  - type: "contains"
+    pattern: "X-Real-IP.*s\""
+  - type: "contains"
+    pattern: "X-Forwarded-Proto.*s\""
+  - type: "contains"
+    pattern: "X-Forwarded-Host.*s\""
+  
+  # HTTP method override
+  - type: "contains"
+    pattern: "X-HTTP-Method-Override.*s\""
+  - type: "contains"
+    pattern: 'X-HTTP-Method-Override.*".*" + '
+  - type: "contains"
+    pattern: "method.*override.*s\""
+  - type: "contains"
+    pattern: "_method.*s\""
+  
+  # Connection header manipulation
+  - type: "contains"
+    pattern: "Connection.*s\""
+  - type: "contains"
+    pattern: 'Connection.*".*" + '
+  - type: "contains"
+    pattern: 'Connection.*".*keep-alive.*" + '
+  - type: "contains"
+    pattern: 'Connection.*".*close.*" + '
+  
+  # HTTP pipelining issues
+  - type: "contains"
+    pattern: "pipelining.*true"
+  - type: "contains"
+    pattern: "enablePipelining"
+  - type: "contains"
+    pattern: "pipeline.*requests"
+  
+  # Websocket upgrade smuggling
+  - type: "contains"
+    pattern: "Upgrade.*websocket.*s\""
+  - type: "contains"
+    pattern: 'Upgrade.*websocket.*".*" + '
+  - type: "contains"
+    pattern: "Sec-WebSocket-Key.*s\""
+  - type: "contains"
+    pattern: "Sec-WebSocket-Version.*s\""
+  
+  # HTTP/2 downgrade attacks
+  - type: "contains"
+    pattern: "h2c.*upgrade"
+  - type: "contains"
+    pattern: "HTTP2-Settings.*s\""
+  - type: "contains"
+    pattern: 'protocol.*".*HTTP/1.1.*" + '
+file_types: ["scala"]

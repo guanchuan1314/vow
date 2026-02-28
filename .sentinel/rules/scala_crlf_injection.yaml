@@ -1,0 +1,88 @@
+name: "scala_crlf_injection"
+description: "Detect potential CRLF injection vulnerabilities in Scala/Play code"
+severity: "medium"
+patterns:
+  # HTTP header injection through response headers
+  - type: "contains"
+    pattern: "response.setHeader.*s\""
+  - type: "contains"
+    pattern: 'response.setHeader.*".*" + '
+  - type: "contains"
+    pattern: "response.addHeader.*s\""
+  - type: "contains"
+    pattern: 'response.addHeader.*".*" + '
+  - type: "contains"
+    pattern: "withHeaders.*s\""
+  - type: "contains"
+    pattern: 'withHeaders.*".*" + '
+  
+  # Play Framework specific patterns
+  - type: "contains"
+    pattern: "Ok.*withHeaders.*s\""
+  - type: "contains"
+    pattern: "BadRequest.*withHeaders.*s\""
+  - type: "contains"
+    pattern: "Redirect.*withHeaders.*s\""
+  - type: "contains"
+    pattern: "Results.*withHeaders.*s\""
+  - type: "contains"
+    pattern: "withCookies.*s\""
+  - type: "contains"
+    pattern: 'withCookies.*".*" + '
+  
+  # Direct header manipulation
+  - type: "contains"
+    pattern: "Set-Cookie.*s\""
+  - type: "contains"
+    pattern: 'Set-Cookie.*".*" + '
+  - type: "contains"
+    pattern: "Location.*s\""
+  - type: "contains"
+    pattern: 'Location.*".*" + '
+  - type: "contains"
+    pattern: "Content-Type.*s\""
+  - type: "contains"
+    pattern: 'Content-Type.*".*" + '
+  
+  # HTTP response splitting patterns
+  - type: "contains"
+    pattern: 's".*\\r\\n.*$'
+  - type: "contains"
+    pattern: 's".*\\n.*$'
+  - type: "contains"
+    pattern: '".*\\r\\n.*" + '
+  - type: "contains"
+    pattern: '".*\\n.*" + '
+  - type: "contains"
+    pattern: "\\u000D\\u000A"
+  - type: "contains"
+    pattern: "\\u000A"
+  
+  # Logger injection (log forging)
+  - type: "contains"
+    pattern: "logger.info.*s\""
+  - type: "contains"
+    pattern: "logger.error.*s\""
+  - type: "contains"
+    pattern: "logger.warn.*s\""
+  - type: "contains"
+    pattern: "logger.debug.*s\""
+  - type: "contains"
+    pattern: 'log.info.*".*" + '
+  - type: "contains"
+    pattern: 'log.error.*".*" + '
+  
+  # Email header injection
+  - type: "contains"
+    pattern: "mail.setSubject.*s\""
+  - type: "contains"
+    pattern: 'mail.setSubject.*".*" + '
+  - type: "contains"
+    pattern: "mail.addHeader.*s\""
+  - type: "contains"
+    pattern: "email.subject.*s\""
+  - type: "contains"
+    pattern: "email.from.*s\""
+  - type: "contains"
+    pattern: "email.to.*s\""
+file_types: ["scala"]

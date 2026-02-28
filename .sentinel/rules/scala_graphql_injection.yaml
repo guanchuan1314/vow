@@ -1,0 +1,72 @@
+name: "scala_graphql_injection"
+description: "Detect potential GraphQL injection vulnerabilities in Scala/Play code"
+severity: "high"
+patterns:
+  # GraphQL query construction with user input
+  - type: "contains"
+    pattern: "s\"query $"
+  - type: "contains"
+    pattern: "s\"mutation $"
+  - type: "contains"
+    pattern: "s\"subscription $"
+  - type: "contains"
+    pattern: '"query " + '
+  - type: "contains"
+    pattern: '"mutation " + '
+  - type: "contains"
+    pattern: '"subscription " + '
+  
+  # Sangria GraphQL patterns
+  - type: "contains"
+    pattern: "graphql.query(s\""
+  - type: "contains"
+    pattern: "QueryParser.parse(s\""
+  - type: "contains"
+    pattern: "QueryParser.parse(.*+.*)"
+  - type: "contains"
+    pattern: "execute(s\""
+  - type: "contains"
+    pattern: "execute(.*+.*)"
+  - type: "contains"
+    pattern: "Executor.execute(.*s\""
+  
+  # Caliban GraphQL patterns
+  - type: "contains"
+    pattern: "graphQL(s\""
+  - type: "contains"
+    pattern: "GraphQL.execute(s\""
+  - type: "contains"
+    pattern: "GraphQLRequest(s\""
+  
+  # Generic GraphQL patterns
+  - type: "contains"
+    pattern: 's".*{.*$.*}.*"'
+  - type: "contains"
+    pattern: '".*{.*" + userInput + ".*}.*"'
+  - type: "contains"
+    pattern: "s\".*user($"
+  - type: "contains"
+    pattern: "s\".*where.*$"
+  - type: "contains"
+    pattern: "s\".*filter.*$"
+  - type: "contains"
+    pattern: "s\".*orderBy.*$"
+  
+  # Direct variable injection into GraphQL
+  - type: "contains"
+    pattern: "variables.*=.*Map.*s\""
+  - type: "contains"
+    pattern: 'variables.*=.*Map.*".*".*+.*userInput'
+  - type: "contains"
+    pattern: "operationName.*=.*s\""
+  - type: "contains"
+    pattern: 'operationName.*=.*".*".*+.*userInput'
+  
+  # GraphQL over HTTP patterns
+  - type: "contains"
+    pattern: "request.body.*graphql"
+  - type: "contains"
+    pattern: "Json.obj.*query.*s\""
+  - type: "contains"
+    pattern: "Json.obj.*variables.*s\""
+file_types: ["scala"]

@@ -1,0 +1,146 @@
+name: "scala_xml_injection"
+description: "Detect XML injection vulnerabilities in Scala/Play code beyond XXE"
+severity: "high"
+patterns:
+  # XML construction with user input
+  - type: "contains"
+    pattern: "s\"<.*$"
+  - type: "contains"
+    pattern: '"<.*" + '
+  - type: "contains"
+    pattern: "s\".*<tag>$"
+  - type: "contains"
+    pattern: 's".*<$.*>.*"'
+  - type: "contains"
+    pattern: '".*<.*" + userInput + ".*>.*"'
+  
+  # Scala XML literals with interpolation
+  - type: "contains"
+    pattern: "xml.Elem.*s\""
+  - type: "contains"
+    pattern: '<.*{.*s".*$.*"}.*>'
+  - type: "contains"
+    pattern: '<.*{.*userInput.*}.*>'
+  - type: "contains"
+    pattern: "Elem.*s\""
+  
+  # XML attribute injection
+  - type: "contains"
+    pattern: 's".*<.*$.*=.*"'
+  - type: "contains"
+    pattern: '".*<.*" + userInput + "=.*"'
+  - type: "contains"
+    pattern: 's".*<.*attribute="$.*"'
+  - type: "contains"
+    pattern: '<.*attribute={.*s".*$.*"}.*>'
+  
+  # XML namespace injection
+  - type: "contains"
+    pattern: "s\".*xmlns.*$"
+  - type: "contains"
+    pattern: '".*xmlns.*" + '
+  - type: "contains"
+    pattern: "xmlns:.*s\""
+  - type: "contains"
+    pattern: "namespace.*s\""
+  
+  # SOAP XML injection
+  - type: "contains"
+    pattern: "s\".*<soap:.*$"
+  - type: "contains"
+    pattern: 's".*<soapenv:.*$'
+  - type: "contains"
+    pattern: '".*<soap:.*" + '
+  - type: "contains"
+    pattern: "SOAP.*envelope.*s\""
+  
+  # XML comment injection
+  - type: "contains"
+    pattern: "s\".*<!--.*$"
+  - type: "contains"
+    pattern: '".*<!--.*" + '
+  - type: "contains"
+    pattern: 's".*-->.*$'
+  - type: "contains"
+    pattern: "comment.*s\""
+  
+  # CDATA injection
+  - type: "contains"
+    pattern: "s\".*<!\\[CDATA\\[.*$"
+  - type: "contains"
+    pattern: '".*<!\\[CDATA\\[.*" + '
+  - type: "contains"
+    pattern: 's".*\\]\\]>.*$'
+  - type: "contains"
+    pattern: "CDATA.*s\""
+  
+  # XML processing instruction injection
+  - type: "contains"
+    pattern: "s\".*<\\?.*$"
+  - type: "contains"
+    pattern: '".*<\\?.*" + '
+  - type: "contains"
+    pattern: 's".*\\?>.*$'
+  - type: "contains"
+    pattern: "ProcessingInstruction.*s\""
+  
+  # DOM manipulation with user input
+  - type: "contains"
+    pattern: "createElement.*s\""
+  - type: "contains"
+    pattern: 'createElement.*".*" + '
+  - type: "contains"
+    pattern: "createTextNode.*s\""
+  - type: "contains"
+    pattern: "setAttribute.*s\""
+  - type: "contains"
+    pattern: "setAttributeNode.*s\""
+  
+  # XPath injection in XML queries
+  - type: "contains"
+    pattern: "XPath.*compile.*s\""
+  - type: "contains"
+    pattern: 'XPath.*compile.*".*" + '
+  - type: "contains"
+    pattern: "xpath.*evaluate.*s\""
+  - type: "contains"
+    pattern: "selectNodes.*s\""
+  - type: "contains"
+    pattern: "selectSingleNode.*s\""
+  
+  # XML serialization with user input
+  - type: "contains"
+    pattern: "XML.save.*s\""
+  - type: "contains"
+    pattern: 'XML.save.*".*" + '
+  - type: "contains"
+    pattern: "toXMLString.*s\""
+  - type: "contains"
+    pattern: "serialize.*s\""
+  
+  # Play Framework XML patterns
+  - type: "contains"
+    pattern: "request.body.asXml.*s\""
+  - type: "contains"
+    pattern: "Action.*xml.*s\""
+  - type: "contains"
+    pattern: "Ok.*xml.*s\""
+  - type: "contains"
+    pattern: "BadRequest.*xml.*s\""
+  
+  # XML template injection
+  - type: "contains"
+    pattern: "views.xml.*s\""
+  - type: "contains"
+    pattern: "@xml.*s\""
+  - type: "contains"
+    pattern: "Template.*xml.*s\""
+  
+  # XML configuration injection
+  - type: "contains"
+    pattern: "config.*xml.*s\""
+  - type: "contains"
+    pattern: "configuration.*xml.*s\""
+  - type: "contains"
+    pattern: "properties.*xml.*s\""
+file_types: ["scala"]

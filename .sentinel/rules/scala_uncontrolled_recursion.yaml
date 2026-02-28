@@ -1,0 +1,144 @@
+name: "scala_uncontrolled_recursion"
+description: "Detect uncontrolled recursion that can cause stack overflow in Scala/Play code"
+severity: "high"
+patterns:
+  # Direct recursion without termination conditions
+  - type: "contains"
+    pattern: "def.*\\(.*\\).*=.*.*\\(.*\\)"
+  - type: "contains"
+    pattern: "def.*:.*=.*this\\."
+  
+  # Mutual recursion patterns
+  - type: "contains"
+    pattern: "def.*a.*=.*b"
+  - type: "contains"
+    pattern: "def.*b.*=.*a"
+  
+  # Recursive data structure traversal without bounds
+  - type: "contains"
+    pattern: "def.*traverse.*=.*traverse"
+  - type: "contains"
+    pattern: "def.*visit.*=.*visit"
+  - type: "contains"
+    pattern: "def.*walk.*=.*walk"
+  - type: "contains"
+    pattern: "def.*process.*=.*process"
+  
+  # Tail recursion without @tailrec
+  - type: "contains"
+    pattern: "def.*\\(.*\\).*:.*=.*if.*else.*\\("
+  - type: "contains"
+    pattern: "def.*factorial.*=.*factorial"
+  - type: "contains"
+    pattern: "def.*fibonacci.*=.*fibonacci"
+  - type: "contains"
+    pattern: "def.*fib.*=.*fib"
+  
+  # Stream infinite recursion
+  - type: "contains"
+    pattern: "def.*stream.*=.*#::"
+  - type: "contains"
+    pattern: "Stream.continually.*\\("
+  - type: "contains"
+    pattern: "Stream.iterate.*\\("
+  - type: "contains"
+    pattern: "LazyList.continually.*\\("
+  
+  # JSON parsing recursion without depth limit
+  - type: "contains"
+    pattern: "def.*parseJson.*=.*parseJson"
+  - type: "contains"
+    pattern: "def.*parse.*=.*parse.*JsValue"
+  - type: "contains"
+    pattern: "Json.parse.*!.*depth"
+  - type: "contains"
+    pattern: "JsPath.*recNReads.*!.*maxDepth"
+  
+  # XML parsing recursion
+  - type: "contains"
+    pattern: "def.*parseXml.*=.*parseXml"
+  - type: "contains"
+    pattern: "XML.load.*!.*depth"
+  - type: "contains"
+    pattern: "def.*\\(.*Node.*\\).*=.*\\\\.*"
+  
+  # Future recursion patterns
+  - type: "contains"
+    pattern: "def.*future.*=.*Future.*future"
+  - type: "contains"
+    pattern: "Future.*map.*\\("
+  - type: "contains"
+    pattern: "Future.*flatMap.*\\("
+  - type: "contains"
+    pattern: "Promise.*complete.*\\("
+  
+  # Actor recursion patterns
+  - type: "contains"
+    pattern: "def.*receive.*=.*self.*!"
+  - type: "contains"
+    pattern: "context.self.*!.*\\("
+  - type: "contains"
+    pattern: "sender.*!.*\\("
+  - type: "contains"
+    pattern: "actorRef.*!.*\\("
+  
+  # Collection recursion without bounds
+  - type: "contains"
+    pattern: "def.*\\(.*List.*\\).*=.*::"
+  - type: "contains"
+    pattern: "def.*\\(.*Seq.*\\).*=.*++"
+  - type: "contains"
+    pattern: "list.*map.*\\("
+  - type: "contains"
+    pattern: "list.*flatMap.*\\("
+  
+  # Tree traversal recursion
+  - type: "contains"
+    pattern: "def.*\\(.*Tree.*\\).*=.*left.*right"
+  - type: "contains"
+    pattern: "case class.*Tree.*left.*right"
+  - type: "contains"
+    pattern: "def.*traverse.*left.*traverse.*right"
+  - type: "contains"
+    pattern: "case.*Node.*children.*map"
+  
+  # Request processing recursion
+  - type: "contains"
+    pattern: "def.*\\(.*Request.*\\).*=.*\\(.*Request.*\\)"
+  - type: "contains"
+    pattern: "request.*body.*asJson.*\\("
+  - type: "contains"
+    pattern: "Action.*async.*\\{.*\\("
+  
+  # Regex recursion patterns
+  - type: "contains"
+    pattern: "def.*\\(.*String.*\\).*=.*replaceAll.*\\("
+  - type: "contains"
+    pattern: "regex.*replace.*\\("
+  - type: "contains"
+    pattern: "Pattern.*compile.*\\("
+  
+  # File system recursion
+  - type: "contains"
+    pattern: "def.*\\(.*File.*\\).*=.*listFiles.*\\("
+  - type: "contains"
+    pattern: "Files.walk.*!.*maxDepth"
+  - type: "contains"
+    pattern: "def.*readDir.*=.*readDir"
+  
+  # Network request recursion
+  - type: "contains"
+    pattern: "def.*\\(.*URL.*\\).*=.*\\(.*URL.*\\)"
+  - type: "contains"
+    pattern: "WS.url.*get.*map.*\\("
+  - type: "contains"
+    pattern: "http.*request.*\\("
+  
+  # Parsing recursion without bounds
+  - type: "contains"
+    pattern: "def.*parse.*=.*parse.*input"
+  - type: "contains"
+    pattern: "def.*tokenize.*=.*tokenize"
+  - type: "contains"
+    pattern: "grammar.*rule.*\\("
+file_types: ["scala"]

@@ -1,0 +1,130 @@
+name: "scala_memory_leak"
+description: "Detect potential memory leak patterns in Scala/Play applications"
+severity: "medium"
+patterns:
+  # Collection growth without bounds
+  - type: "contains"
+    pattern: "mutable.ListBuffer.*+="
+  - type: "contains"
+    pattern: "mutable.ArrayBuffer.*+="
+  - type: "contains"
+    pattern: "mutable.Map.*+="
+  - type: "contains"
+    pattern: "mutable.Set.*+="
+  - type: "contains"
+    pattern: "collection.*+="
+  - type: "contains"
+    pattern: "cache.*put.*!.*remove"
+  - type: "contains"
+    pattern: "cache.*set.*!.*clear"
+  
+  # Akka Actor memory leaks
+  - type: "contains"
+    pattern: "context.system.scheduler.schedule.*!.*cancel"
+  - type: "contains"
+    pattern: "Cancellable.*!.*cancel"
+  - type: "contains"
+    pattern: "actorRef.*!.*PoisonPill"
+  - type: "contains"
+    pattern: "context.become.*!.*unbecome"
+  - type: "contains"
+    pattern: "context.actorOf.*!.*context.stop"
+  
+  # Stream and Iterator leaks
+  - type: "contains"
+    pattern: "Source.fromFile.*!.*close"
+  - type: "contains"
+    pattern: "FileInputStream.*!.*close"
+  - type: "contains"
+    pattern: "BufferedReader.*!.*close"
+  - type: "contains"
+    pattern: "Scanner.*!.*close"
+  - type: "contains"
+    pattern: "Iterator.*!.*hasNext"
+  - type: "contains"
+    pattern: "Stream.iterate.*!.*take"
+  
+  # Database connection leaks
+  - type: "contains"
+    pattern: "connection.createStatement.*!.*close"
+  - type: "contains"
+    pattern: "preparedStatement.*!.*close"
+  - type: "contains"
+    pattern: "resultSet.*!.*close"
+  - type: "contains"
+    pattern: "DB.withConnection.*!.*close"
+  - type: "contains"
+    pattern: "dataSource.getConnection.*!.*close"
+  
+  # Timer and scheduler leaks
+  - type: "contains"
+    pattern: "Timer.*schedule.*!.*cancel"
+  - type: "contains"
+    pattern: "ScheduledExecutorService.*!.*shutdown"
+  - type: "contains"
+    pattern: "Future.*onComplete.*!.*cancel"
+  - type: "contains"
+    pattern: "Promise.*!.*complete"
+  
+  # ThreadLocal leaks
+  - type: "contains"
+    pattern: "ThreadLocal.*set.*!.*remove"
+  - type: "contains"
+    pattern: "threadLocal.*!.*remove"
+  - type: "contains"
+    pattern: "InheritableThreadLocal.*!.*remove"
+  
+  # Play Framework specific patterns
+  - type: "contains"
+    pattern: "Global.*onStart.*!.*onStop"
+  - type: "contains"
+    pattern: "ApplicationLifecycle.*!.*stop"
+  - type: "contains"
+    pattern: "Akka.*system.*!.*terminate"
+  
+  # Large object allocations in loops
+  - type: "contains"
+    pattern: "for.*new.*Array.*("
+  - type: "contains"
+    pattern: "while.*new.*List.*("
+  - type: "contains"
+    pattern: "map.*new.*Buffer.*("
+  - type: "contains"
+    pattern: "foreach.*new.*StringBuilder.*("
+  
+  # Unbounded recursion patterns
+  - type: "contains"
+    pattern: "def.*\\(.*\\).*:.*=.*.*\\("
+  - type: "contains"
+    pattern: "lazy val.*=.*this"
+  - type: "contains"
+    pattern: "val.*=.*this\\."
+  
+  # Event listener leaks
+  - type: "contains"
+    pattern: "addEventListener.*!.*removeEventListener"
+  - type: "contains"
+    pattern: "addListener.*!.*removeListener"
+  - type: "contains"
+    pattern: "subscribe.*!.*unsubscribe"
+  - type: "contains"
+    pattern: "onComplete.*!.*cancel"
+  
+  # Cache without expiration
+  - type: "contains"
+    pattern: "Cache.*put.*!.*expire"
+  - type: "contains"
+    pattern: "memoize.*!.*clear"
+  - type: "contains"
+    pattern: "cache.*forever"
+  - type: "contains"
+    pattern: "cache.*never.*expire"
+  
+  # WeakReference misuse
+  - type: "contains"
+    pattern: "WeakReference.*get.*==.*null"
+  - type: "contains"
+    pattern: "java.lang.ref.WeakReference.*!.*clear"
+  - type: "contains"
+    pattern: "SoftReference.*!.*clear"
+file_types: ["scala"]

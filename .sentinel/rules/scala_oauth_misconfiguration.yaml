@@ -1,0 +1,112 @@
+name: "scala_oauth_misconfiguration"
+description: "Detect OAuth security misconfigurations in Scala/Play applications"
+severity: "high"
+patterns:
+  # Insecure redirect URIs
+  - type: "contains"
+    pattern: 'redirect_uri.*"http://'
+  - type: "contains"
+    pattern: 'redirectUri.*"http://'
+  - type: "contains"
+    pattern: 'redirect_uri.*".*localhost'
+  - type: "contains"
+    pattern: 'redirect_uri.*".*127.0.0.1'
+  - type: "contains"
+    pattern: 'redirect_uri.*s\""'
+  - type: "contains"
+    pattern: 'redirect_uri.*".*" + '
+  
+  # Weak client secrets
+  - type: "contains"
+    pattern: 'client_secret.*"secret"'
+  - type: "contains"
+    pattern: 'client_secret.*"password"'
+  - type: "contains"
+    pattern: 'client_secret.*"123456"'
+  - type: "contains"
+    pattern: 'client_secret.*"test"'
+  - type: "contains"
+    pattern: 'client_secret.*""'
+  - type: "contains"
+    pattern: 'clientSecret.*"secret"'
+  - type: "contains"
+    pattern: 'clientSecret.*"password"'
+  
+  # Missing PKCE (Proof Key for Code Exchange)
+  - type: "contains"
+    pattern: 'response_type.*"code".*code_challenge.*null'
+  - type: "contains"
+    pattern: 'responseType.*"code".*codeChallenge.*null'
+  - type: "contains"
+    pattern: 'grant_type.*"authorization_code".*code_verifier.*null'
+  
+  # Insecure state parameter handling
+  - type: "contains"
+    pattern: 'state.*=.*null'
+  - type: "contains"
+    pattern: 'state.*=.*""'
+  - type: "contains"
+    pattern: 'state.*=.*"static"'
+  - type: "contains"
+    pattern: 'state.*Random.alphanumeric.take\\(4\\)'
+  
+  # OAuth token exposure in URLs
+  - type: "contains"
+    pattern: 'response_type.*"token"'
+  - type: "contains"
+    pattern: 'responseType.*"token"'
+  - type: "contains"
+    pattern: "implicit.*flow"
+  - type: "contains"
+    pattern: "access_token.*url"
+  
+  # Missing scope validation
+  - type: "contains"
+    pattern: 'scope.*".*admin.*"'
+  - type: "contains"
+    pattern: 'scope.*".*root.*"'
+  - type: "contains"
+    pattern: 'scope.*".*superuser.*"'
+  - type: "contains"
+    pattern: 'scope.*".*\*.*"'
+  
+  # Play OAuth patterns
+  - type: "contains"
+    pattern: "OAuth2.*clientSecret.*s\""
+  - type: "contains"
+    pattern: 'OAuth2.*clientSecret.*".*" + '
+  - type: "contains"
+    pattern: "AuthInfo.*redirectUri.*s\""
+  - type: "contains"
+    pattern: "authCode.*verifier.*null"
+  
+  # ScalaOAuth patterns
+  - type: "contains"
+    pattern: "OAuthConsumer.*secret.*s\""
+  - type: "contains"
+    pattern: 'OAuthConsumer.*secret.*".*" + '
+  - type: "contains"
+    pattern: "OAuth.*callback.*http://"
+  
+  # Deprecated OAuth flows
+  - type: "contains"
+    pattern: 'grant_type.*"password"'
+  - type: "contains"
+    pattern: 'grant_type.*"client_credentials".*scope.*".*user.*"'
+  - type: "contains"
+    pattern: "resource.*owner.*password"
+  
+  # JWT Bearer token misuse
+  - type: "contains"
+    pattern: 'grant_type.*"urn:ietf:params:oauth:grant-type:jwt-bearer".*assertion.*s\""'
+  - type: "contains"
+    pattern: 'assertion.*Jwt.encode.*".*"'
+  
+  # OAuth client registration vulnerabilities
+  - type: "contains"
+    pattern: "dynamic.*registration.*true"
+  - type: "contains"
+    pattern: 'client_uri.*s\""'
+  - type: "contains"
+    pattern: 'registration_endpoint.*s\""'
+file_types: ["scala"]

@@ -1,0 +1,118 @@
+name: "scala_file_upload"
+description: "Detect unrestricted file upload vulnerabilities in Scala/Play applications"
+severity: "high"
+patterns:
+  # Play Framework file upload patterns without validation
+  - type: "contains"
+    pattern: "parse.multipartFormData"
+  - type: "contains"
+    pattern: "request.body.file"
+  - type: "contains"
+    pattern: "TemporaryFile"
+  - type: "contains"
+    pattern: "MultipartFormData.FilePart"
+  
+  # File saving without extension validation
+  - type: "contains"
+    pattern: "file.moveTo"
+  - type: "contains"
+    pattern: "Files.move"
+  - type: "contains"
+    pattern: "Files.copy.*getOriginalFilename"
+  - type: "contains"
+    pattern: "FileOutputStream.*getOriginalFilename"
+  - type: "contains"
+    pattern: "new File.*getOriginalFilename"
+  
+  # Missing MIME type validation
+  - type: "contains"
+    pattern: "contentType.*startsWith.*\".*\""
+  - type: "contains"
+    pattern: "getContentType.*==.*null"
+  - type: "contains"
+    pattern: "mimeType.*==.*null"
+  - type: "contains"
+    pattern: "contentType.*isEmpty"
+  
+  # Missing file size validation
+  - type: "contains"
+    pattern: "file.length.*>"
+  - type: "contains"
+    pattern: "getSize.*>"
+  - type: "contains"
+    pattern: "maxFileSize.*=.*-1"
+  - type: "contains"
+    pattern: "maxLength.*=.*Int.MaxValue"
+  
+  # Dangerous file operations
+  - type: "contains"
+    pattern: "file.getAbsolutePath.*s\""
+  - type: "contains"
+    pattern: 'file.getAbsolutePath.*".*" + '
+  - type: "contains"
+    pattern: "Paths.get.*s\""
+  - type: "contains"
+    pattern: 'Paths.get.*".*" + '
+  - type: "contains"
+    pattern: "new File.*s\""
+  - type: "contains"
+    pattern: 'new File.*".*" + '
+  
+  # Akka HTTP file upload patterns
+  - type: "contains"
+    pattern: "fileUpload.*storeUploadedFile"
+  - type: "contains"
+    pattern: "uploadedFile.*moveTo"
+  - type: "contains"
+    pattern: "Multipart.FormData.*FileData"
+  
+  # Missing executable file validation
+  - type: "contains"
+    pattern: 'filename.*endsWith.*".*exe"'
+  - type: "contains"
+    pattern: 'filename.*endsWith.*".*bat"'
+  - type: "contains"
+    pattern: 'filename.*endsWith.*".*sh"'
+  - type: "contains"
+    pattern: 'filename.*endsWith.*".*jsp"'
+  - type: "contains"
+    pattern: 'filename.*endsWith.*".*php"'
+  - type: "contains"
+    pattern: 'filename.*endsWith.*".*asp"'
+  
+  # Path traversal in upload
+  - type: "contains"
+    pattern: "filename.*contains.*\"..\""
+  - type: "contains"
+    pattern: "getOriginalFilename.*contains.*\"..\""
+  - type: "contains"
+    pattern: "file.getName.*contains.*\"..\""
+  - type: "contains"
+    pattern: "fileName.*replace.*\"..\""
+  
+  # Direct file execution risks
+  - type: "contains"
+    pattern: "Runtime.exec.*uploadPath"
+  - type: "contains"
+    pattern: "ProcessBuilder.*uploadPath"
+  - type: "contains"
+    pattern: "Files.isExecutable.*uploadedFile"
+  
+  # Web accessible upload directory
+  - type: "contains"
+    pattern: 'uploadPath.*".*public.*"'
+  - type: "contains"
+    pattern: 'uploadPath.*".*static.*"'
+  - type: "contains"
+    pattern: 'uploadPath.*".*assets.*"'
+  - type: "contains"
+    pattern: 'uploadDirectory.*".*www.*"'
+  
+  # Missing antivirus scanning
+  - type: "contains"
+    pattern: "file.moveTo.*virusScan.*false"
+  - type: "contains"
+    pattern: "upload.*scan.*false"
+  - type: "contains"
+    pattern: "antivirus.*disabled"
+file_types: ["scala"]

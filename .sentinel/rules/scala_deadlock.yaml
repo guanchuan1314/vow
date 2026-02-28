@@ -1,0 +1,140 @@
+name: "scala_deadlock"
+description: "Detect potential deadlock patterns in Scala/Play concurrent code"
+severity: "high"
+patterns:
+  # Nested synchronized blocks
+  - type: "contains"
+    pattern: "synchronized.*{.*synchronized"
+  - type: "contains"
+    pattern: "this.synchronized.*{.*.*synchronized"
+  - type: "contains"
+    pattern: "lock.*{.*lock"
+  
+  # Multiple lock acquisition
+  - type: "contains"
+    pattern: "acquire.*acquire"
+  - type: "contains"
+    pattern: "lock.*lock"
+  - type: "contains"
+    pattern: "wait.*synchronized"
+  - type: "contains"
+    pattern: "notify.*synchronized"
+  
+  # Akka Actor deadlock patterns
+  - type: "contains"
+    pattern: "Await.result.*actor.*ask"
+  - type: "contains"
+    pattern: "Await.ready.*actorRef.*\\?"
+  - type: "contains"
+    pattern: "blocking.*Future.*await"
+  - type: "contains"
+    pattern: "context.become.*Await"
+  - type: "contains"
+    pattern: "receive.*{.*Await"
+  
+  # Future deadlock patterns
+  - type: "contains"
+    pattern: "Await.result.*Future.*Await"
+  - type: "calls"
+    pattern: "Future.*map.*Await"
+  - type: "contains"
+    pattern: "Future.*flatMap.*Await"
+  - type: "contains"
+    pattern: "for.*yield.*Await"
+  - type: "contains"
+    pattern: "blocking.*{.*Future.*map"
+  
+  # Database connection deadlocks
+  - type: "contains"
+    pattern: "DB.withConnection.*DB.withConnection"
+  - type: "contains"
+    pattern: "withTransaction.*withTransaction"
+  - type: "contains"
+    pattern: "connection.createStatement.*connection.createStatement"
+  
+  # Thread pool exhaustion
+  - type: "contains"
+    pattern: "ExecutionContext.global.*blocking"
+  - type: "contains"
+    pattern: "Future.*ExecutionContext.global.*blocking"
+  - type: "calls"
+    pattern: "parallel.*blocking"
+  - type: "contains"
+    pattern: "par.*synchronized"
+  
+  # Monitor pattern issues
+  - type: "contains"
+    pattern: "wait\\(\\).*!.*synchronized"
+  - type: "contains"
+    pattern: "notify\\(\\).*!.*synchronized"
+  - type: "contains"
+    pattern: "notifyAll\\(\\).*!.*synchronized"
+  - type: "contains"
+    pattern: "wait.*notify"
+  
+  # ReentrantLock deadlocks
+  - type: "contains"
+    pattern: "ReentrantLock.*lock.*lock"
+  - type: "contains"
+    pattern: "lock.lock.*!.*unlock"
+  - type: "contains"
+    pattern: "readLock.*writeLock"
+  - type: "contains"
+    pattern: "writeLock.*readLock"
+  
+  # CountDownLatch misuse
+  - type: "contains"
+    pattern: "countDown.*await.*countDown"
+  - type: "contains"
+    pattern: "await.*!.*countDown"
+  - type: "contains"
+    pattern: "CountDownLatch.*await.*await"
+  
+  # Semaphore deadlocks
+  - type: "contains"
+    pattern: "acquire.*acquire.*!.*release"
+  - type: "contains"
+    pattern: "semaphore.acquire.*semaphore.acquire"
+  - type: "contains"
+    pattern: "tryAcquire.*acquire"
+  
+  # CyclicBarrier deadlocks
+  - type: "contains"
+    pattern: "barrier.await.*barrier.await"
+  - type: "contains"
+    pattern: "CyclicBarrier.*await.*!.*reset"
+  
+  # Executor service deadlocks
+  - type: "contains"
+    pattern: "submit.*get.*submit"
+  - type: "contains"
+    pattern: "invokeAll.*get"
+  - type: "contains"
+    pattern: "shutdown.*awaitTermination.*submit"
+  
+  # Play Framework specific patterns
+  - type: "contains"
+    pattern: "Global.onStart.*Await"
+  - type: "contains"
+    pattern: "Application.mode.*blocking"
+  - type: "contains"
+    pattern: "WS.url.*map.*Await"
+  
+  # Akka Streams deadlocks
+  - type: "contains"
+    pattern: "Source.*runWith.*Await"
+  - type: "contains"
+    pattern: "Sink.*runWith.*blocking"
+  - type: "contains"
+    pattern: "Flow.*run.*synchronized"
+  
+  # Lock ordering issues
+  - type: "contains"
+    pattern: "synchronized.*this.*object"
+  - type: "contains"
+    pattern: "synchronized.*object.*this"
+  - type: "contains"
+    pattern: "lock1.*lock2"
+  - type: "contains"
+    pattern: "lock2.*lock1"
+file_types: ["scala"]

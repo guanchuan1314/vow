@@ -1,0 +1,148 @@
+name: "scala_null_pointer_dereference"
+description: "Detect potential null pointer dereference vulnerabilities in Scala/Play code"
+severity: "medium"
+patterns:
+  # Direct null access without checking
+  - type: "contains"
+    pattern: ".get\\("
+  - type: "contains"
+    pattern: ".apply\\("
+  - type: "contains"
+    pattern: ".head"
+  - type: "contains"
+    pattern: ".tail"
+  - type: "contains"
+    pattern: ".last"
+  - type: "contains"
+    pattern: ".max"
+  - type: "contains"
+    pattern: ".min"
+  
+  # Option misuse
+  - type: "contains"
+    pattern: "Option.*get"
+  - type: "contains"
+    pattern: "Some.*get"
+  - type: "contains"
+    pattern: ".get.*!.*isDefined"
+  - type: "contains"
+    pattern: ".get.*!.*nonEmpty"
+  
+  # Try misuse
+  - type: "contains"
+    pattern: "Try.*get"
+  - type: "contains"
+    pattern: "Success.*get"
+  - type: "contains"
+    pattern: ".get.*!.*isSuccess"
+  
+  # Java interop null issues
+  - type: "contains"
+    pattern: "asInstanceOf.*\\[.*\\].*\\."
+  - type: "contains"
+    pattern: "null.asInstanceOf"
+  - type: "contains"
+    pattern: "java.*null.*\\."
+  - type: "contains"
+    pattern: "\\.toString.*!.*!=.*null"
+  - type: "contains"
+    pattern: "\\.length.*!.*!=.*null"
+  
+  # Collection operations on potentially empty collections
+  - type: "contains"
+    pattern: "List\\(\\).*head"
+  - type: "contains"
+    pattern: "Vector\\(\\).*head"
+  - type: "contains"
+    pattern: "Seq\\(\\).*head"
+  - type: "contains"
+    pattern: "Array\\(\\).*head"
+  - type: "contains"
+    pattern: "collection.*head.*!.*nonEmpty"
+  - type: "contains"
+    pattern: "collection.*last.*!.*nonEmpty"
+  
+  # Map operations without checking
+  - type: "contains"
+    pattern: "map\\(.*\\).*!.*contains"
+  - type: "contains"
+    pattern: "map.*get.*!.*contains"
+  - type: "contains"
+    pattern: "getOrElse.*null"
+  
+  # Pattern matching without None case
+  - type: "contains"
+    pattern: "match.*{.*Some.*}.*!.*None"
+  - type: "contains"
+    pattern: "match.*{.*Success.*}.*!.*Failure"
+  - type: "contains"
+    pattern: "match.*{.*Right.*}.*!.*Left"
+  
+  # Play Framework specific null issues
+  - type: "contains"
+    pattern: "request.body.asJson.get"
+  - type: "contains"
+    pattern: "request.body.asText.get"
+  - type: "contains"
+    pattern: "request.body.asXml.get"
+  - type: "contains"
+    pattern: "request.getQueryString.*\\."
+  - type: "contains"
+    pattern: "session.get.*\\."
+  - type: "contains"
+    pattern: "flash.get.*\\."
+  
+  # Database result null access
+  - type: "contains"
+    pattern: "resultSet.getString.*\\."
+  - type: "contains"
+    pattern: "resultSet.getInt.*\\."
+  - type: "contains"
+    pattern: "resultSet.getObject.*\\."
+  - type: "contains"
+    pattern: "row\\[.*\\].*\\."
+  
+  # JSON null access
+  - type: "contains"
+    pattern: "json.*\\\\.*get"
+  - type: "contains"
+    pattern: "JsPath.*get"
+  - type: "contains"
+    pattern: "as\\[.*\\].*!.*validate"
+  - type: "contains"
+    pattern: "JsValue.*as.*\\."
+  
+  # Akka Actor message handling
+  - type: "contains"
+    pattern: "sender\\(\\).*\\."
+  - type: "contains"
+    pattern: "sender.*!.*!.*ActorRef.noSender"
+  - type: "contains"
+    pattern: "context.parent.*\\."
+  
+  # Unsafe string operations
+  - type: "contains"
+    pattern: "split.*\\[0\\]"
+  - type: "contains"
+    pattern: "split.*\\[1\\]"
+  - type: "contains"
+    pattern: "substring.*!.*length"
+  - type: "contains"
+    pattern: "charAt.*!.*length"
+  
+  # Reflection null access
+  - type: "contains"
+    pattern: "getClass.getField.*get"
+  - type: "contains"
+    pattern: "getClass.getMethod.*invoke"
+  - type: "contains"
+    pattern: "classOf.*newInstance"
+  
+  # Future result access
+  - type: "contains"
+    pattern: "Await.result.*!.*timeout"
+  - type: "contains"
+    pattern: "future.value.get"
+  - type: "contains"
+    pattern: "promise.future.value"
+file_types: ["scala"]

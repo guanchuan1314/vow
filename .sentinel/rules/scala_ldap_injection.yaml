@@ -1,0 +1,84 @@
+name: "scala_ldap_injection"
+description: "Detect potential LDAP injection vulnerabilities in Scala/Play code"
+severity: "high"
+patterns:
+  # LDAP search filter injection
+  - type: "contains"
+    pattern: "s\"(cn=$"
+  - type: "contains"
+    pattern: "s\"(uid=$"
+  - type: "contains"
+    pattern: "s\"(mail=$"
+  - type: "contains"
+    pattern: "s\"(sn=$"
+  - type: "contains"
+    pattern: "s\"(givenName=$"
+  - type: "contains"
+    pattern: "s\"(objectClass=$"
+  - type: "contains"
+    pattern: "s\"(memberOf=$"
+  - type: "contains"
+    pattern: "s\"(distinguishedName=$"
+  
+  # String concatenation patterns
+  - type: "contains"
+    pattern: '"(cn=" + '
+  - type: "contains"
+    pattern: '"(uid=" + '
+  - type: "contains"
+    pattern: '"(mail=" + '
+  - type: "contains"
+    pattern: '"(sn=" + '
+  - type: "contains"
+    pattern: '"(givenName=" + '
+  - type: "contains"
+    pattern: '"(objectClass=" + '
+  - type: "contains"
+    pattern: '"(memberOf=" + '
+  - type: "contains"
+    pattern: '"(distinguishedName=" + '
+  
+  # JNDI LDAP patterns
+  - type: "contains"
+    pattern: "InitialDirContext.*s\""
+  - type: "contains"
+    pattern: 'InitialDirContext.*".*" + '
+  - type: "contains"
+    pattern: "DirContext.search.*s\""
+  - type: "contains"
+    pattern: 'DirContext.search.*".*" + '
+  - type: "contains"
+    pattern: "SearchControls.*s\""
+  - type: "contains"
+    pattern: "NamingEnumeration.*s\""
+  
+  # Spring LDAP patterns
+  - type: "contains"
+    pattern: "ldapTemplate.search.*s\""
+  - type: "contains"
+    pattern: "ldapTemplate.searchForObject.*s\""
+  - type: "contains"
+    pattern: "ldapTemplate.find.*s\""
+  - type: "contains"
+    pattern: "ldapTemplate.findByDn.*s\""
+  
+  # Apache Directory API patterns
+  - type: "contains"
+    pattern: "searchRequest.setFilter.*s\""
+  - type: "contains"
+    pattern: 'searchRequest.setFilter.*".*" + '
+  - type: "contains"
+    pattern: "ExprNode.*s\""
+  
+  # Generic LDAP filter construction
+  - type: "contains"
+    pattern: "filter.*=.*s\""
+  - type: "contains"
+    pattern: 'filter.*=.*".*" + userInput'
+  - type: "contains"
+    pattern: "searchFilter.*=.*s\""
+  - type: "contains"
+    pattern: "baseDN.*=.*s\""
+  - type: "contains"
+    pattern: "searchBase.*=.*s\""
+file_types: ["scala"]

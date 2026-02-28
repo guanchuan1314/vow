@@ -1,0 +1,96 @@
+name: "scala_jwt_weakness"
+description: "Detect JWT security weaknesses in Scala/Play applications"
+severity: "high"
+patterns:
+  # Weak JWT secrets
+  - type: "contains"
+    pattern: 'Jwt.encode.*"secret"'
+  - type: "contains"
+    pattern: 'Jwt.encode.*"password"'
+  - type: "contains"
+    pattern: 'Jwt.encode.*"123456"'
+  - type: "contains"
+    pattern: 'Jwt.encode.*"key"'
+  - type: "contains"
+    pattern: 'Jwt.encode.*"test"'
+  - type: "contains"
+    pattern: 'Jwt.encode.*""'
+  - type: "contains"
+    pattern: "Jwt.encode.*null"
+  
+  # JWT algorithm confusion
+  - type: "contains"
+    pattern: 'algorithm.*=.*"none"'
+  - type: "contains"
+    pattern: 'JwtAlgorithm.none'
+  - type: "contains"
+    pattern: 'setAlgorithm.*"none"'
+  - type: "contains"
+    pattern: "disableSignatureVerification"
+  - type: "contains"
+    pattern: "verifySignature.*false"
+  
+  # Play-specific JWT patterns
+  - type: "contains"
+    pattern: 'play.api.libs.crypto.CookieSigner.*".*"'
+  - type: "contains"
+    pattern: 'CryptoConfig.*".*"'
+  - type: "contains"
+    pattern: 'jwt.secret.*".*"'
+  - type: "contains"
+    pattern: 'application.secret.*".*"'
+  
+  # Nimbus JWT patterns
+  - type: "contains"
+    pattern: 'JWSVerifier.*".*"'
+  - type: "contains"
+    pattern: 'MACSigner.*".*"'
+  - type: "contains"
+    pattern: 'MACVerifier.*".*"'
+  - type: "contains"
+    pattern: 'new HMACVerifier.*".*"'
+  
+  # JWT decode without verification
+  - type: "contains"
+    pattern: "Jwt.decode.*verify.*false"
+  - type: "contains"
+    pattern: "JWT.decode.*verify.*false"
+  - type: "contains"
+    pattern: "decodeAndVerify.*false"
+  - type: "contains"
+    pattern: "parse.*verify.*false"
+  
+  # Hardcoded JWT signing keys
+  - type: "contains"
+    pattern: 'hmacShaKeyFor.*".*"'
+  - type: "contains"
+    pattern: 'Keys.hmacShaKeyFor.*".*"'
+  - type: "contains"
+    pattern: 'secretKeyFor.*".*"'
+  - type: "contains"
+    pattern: 'getBytes.*".*"'
+  
+  # JWT with sensitive data in payload
+  - type: "contains"
+    pattern: 'Jwt.encode.*password'
+  - type: "contains"
+    pattern: 'Jwt.encode.*secret'
+  - type: "contains"
+    pattern: 'Jwt.encode.*apiKey'
+  - type: "contains"
+    pattern: 'Jwt.encode.*token'
+  - type: "contains"
+    pattern: 'Jwt.encode.*ssn'
+  - type: "contains"
+    pattern: 'Jwt.encode.*creditCard'
+  
+  # Insecure JWT storage
+  - type: "contains"
+    pattern: "localStorage.*jwt"
+  - type: "contains"
+    pattern: "sessionStorage.*jwt"
+  - type: "contains"
+    pattern: 'cookie.*jwt.*secure.*false'
+  - type: "contains"
+    pattern: 'cookie.*jwt.*httpOnly.*false'
+file_types: ["scala"]

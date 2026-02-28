@@ -36,9 +36,11 @@ print("Hello world")
         true, // no_cache
         false,
         false,
-        false, // no baseline
+        None, // diff
         false, // no fix
         true,  // suggest
+        None,  // min_severity
+        false, // strict
     );
     
     // Should complete successfully even with issues

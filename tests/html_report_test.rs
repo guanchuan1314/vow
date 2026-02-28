@@ -32,6 +32,7 @@ api_key = "secret123"
             total_time_seconds: 0.1,
             files_skipped: 0,
             skipped_reasons: HashMap::new(),
+            suppressed_issues: 0,
         },
     };
     
@@ -78,6 +79,7 @@ fn test_html_report_empty_results() {
             total_time_seconds: 0.0,
             files_skipped: 0,
             skipped_reasons: HashMap::new(),
+            suppressed_issues: 0,
         },
     };
     
@@ -105,6 +107,7 @@ fn test_html_print_report() {
             total_time_seconds: 0.2,
             files_skipped: 0,
             skipped_reasons: HashMap::new(),
+            suppressed_issues: 0,
         },
     };
     

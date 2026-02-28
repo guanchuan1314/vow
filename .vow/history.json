@@ -1,0 +1,100 @@
+{
+  "version": "0.1.0",
+  "scans": [
+    {
+      "timestamp": "2026-02-28T15:40:19.596084675Z",
+      "total_files": 1,
+      "total_issues": 4,
+      "avg_score": 37,
+      "issues_by_severity": {
+        "critical": 1,
+        "high": 2,
+        "medium": 1
+      },
+      "issues_by_rule": {
+        "dangerous_deserialize": 1,
+        "exec_usage": 1,
+        "process_injection": 1,
+        "system_calls": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-02-28T15:40:32.720122380Z",
+      "total_files": 1,
+      "total_issues": 10,
+      "avg_score": 0,
+      "issues_by_severity": {
+        "medium": 1,
+        "critical": 3,
+        "high": 6
+      },
+      "issues_by_rule": {
+        "system_calls": 1,
+        "exec_usage": 1,
+        "process_injection": 3,
+        "dangerous_deserialize": 3,
+        "eval_usage": 2
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-02-28T15:40:44.572848913Z",
+      "total_files": 1,
+      "total_issues": 10,
+      "avg_score": 0,
+      "issues_by_severity": {
+        "critical": 3,
+        "high": 6,
+        "medium": 1
+      },
+      "issues_by_rule": {
+        "exec_usage": 1,
+        "eval_usage": 2,
+        "system_calls": 1,
+        "process_injection": 3,
+        "dangerous_deserialize": 3
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-02-28T15:40:56.398775131Z",
+      "total_files": 1,
+      "total_issues": 3,
+      "avg_score": 52,
+      "issues_by_severity": {
+        "critical": 1,
+        "medium": 1,
+        "high": 1
+      },
+      "issues_by_rule": {
+        "dangerous_deserialize": 1,
+        "system_calls": 1,
+        "process_injection": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-02-28T15:41:13.482829470Z",
+      "total_files": 1,
+      "total_issues": 3,
+      "avg_score": 52,
+      "issues_by_severity": {
+        "critical": 1,
+        "medium": 1,
+        "high": 1
+      },
+      "issues_by_rule": {
+        "system_calls": 1,
+        "process_injection": 1,
+        "dangerous_deserialize": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    }
+  ]
+}

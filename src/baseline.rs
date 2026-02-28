@@ -225,6 +225,7 @@ mod tests {
             message: "Dangerous eval usage".to_string(),
             line: Some(2),
             rule: Some("eval_usage".to_string()),
+            suggestion: None,
         };
         
         let fingerprint = create_issue_fingerprint(&test_file, &issue, content).unwrap();
@@ -247,6 +248,7 @@ mod tests {
             message: "Dangerous eval usage".to_string(),
             line: Some(1),
             rule: Some("eval_usage".to_string()),
+            suggestion: None,
         };
         
         let fingerprint = create_issue_fingerprint(&test_file, &baseline_issue, content).unwrap();

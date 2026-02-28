@@ -5,12 +5,13 @@ pub mod baseline;
 pub mod diff;
 pub mod fix;
 pub mod stats;
+pub mod ignore;
 // pub mod scanner; // Temporarily disabled - requires async networking
 
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io::{self, Read};
-use ignore::WalkBuilder;
+use ::ignore::WalkBuilder;
 use serde::{Deserialize, Serialize};
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
@@ -194,6 +195,7 @@ pub struct ProjectSummary {
     pub total_time_seconds: f32,
     pub files_skipped: usize,
     pub skipped_reasons: std::collections::HashMap<String, usize>,
+    pub suppressed_issues: usize,
 }
 
 #[derive(Debug)]
@@ -201,6 +203,7 @@ pub struct AnalysisMetrics {
     pub total_time_seconds: f32,
     pub files_skipped: usize,
     pub skipped_reasons: std::collections::HashMap<String, usize>,
+    pub suppressed_issues: usize,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -371,6 +374,7 @@ pub fn watch_files(
     fix: bool,
     suggest: bool,
     min_severity_str: Option<String>,
+    strict: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
@@ -460,7 +464,7 @@ pub fn watch_files(
     if !final_quiet {
         println!("🔍 Running initial analysis...");
     }
-    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None, fix, suggest, min_severity_str.clone())?;
+    run_single_analysis(&path, &final_format, &rules, threshold, ci, verbose, final_quiet, max_file_size, max_depth, max_issues, no_cache, summary, baseline, None, fix, suggest, min_severity_str.clone(), strict)?;
 
     // Debouncing state
     let mut last_events: HashMap<PathBuf, SystemTime> = HashMap::new();
@@ -496,7 +500,8 @@ pub fn watch_files(
                             max_file_size,
                             max_depth,
                             max_issues,
-                            &min_severity
+                            &min_severity,
+                            strict
                         )?;
                     },
                     Err(e) => {
@@ -526,6 +531,7 @@ fn handle_watch_event(
     _max_depth: usize,
     max_issues: usize,
     min_severity: &Option<Severity>,
+    strict: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     
     // Only handle write/create events for performance
@@ -570,7 +576,7 @@ fn handle_watch_event(
         }
 
         // Analyze the changed file
-        analyze_changed_file(&path, format, rules, threshold, ci, verbose, quiet, max_issues, min_severity)?;
+        analyze_changed_file(&path, format, rules, threshold, ci, verbose, quiet, max_issues, min_severity, strict)?;
     }
 
     Ok(())
@@ -587,6 +593,7 @@ fn analyze_changed_file(
     quiet: bool,
     max_issues: usize,
     min_severity: &Option<Severity>,
+    strict: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let timestamp = chrono::Local::now().format("%H:%M:%S");
     
@@ -596,9 +603,9 @@ fn analyze_changed_file(
 
     let analysis_start = Instant::now();
     
-    // Analyze the file
-    let mut result = match analyze_file_with_limits_verbose(file_path, max_issues, verbose) {
-        Ok(result) => result,
+    // Analyze the file with ignore filtering
+    let (mut result, suppressed_count) = match analyze_file_with_limits_verbose_ignore(file_path, max_issues, verbose, strict) {
+        Ok((result, suppressed)) => (result, suppressed),
         Err(e) => {
             if !quiet {
                 eprintln!("❌ [{}] Error analyzing {}: {}", timestamp, file_path.display(), e);
@@ -632,21 +639,29 @@ fn analyze_changed_file(
         },
         "terminal" | _ => {
             // Terminal format with clear output
+            let suppressed_info = if suppressed_count > 0 {
+                format!(", {} suppressed", suppressed_count)
+            } else {
+                String::new()
+            };
+            
             if result.issues.is_empty() {
                 if !quiet {
-                    println!("✅ [{}] {} - Trust Score: {}% ({}ms)", 
+                    println!("✅ [{}] {} - Trust Score: {}% ({}ms{})", 
                            timestamp, 
                            file_path.file_name().unwrap_or_default().to_string_lossy(),
                            result.trust_score,
-                           analysis_duration.as_millis());
+                           analysis_duration.as_millis(),
+                           suppressed_info);
                 }
             } else {
-                println!("⚠️ [{}] {} - Trust Score: {}% ({} issues, {}ms)",
+                println!("⚠️ [{}] {} - Trust Score: {}% ({} issues, {}ms{})",
                        timestamp,
                        file_path.file_name().unwrap_or_default().to_string_lossy(),
                        result.trust_score,
                        result.issues.len(),
-                       analysis_duration.as_millis());
+                       analysis_duration.as_millis(),
+                       suppressed_info);
 
                 // Show issues
                 for issue in &result.issues {
@@ -698,6 +713,7 @@ fn run_single_analysis(
     fix: bool,
     suggest: bool,
     min_severity_str: Option<String>,
+    strict: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Run regular analysis once
     let exit_code = check_input(
@@ -724,7 +740,8 @@ fn run_single_analysis(
         diff,
         fix,
         suggest,
-        min_severity_str
+        min_severity_str,
+        strict
     )?;
     
     if exit_code != 0 && verbose {
@@ -776,6 +793,7 @@ pub fn check_input(
     fix: bool,
     suggest: bool,
     min_severity_str: Option<String>,
+    strict: bool,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -899,10 +917,14 @@ pub fn check_input(
         // Analyze only the changed files
         let start_time = std::time::Instant::now();
         let mut results = Vec::new();
+        let mut total_suppressed = 0;
         
         for file_path in supported_changed_files {
-            match analyze_file_with_limits(&file_path, max_issues) {
-                Ok(result) => results.push(result),
+            match analyze_file_with_limits_verbose_ignore(&file_path, max_issues, verbose, strict) {
+                Ok((result, suppressed_count)) => {
+                    results.push(result);
+                    total_suppressed += suppressed_count;
+                },
                 Err(e) => {
                     if !final_quiet {
                         eprintln!("Warning: Failed to analyze {}: {}", file_path.display(), e);
@@ -915,6 +937,7 @@ pub fn check_input(
             total_time_seconds: start_time.elapsed().as_secs_f32(),
             files_skipped: 0,
             skipped_reasons: std::collections::HashMap::new(),
+            suppressed_issues: total_suppressed,
         };
         
         (results, metrics)
@@ -926,12 +949,16 @@ pub fn check_input(
         
         let start_time = std::time::Instant::now();
         let mut results = Vec::new();
+        let mut total_suppressed = 0;
         
         for file_path in file_paths {
             let path_buf = PathBuf::from(file_path);
             if path_buf.exists() && path_buf.is_file() && is_supported_file(&path_buf) {
-                match analyze_file_with_limits(&path_buf, max_issues) {
-                    Ok(result) => results.push(result),
+                match analyze_file_with_limits_verbose_ignore(&path_buf, max_issues, verbose, strict) {
+                    Ok((result, suppressed_count)) => {
+                        results.push(result);
+                        total_suppressed += suppressed_count;
+                    },
                     Err(e) => {
                         if !final_quiet {
                             eprintln!("Warning: Failed to analyze {}: {}", file_path, e);
@@ -945,6 +972,7 @@ pub fn check_input(
             total_time_seconds: start_time.elapsed().as_secs_f32(),
             files_skipped: 0,
             skipped_reasons: std::collections::HashMap::new(),
+            suppressed_issues: total_suppressed,
         };
         (results, metrics)
     } else if path == "-" {
@@ -952,25 +980,28 @@ pub fn check_input(
         let mut buffer = String::new();
         io::stdin().read_to_string(&mut buffer)?;
         let stdin_path = PathBuf::from("<stdin>");
-        let result = vec![analyze_content_with_limits(&stdin_path, &buffer, max_issues)?];
+        let (result, suppressed_count) = analyze_content_with_limits_verbose_ignore(&stdin_path, &buffer, max_issues, verbose, strict)?;
         let metrics = AnalysisMetrics {
             total_time_seconds: 0.0,
             files_skipped: 0,
             skipped_reasons: std::collections::HashMap::new(),
+            suppressed_issues: suppressed_count,
         };
+        let result = vec![result];
         (result, metrics)
     } else {
         let path_buf = PathBuf::from(&path);
         if path_buf.is_file() {
-            let result = vec![analyze_file_with_limits(&path_buf, max_issues)?];
+            let (result, suppressed_count) = analyze_file_with_limits_verbose_ignore(&path_buf, max_issues, verbose, strict)?;
             let metrics = AnalysisMetrics {
                 total_time_seconds: 0.0,
                 files_skipped: 0,
                 skipped_reasons: std::collections::HashMap::new(),
+                suppressed_issues: suppressed_count,
             };
-            (result, metrics)
+            (vec![result], metrics)
         } else if path_buf.is_dir() {
-            analyze_directory_parallel(&path_buf, verbose, truly_quiet, max_file_size, max_depth, max_issues, no_cache)?
+            analyze_directory_parallel_ignore(&path_buf, verbose, truly_quiet, max_file_size, max_depth, max_issues, no_cache, strict)?
         } else {
             return Err(format!("Path does not exist: {}", path).into());
         }
@@ -1076,6 +1107,7 @@ pub fn check_input(
         metrics.total_time_seconds,
         metrics.files_skipped,
         metrics.skipped_reasons,
+        metrics.suppressed_issues,
     );
     
     // Generate reports
@@ -1153,6 +1185,50 @@ pub fn analyze_content_with_limits(path: &Path, content: &str, max_issues: usize
 pub fn analyze_file_with_limits_verbose(path: &Path, max_issues: usize, verbose: bool) -> Result<AnalysisResult, Box<dyn std::error::Error>> {
     let content = fs::read_to_string(path)?;
     analyze_content_with_limits_verbose(path, &content, max_issues, verbose)
+}
+
+/// Analyze a single file with issue limits, verbose option, and ignore filtering
+pub fn analyze_file_with_limits_verbose_ignore(
+    path: &Path, 
+    max_issues: usize, 
+    verbose: bool, 
+    strict: bool
+) -> Result<(AnalysisResult, usize), Box<dyn std::error::Error>> {
+    let content = fs::read_to_string(path)?;
+    analyze_content_with_limits_verbose_ignore(path, &content, max_issues, verbose, strict)
+}
+
+/// Analyze content with limits, verbose option, and ignore filtering
+pub fn analyze_content_with_limits_verbose_ignore(
+    path: &Path, 
+    content: &str, 
+    max_issues: usize, 
+    verbose: bool, 
+    strict: bool
+) -> Result<(AnalysisResult, usize), Box<dyn std::error::Error>> {
+    let mut result = analyze_content_with_limits_verbose(path, content, max_issues, verbose)?;
+    
+    // Parse ignore directives from content
+    let directives = ignore::parse_ignore_directives(content, result.file_type.clone());
+    
+    // Apply ignore filtering
+    let (filtered_issues, suppressed_count) = ignore::filter_ignored_issues(
+        result.issues, 
+        &directives, 
+        strict
+    );
+    
+    // Update result with filtered issues
+    result.issues = filtered_issues;
+    
+    // Recalculate trust score after filtering
+    result.trust_score = calculate_trust_score(&result.issues);
+    
+    if verbose && suppressed_count > 0 {
+        println!("  📝 Suppressed {} issues via ignore directives", suppressed_count);
+    }
+    
+    Ok((result, suppressed_count))
 }
 
 /// Analyze a single file with issue limits (non-verbose wrapper)
@@ -1303,6 +1379,7 @@ pub fn analyze_directory_parallel(
     max_depth: usize,
     max_issues: usize,
     no_cache: bool,
+    strict: bool,
 ) -> Result<(Vec<AnalysisResult>, AnalysisMetrics), Box<dyn std::error::Error>> {
     let start_time = Instant::now();
     let mut file_candidates = Vec::new();
@@ -1335,8 +1412,8 @@ pub fn analyze_directory_parallel(
     ]);
     
     // Optimized filter that processes exclusions before directory traversal
-    walker.filter_entry(move |entry| {
-        if entry.file_type().map_or(false, |ft| ft.is_dir()) {
+    walker.filter_entry(move |entry: &::ignore::DirEntry| {
+        if entry.file_type().map_or(false, |ft: std::fs::FileType| ft.is_dir()) {
             let name = entry.file_name().to_string_lossy();
             // O(1) lookup instead of linear scan
             !default_excludes.contains(name.as_ref())
@@ -1455,8 +1532,8 @@ pub fn analyze_directory_parallel(
         
         if !cache_hit {
             // Cache miss - analyze file
-            match analyze_file_with_limits_verbose(&file_path, max_issues, verbose) {
-                Ok(result) => {
+            match analyze_file_with_limits_verbose_ignore(&file_path, max_issues, verbose, strict) {
+                Ok((result, _suppressed_count)) => {
                     let duration = file_start.elapsed();
                     
                     // Update cache with new result
@@ -1565,6 +1642,296 @@ pub fn analyze_directory_parallel(
         total_time_seconds: total_duration.as_secs_f32(),
         files_skipped: skipped_files,
         skipped_reasons,
+        suppressed_issues: 0, // Legacy function doesn't support ignore filtering
+    };
+    
+    Ok((final_results, metrics))
+}
+
+/// Analyze all supported files in a directory with parallel processing, advanced features, and ignore filtering
+pub fn analyze_directory_parallel_ignore(
+    path: &Path,
+    verbose: bool,
+    quiet: bool,
+    max_file_size_mb: u64,
+    max_depth: usize,
+    max_issues: usize,
+    no_cache: bool,
+    strict: bool,
+) -> Result<(Vec<AnalysisResult>, AnalysisMetrics), Box<dyn std::error::Error>> {
+    let start_time = Instant::now();
+    let mut file_candidates = Vec::new();
+    let mut skipped_files = 0;
+    let mut skipped_reasons = std::collections::HashMap::new();
+    let max_file_size_bytes = max_file_size_mb * 1024 * 1024;
+    
+    // Create walker with optimized exclusions and .vowignore support
+    let mut walker = WalkBuilder::new(path);
+    walker
+        .hidden(false) // Don't automatically skip hidden files
+        .git_ignore(true) // Respect .gitignore
+        .git_global(false) // Don't use global git config
+        .git_exclude(false) // Don't use .git/info/exclude
+        .max_depth(Some(max_depth)); // Apply depth limit
+    
+    // Add comprehensive default directory exclusions (processed BEFORE walking into them)
+    let default_excludes = std::collections::HashSet::from([
+        "node_modules", ".git", "dist", "build", "target", ".vow", 
+        "__pycache__", ".next", ".nuxt", "vendor", "coverage", 
+        ".venv", "venv", ".cache", "tmp", "temp", ".tox", "env", ".env",
+        ".pytest_cache", ".mypy_cache", ".ruff_cache", ".black_cache",
+        "logs", "log", "*.log", ".DS_Store", "Thumbs.db", ".sass-cache",
+        "bower_components", "jspm_packages", "web_modules", ".yarn",
+        ".pnp", ".pnp.js", "lerna-debug.log*", ".nyc_output", 
+        "lib-cov", ".grunt", ".lock-wscript", ".wafpickle-*", 
+        ".node_repl_history", ".npm", ".eslintcache", ".stylelintcache",
+        ".rpt2_cache/", ".rts2_cache_cjs/", ".rts2_cache_es/",
+        ".rts2_cache_umd/", ".optional", ".fusebox/", ".dynamodb/"
+    ]);
+    
+    // Optimized filter that processes exclusions before directory traversal
+    walker.filter_entry(move |entry| {
+        if entry.file_type().map_or(false, |ft| ft.is_dir()) {
+            let name = entry.file_name().to_string_lossy();
+            // O(1) lookup instead of linear scan
+            !default_excludes.contains(name.as_ref())
+        } else {
+            true
+        }
+    });
+    
+    // Add .vowignore file support (gitignore-style patterns)
+    walker.add_custom_ignore_filename(".vowignore");
+    
+    if !quiet {
+        println!("🔍 Scanning directory: {}", path.display());
+    }
+    
+    // Load cache if enabled
+    let mut cache = if no_cache {
+        Cache::new()
+    } else {
+        load_cache(path).unwrap_or_else(|_| Cache::new())
+    };
+    
+    let mut cached_files = 0;
+    
+    // Phase 1: Collect all files and filter by size/type
+    for result in walker.build() {
+        match result {
+            Ok(entry) => {
+                if entry.file_type().map_or(false, |ft| ft.is_file()) {
+                    let file_path = entry.path();
+                    if is_supported_file(file_path) {
+                        // Check file size
+                        match fs::metadata(file_path) {
+                            Ok(metadata) => {
+                                if metadata.len() > max_file_size_bytes {
+                                    skipped_files += 1;
+                                    *skipped_reasons.entry("too_large".to_string()).or_insert(0) += 1;
+                                    if verbose {
+                                        println!("⏭️  Skipping {} ({}MB > {}MB)", 
+                                               file_path.display(),
+                                               metadata.len() / (1024 * 1024),
+                                               max_file_size_mb);
+                                    }
+                                    continue;
+                                }
+                            },
+                            Err(e) => {
+                                skipped_files += 1;
+                                *skipped_reasons.entry("metadata_error".to_string()).or_insert(0) += 1;
+                                if verbose {
+                                    eprintln!("⚠️  Cannot read metadata for {}: {}", file_path.display(), e);
+                                }
+                                continue;
+                            }
+                        }
+                        
+                        // Add to candidates with priority information
+                        let file_type = detect_file_type(file_path);
+                        let priority = file_type.get_priority();
+                        file_candidates.push((file_path.to_path_buf(), priority));
+                    }
+                }
+            }
+            Err(e) => {
+                if verbose {
+                    eprintln!("⚠️  Error walking directory: {}", e);
+                }
+            },
+        }
+    }
+    
+    // Phase 2: Sort files by priority (high priority first)
+    file_candidates.sort_by_key(|(_, priority)| *priority);
+    
+    if !quiet {
+        println!("📋 Found {} files to analyze (skipped {})", file_candidates.len(), skipped_files);
+    }
+    
+    // Phase 3: Check cache and process files in parallel
+    let results = Arc::new(Mutex::new(Vec::new()));
+    let cached_count = Arc::new(Mutex::new(0usize));
+    let processed_count = Arc::new(Mutex::new(0usize));
+    let suppressed_count = Arc::new(Mutex::new(0usize));
+    let total_files = file_candidates.len();
+    let cache_arc = Arc::new(Mutex::new(cache));
+    
+    // Use rayon to process files in parallel with cache checking
+    file_candidates.into_par_iter().for_each(|(file_path, _priority)| {
+        let file_start = Instant::now();
+        
+        // Check cache first
+        let cache_hit = if no_cache {
+            false
+        } else {
+            match check_cache(&cache_arc, &file_path) {
+                Ok(Some(cached_result)) => {
+                    // Cache hit - use cached result
+                    if let Ok(mut results_lock) = results.lock() {
+                        results_lock.push(cached_result);
+                    }
+                    if let Ok(mut count) = cached_count.lock() {
+                        *count += 1;
+                    }
+                    if let Ok(mut count) = processed_count.lock() {
+                        *count += 1;
+                    }
+                    
+                    if verbose {
+                        println!("💾 Cached: {} (cache hit)", file_path.display());
+                    }
+                    true
+                }
+                Ok(None) => false, // Cache miss
+                Err(_) => false,   // Cache error, proceed with analysis
+            }
+        };
+        
+        if !cache_hit {
+            // Cache miss - analyze file with ignore processing
+            match analyze_file_with_limits_verbose_ignore(&file_path, max_issues, verbose, strict) {
+                Ok((result, suppressed_count_file)) => {
+                    let duration = file_start.elapsed();
+                    
+                    // Update suppressed count
+                    if let Ok(mut suppressed_lock) = suppressed_count.lock() {
+                        *suppressed_lock += suppressed_count_file;
+                    }
+                    
+                    // Update cache with new result
+                    if !no_cache {
+                        let _ = update_cache(&cache_arc, &file_path, &result);
+                    }
+                    
+                    // Thread-safe result storage
+                    {
+                        if let Ok(mut results_lock) = results.lock() {
+                            results_lock.push(result);
+                        }
+                    }
+                    
+                    // Thread-safe progress reporting (respects quiet flag)
+                    if !quiet {
+                        if let Ok(mut count) = processed_count.lock() {
+                            *count += 1;
+                            let current_count = *count;
+                        
+                        if verbose || (current_count % 10 == 0) {
+                            let elapsed = start_time.elapsed();
+                            let files_per_sec = current_count as f32 / elapsed.as_secs_f32();
+                            let eta_seconds = if files_per_sec > 0.0 {
+                                (total_files - current_count) as f32 / files_per_sec
+                            } else {
+                                0.0
+                            };
+                            
+                            println!("📊 Progress: {}/{} files ({:.1}f/s, ETA: {:.0}s) - {} in {:.2}s", 
+                                   current_count, total_files, files_per_sec, eta_seconds,
+                                   file_path.file_name().unwrap_or_default().to_string_lossy(),
+                                   duration.as_secs_f32());
+                        }
+                        }
+                    } else {
+                        // Still need to increment counter for final metrics, even in quiet mode
+                        if let Ok(mut count) = processed_count.lock() {
+                            *count += 1;
+                        }
+                    }
+                    
+                    if verbose && duration.as_secs() > 3 {
+                        println!("⏳ WARNING: File {} took {:.1}s (target: <3s)", 
+                               file_path.display(), duration.as_secs_f32());
+                    }
+                },
+                Err(e) => {
+                    if verbose {
+                        eprintln!("❌ Failed to analyze {}: {}", file_path.display(), e);
+                    }
+                    
+                    // Still increment counter for progress
+                    if !quiet {
+                        if let Ok(mut count) = processed_count.lock() {
+                            *count += 1;
+                        }
+                    } else {
+                        if let Ok(mut count) = processed_count.lock() {
+                            *count += 1;
+                        }
+                    }
+                },
+            }
+        }
+    });
+    
+    let total_duration = start_time.elapsed();
+    let final_results = Arc::try_unwrap(results)
+        .map_err(|_| "Failed to unwrap results Arc")?
+        .into_inner()
+        .map_err(|_| "Failed to unwrap results Mutex")?;
+    let files_processed = final_results.len();
+    let cached_hits = Arc::try_unwrap(cached_count)
+        .map_err(|_| "Failed to unwrap cached_count Arc")?
+        .into_inner()
+        .map_err(|_| "Failed to unwrap cached_count Mutex")?;
+    let total_suppressed = Arc::try_unwrap(suppressed_count)
+        .map_err(|_| "Failed to unwrap suppressed_count Arc")?
+        .into_inner()
+        .map_err(|_| "Failed to unwrap suppressed_count Mutex")?;
+    let analyzed_files = files_processed - cached_hits;
+    
+    // Save cache if not disabled
+    if !no_cache {
+        let final_cache = Arc::try_unwrap(cache_arc)
+            .map_err(|_| "Failed to unwrap cache Arc")?
+            .into_inner()
+            .map_err(|_| "Failed to unwrap cache Mutex")?;
+        let _ = save_cache(path, &final_cache);
+    }
+    
+    // Enhanced performance summary with cache statistics
+    if !quiet {
+        println!("✅ Analysis complete: {} files in {:.1}s ({} cached, {} analyzed)", 
+                files_processed, 
+                total_duration.as_secs_f32(),
+                cached_hits,
+                analyzed_files);
+        
+        if total_suppressed > 0 {
+            println!("📝 Suppressed {} issues via ignore directives", total_suppressed);
+        }
+        
+        if total_duration > std::time::Duration::from_secs(5) {
+            println!("⚠️  Analysis took longer than 5-second target!");
+        }
+    }
+    
+    let metrics = AnalysisMetrics {
+        total_time_seconds: total_duration.as_secs_f32(),
+        files_skipped: skipped_files,
+        skipped_reasons,
+        suppressed_issues: total_suppressed,
     };
     
     Ok((final_results, metrics))
@@ -1692,7 +2059,7 @@ pub fn calculate_trust_score(issues: &[Issue]) -> u8 {
 
 /// Calculate project-level summary with performance metrics
 fn calculate_project_summary(results: Vec<AnalysisResult>) -> ProjectResults {
-    calculate_project_summary_with_metrics(results, 0.0, 0, std::collections::HashMap::new())
+    calculate_project_summary_with_metrics(results, 0.0, 0, std::collections::HashMap::new(), 0)
 }
 
 /// Calculate project-level summary with performance metrics
@@ -1700,7 +2067,8 @@ fn calculate_project_summary_with_metrics(
     results: Vec<AnalysisResult>, 
     total_time_seconds: f32,
     files_skipped: usize,
-    skipped_reasons: std::collections::HashMap<String, usize>
+    skipped_reasons: std::collections::HashMap<String, usize>,
+    suppressed_issues: usize
 ) -> ProjectResults {
     let total_files = results.len();
     let total_issues: usize = results.iter().map(|r| r.issues.len()).sum();
@@ -1735,6 +2103,7 @@ fn calculate_project_summary_with_metrics(
             total_time_seconds,
             files_skipped,
             skipped_reasons,
+            suppressed_issues,
         },
     }
 }
@@ -1935,6 +2304,10 @@ fn capture_terminal_report(results: &ProjectResults) -> String {
         writeln!(output, "  Files skipped: {}", results.summary.files_skipped).unwrap();
     }
     
+    if results.summary.suppressed_issues > 0 {
+        writeln!(output, "  Issues suppressed: {}", results.summary.suppressed_issues).unwrap();
+    }
+    
     writeln!(output).unwrap();
     
     // Print severity breakdown
@@ -1974,11 +2347,20 @@ fn capture_terminal_summary_report(results: &ProjectResults) -> String {
     use std::fmt::Write;
     let mut output = String::new();
     
-    writeln!(output, "Files: {}, Avg Score: {}%, Issues: {}, Time: {:.1}s", 
-             results.summary.total_files,
-             results.summary.avg_score,
-             results.summary.total_issues,
-             results.summary.total_time_seconds).unwrap();
+    if results.summary.suppressed_issues > 0 {
+        writeln!(output, "Files: {}, Avg Score: {}%, Issues: {}, Suppressed: {}, Time: {:.1}s", 
+                 results.summary.total_files,
+                 results.summary.avg_score,
+                 results.summary.total_issues,
+                 results.summary.suppressed_issues,
+                 results.summary.total_time_seconds).unwrap();
+    } else {
+        writeln!(output, "Files: {}, Avg Score: {}%, Issues: {}, Time: {:.1}s", 
+                 results.summary.total_files,
+                 results.summary.avg_score,
+                 results.summary.total_issues,
+                 results.summary.total_time_seconds).unwrap();
+    }
     
     output
 }
@@ -2862,7 +3244,8 @@ javascript:
             1,     // max_file_size_mb
             10,    // max_depth
             100,   // max_issues
-            false  // no_cache
+            false, // no_cache
+            false  // strict
         ).unwrap();
         
         // Should skip the large file
@@ -2913,7 +3296,8 @@ javascript:
             results,
             10.5, // total time
             1,    // files skipped
-            skipped_reasons
+            skipped_reasons,
+            5     // suppressed issues
         );
         
         assert_eq!(project_results.summary.total_files, 2);
@@ -2921,6 +3305,7 @@ javascript:
         assert_eq!(project_results.summary.total_issues, 1);
         assert_eq!(project_results.summary.files_skipped, 1);
         assert_eq!(project_results.summary.total_time_seconds, 10.5);
+        assert_eq!(project_results.summary.suppressed_issues, 5);
         assert!((project_results.summary.files_per_second - 0.19).abs() < 0.01); // 2 / 10.5 ≈ 0.19
     }
 
@@ -3265,6 +3650,101 @@ javascript:
         assert!(issues.iter().any(|i| i.severity == Severity::Critical));
         assert!(!issues.iter().any(|i| i.severity == Severity::Low));
     }
+
+    #[test]
+    fn test_ignore_integration() {
+        use std::fs;
+        
+        let content = r#"
+import os
+# vow-ignore
+eval("test_code")
+# vow-ignore-next-line
+exec("more test code")
+# This should be flagged
+eval("should be flagged")
+"#;
+        
+        let temp_dir = TempDir::new().unwrap();
+        let test_file = temp_dir.path().join("test.py");
+        fs::write(&test_file, content).unwrap();
+        
+        // Test without strict mode (should suppress 2 issues)
+        let (result, suppressed) = analyze_file_with_limits_verbose_ignore(&test_file, 100, false, false).unwrap();
+        
+        assert!(result.issues.len() > 0); // Should still have the unflagged eval
+        assert_eq!(suppressed, 2); // Should suppress 2 issues
+        
+        // Test with strict mode (should suppress 0 issues)
+        let (result_strict, suppressed_strict) = analyze_file_with_limits_verbose_ignore(&test_file, 100, false, true).unwrap();
+        
+        assert_eq!(suppressed_strict, 0); // Should not suppress any issues in strict mode
+        assert!(result_strict.issues.len() > result.issues.len()); // Should have more issues in strict mode
+    }
+
+    #[test]
+    fn test_analyze_changed_file_ignore() {
+        let temp_dir = TempDir::new().unwrap();
+        let test_file = temp_dir.path().join("test.py");
+        
+        // Create test file with ignore directives
+        fs::write(&test_file, r#"
+# vow-ignore-next-line
+eval("test")
+eval("another test")
+"#).unwrap();
+        
+        // Test analyzing changed file (mimicking watch mode behavior)
+        let result = analyze_changed_file(
+            &test_file,
+            "terminal",
+            &None,
+            Some(70),
+            false,
+            false,
+            true, // quiet mode for tests
+            100,
+            &None, // no min severity filtering for basic test
+            false  // not strict mode
+        );
+        
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_strict_mode_flag_integration() {
+        use std::fs;
+        
+        let temp_dir = TempDir::new().unwrap();
+        let original_dir = env::current_dir().unwrap();
+        env::set_current_dir(temp_dir.path()).unwrap();
+        
+        // Create a test file with ignore directives
+        let test_file = temp_dir.path().join("test.py");
+        fs::write(&test_file, r#"
+# vow-ignore-next-line
+eval("should be ignored")
+eval("should be flagged")
+"#).unwrap();
+        
+        // Test normal mode (with ignore processing)
+        let (result_normal, suppressed_normal) = analyze_file_with_limits_verbose_ignore(&test_file, 100, false, false).unwrap();
+        
+        // Test strict mode (ignore directives disabled)
+        let (result_strict, suppressed_strict) = analyze_file_with_limits_verbose_ignore(&test_file, 100, false, true).unwrap();
+        
+        // Strict mode should suppress 0 issues
+        assert_eq!(suppressed_strict, 0);
+        
+        // Normal mode should suppress at least 1 issue
+        assert!(suppressed_normal > 0);
+        
+        // Strict mode should find more issues than normal mode
+        assert!(result_strict.issues.len() > result_normal.issues.len());
+        
+        // Restore directory
+        env::set_current_dir(original_dir).unwrap();
+    }
 }
 
 /// Calculate SHA-256 hash of file content
@@ -3405,10 +3885,11 @@ pub fn baseline_create(
             total_time_seconds: 0.0,
             files_skipped: 0,
             skipped_reasons: std::collections::HashMap::new(),
+            suppressed_issues: 0, // Baseline creation doesn't support ignore filtering
         };
         (result, metrics)
     } else if path_buf.is_dir() {
-        analyze_directory_parallel(&path_buf, verbose, false, max_file_size, max_depth, max_issues, true)?
+        analyze_directory_parallel(&path_buf, verbose, false, max_file_size, max_depth, max_issues, true, false)?
     } else {
         return Err(format!("Path does not exist: {}", path).into());
     };

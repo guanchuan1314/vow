@@ -644,6 +644,73 @@ node_modules/
 .cache/
 ```
 
+### 💬 **Inline Ignore Comments**
+
+Suppress Vow warnings on specific lines using code comments:
+
+#### Basic Ignore (All Rules)
+```python
+# vow-ignore
+eval("dangerous code")  # This line will be ignored
+
+password = "secret123"  # vow-ignore (same-line usage)
+```
+
+#### Rule-Specific Ignore
+```python
+# vow-ignore:eval_usage
+eval("safe in this context")  # Only ignores eval_usage rule
+
+# vow-ignore:hardcoded_secrets
+API_KEY = "test-key-for-demo"  # Only ignores hardcoded_secrets rule
+```
+
+#### Next-Line Ignore
+```python
+# vow-ignore-next-line
+eval("next line will be ignored")
+
+# vow-ignore-next-line:dangerous_function
+exec("context-specific ignore")
+```
+
+#### Works in All Languages
+```javascript
+// vow-ignore
+eval('javascript code');
+
+// vow-ignore:security_issue
+const apiKey = "hardcoded";  // vow-ignore-next-line usage
+
+/* vow-ignore:css_issue */
+background-color: red !important;
+```
+
+```rust
+// vow-ignore
+unsafe { /* dangerous code */ }
+
+// vow-ignore:memory_safety
+let ptr = std::ptr::null_mut();
+```
+
+#### Strict Mode
+Use `--strict` flag to ignore all suppression directives:
+```bash
+# Ignores all vow-ignore comments
+vow check src/ --strict
+```
+
+#### Suppression Summary
+Vow shows how many issues were suppressed:
+```bash
+vow check src/ --verbose
+# 📝 Suppressed 5 issues via ignore directives
+
+vow check src/ --format json | jq '.summary.suppressed_issues'
+# 5
+```
+
 ### 📊 **JSON Output for CI/CD**
 
 Perfect for automated pipelines and integration with other tools:

@@ -62,6 +62,7 @@ impl HtmlAnalyzer {
                         message: format!("Deprecated HTML tag <{}> found. {}", tag, suggestion),
                         line: Some(line_num + 1),
                         rule: Some("deprecated_html_tag".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -89,6 +90,7 @@ impl HtmlAnalyzer {
                             message: message.to_string(),
                             line: Some(line_num + 1),
                             rule: Some("invalid_html_nesting".to_string()),
+                    suggestion: None,
                         });
                     }
                 }
@@ -111,6 +113,7 @@ impl HtmlAnalyzer {
                         message: message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some("block_in_inline_element".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -129,6 +132,7 @@ impl HtmlAnalyzer {
                     message: "Image missing alt attribute for accessibility".to_string(),
                     line: Some(line_num + 1),
                     rule: Some("missing_img_alt".to_string()),
+                    suggestion: None,
                 });
             }
 
@@ -146,6 +150,7 @@ impl HtmlAnalyzer {
                         message: "Input element missing associated label for accessibility".to_string(),
                         line: Some(line_num + 1),
                         rule: Some("missing_input_label".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -157,6 +162,7 @@ impl HtmlAnalyzer {
                     message: "HTML element missing lang attribute for accessibility".to_string(),
                     line: Some(line_num + 1),
                     rule: Some("missing_html_lang".to_string()),
+                    suggestion: None,
                 });
             }
 
@@ -171,6 +177,7 @@ impl HtmlAnalyzer {
                         message: "Table missing header cells (<th>) for accessibility".to_string(),
                         line: Some(line_num + 1),
                         rule: Some("table_missing_headers".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -197,6 +204,7 @@ impl HtmlAnalyzer {
                         message: message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some("ai_generated_pattern".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -298,6 +306,7 @@ impl HtmlAnalyzer {
                             message: format!("Unknown or hallucinated HTML tag: <{}>", tag),
                             line: Some(line_num + 1),
                             rule: Some("hallucinated_html_tag".to_string()),
+                    suggestion: None,
                         });
                     }
                 }
@@ -330,6 +339,7 @@ impl HtmlAnalyzer {
                                 message: format!("CSS property '{}' used as HTML attribute - should be in CSS", attr),
                                 line: Some(line_num + 1),
                                 rule: Some("css_property_as_html_attribute".to_string()),
+                    suggestion: None,
                             });
                         }
                     }

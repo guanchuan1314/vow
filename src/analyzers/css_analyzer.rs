@@ -175,6 +175,7 @@ impl CssAnalyzer {
                                 message: format!("Unknown or hallucinated CSS property: '{}'", property),
                                 line: Some(line_num + 1),
                                 rule: Some("hallucinated_css_property".to_string()),
+                    suggestion: None,
                             });
                         }
                     }
@@ -223,6 +224,7 @@ impl CssAnalyzer {
                         message: message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some("invalid_css_value".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -237,6 +239,7 @@ impl CssAnalyzer {
                     message: "Suspicious color value that may be AI-generated placeholder".to_string(),
                     line: Some(line_num + 1),
                     rule: Some("ai_generated_color".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -275,6 +278,7 @@ impl CssAnalyzer {
                                     message: format!("Vendor prefix '{}' used without standard property '{}'", vendor_prop, standard_prop),
                                     line: Some(line_num + 1),
                                     rule: Some("missing_standard_property".to_string()),
+                    suggestion: None,
                                 });
                                 break;
                             }
@@ -361,6 +365,7 @@ impl CssAnalyzer {
                         message: format!("{} (line {} and line {})", message, line1, line2),
                         line: Some(*line1.max(line2)),
                         rule: Some("contradictory_css_declarations".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -384,6 +389,7 @@ impl CssAnalyzer {
                                        property, lines.join(", ")),
                         line: values.last().map(|(_, line)| *line),
                         rule: Some("duplicate_property_different_values".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -419,6 +425,7 @@ impl CssAnalyzer {
                         message: message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some("ai_generated_css_pattern".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -433,6 +440,7 @@ impl CssAnalyzer {
                     message: "Placeholder CSS selector (example, test, demo, sample) found".to_string(),
                     line: Some(line_num + 1),
                     rule: Some("placeholder_css_selector".to_string()),
+                    suggestion: None,
                 });
             }
         }

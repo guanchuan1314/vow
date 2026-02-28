@@ -4,6 +4,7 @@ pub mod report;
 pub mod baseline;
 pub mod diff;
 pub mod fix;
+pub mod stats;
 // pub mod scanner; // Temporarily disabled - requires async networking
 
 use std::path::{Path, PathBuf};
@@ -610,7 +611,7 @@ fn analyze_changed_file(
     result = apply_rules_to_result(result, rules)?;
 
     // Apply severity filtering if specified
-    if let Some(ref min_sev) = min_severity {
+    if let Some(min_sev) = &min_severity {
         result.issues.retain(|issue| issue.severity >= *min_sev);
         // Recalculate trust score after filtering
         result.trust_score = calculate_trust_score(&result.issues);
@@ -1015,7 +1016,7 @@ pub fn check_input(
     }
 
     // Apply severity filtering if specified
-    if let Some(ref min_sev) = min_severity {
+    if let Some(min_sev) = &min_severity {
         if verbose {
             let before_count: usize = final_results.iter().map(|r| r.issues.len()).sum();
             
@@ -1080,6 +1081,14 @@ pub fn check_input(
     // Generate reports
     generate_reports(&project_results, &processed_formats, &output_dir, summary)?;
     
+    // Save scan results to history for stats tracking
+    if let Err(e) = stats::save_scan_to_history(&project_results) {
+        // Don't fail the entire scan if history saving fails, just warn
+        if verbose {
+            eprintln!("Warning: Failed to save scan to history: {}", e);
+        }
+    }
+    
     // Check thresholds for exit code
     let mut should_exit_failure = false;
     
@@ -1125,7 +1134,7 @@ pub fn analyze_content_with_limits_verbose(path: &Path, content: &str, max_issue
             message: format!("Analysis stopped after {} issues (max limit reached)", max_issues),
             line: None,
             rule: Some("max_issues_limit".to_string()),
-            suggestion: None,
+                    suggestion: None,
         });
     }
     
@@ -2532,12 +2541,14 @@ mod tests {
                 message: "Critical issue".to_string(),
                 line: Some(1),
                 rule: Some("test".to_string()),
+                    suggestion: None,
             },
             Issue {
                 severity: Severity::High,
                 message: "High issue".to_string(),
                 line: Some(2),
                 rule: Some("test".to_string()),
+                    suggestion: None,
             },
         ];
         
@@ -2553,30 +2564,35 @@ mod tests {
                 message: "Critical issue".to_string(),
                 line: Some(1),
                 rule: Some("test".to_string()),
+                    suggestion: None,
             },
             Issue {
                 severity: Severity::Critical,
                 message: "Critical issue".to_string(),
                 line: Some(2),
                 rule: Some("test".to_string()),
+                    suggestion: None,
             },
             Issue {
                 severity: Severity::Critical,
                 message: "Critical issue".to_string(),
                 line: Some(3),
                 rule: Some("test".to_string()),
+                    suggestion: None,
             },
             Issue {
                 severity: Severity::Critical,
                 message: "Critical issue".to_string(),
                 line: Some(4),
                 rule: Some("test".to_string()),
+                    suggestion: None,
             },
             Issue {
                 severity: Severity::Critical,
                 message: "Critical issue".to_string(),
                 line: Some(5),
                 rule: Some("test".to_string()),
+                    suggestion: None,
             },
         ];
         
@@ -2883,6 +2899,7 @@ javascript:
                         message: "Test issue".to_string(),
                         line: Some(1),
                         rule: Some("test".to_string()),
+                    suggestion: None,
                     }
                 ],
                 trust_score: 85,
@@ -3204,6 +3221,8 @@ javascript:
                 message: "Low issue".to_string(),
                 line: Some(1),
                 rule: None,
+                    suggestion: None,
+            suggestion: None,
                 suggestion: None,
             },
             Issue {
@@ -3211,6 +3230,8 @@ javascript:
                 message: "Medium issue".to_string(),
                 line: Some(2),
                 rule: None,
+                    suggestion: None,
+            suggestion: None,
                 suggestion: None,
             },
             Issue {
@@ -3218,6 +3239,8 @@ javascript:
                 message: "High issue".to_string(),
                 line: Some(3),
                 rule: None,
+                    suggestion: None,
+            suggestion: None,
                 suggestion: None,
             },
             Issue {
@@ -3225,6 +3248,8 @@ javascript:
                 message: "Critical issue".to_string(),
                 line: Some(4),
                 rule: None,
+                    suggestion: None,
+            suggestion: None,
                 suggestion: None,
             },
         ];

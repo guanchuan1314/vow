@@ -96,6 +96,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("{} (pattern: {})", pattern.message, pattern.name),
                     line: Some(line_number),
                     rule: Some(format!("type_combination_{}", pattern.name)),
+                    suggestion: None,
                 });
             }
         }
@@ -290,6 +291,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling string method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -301,6 +303,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling array method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -312,6 +315,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling number method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -330,6 +334,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling string method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -341,6 +346,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling list method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -352,6 +358,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling dict method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -370,6 +377,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling string method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -381,6 +389,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling Vec method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -392,6 +401,7 @@ impl TypeCombinationAnalyzer {
                     message: format!("Calling Option method '{}' on variable '{}' of type '{}'", method, var_name, var_type),
                     line: Some(line_num),
                     rule: Some("type_combination_method_mismatch".to_string()),
+                    suggestion: None,
                 });
             }
         }

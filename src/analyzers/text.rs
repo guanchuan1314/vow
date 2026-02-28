@@ -517,6 +517,7 @@ impl TextAnalyzer {
                             },
                             line: Some(line_num + 1),
                             rule: Some(pattern.name.to_string()),
+                    suggestion: None,
                         });
                     }
                 }
@@ -545,6 +546,7 @@ impl TextAnalyzer {
                                    phrase_pattern.confidence_boost * phrase_matches.min(3) as u8),
                     line: None,
                     rule: Some(phrase_pattern.name.to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -578,6 +580,7 @@ impl TextAnalyzer {
                 ),
                 line: None,
                 rule: Some("sentence_uniformity_analysis".to_string()),
+                    suggestion: None,
             });
         }
         
@@ -592,6 +595,7 @@ impl TextAnalyzer {
                 ),
                 line: None,
                 rule: Some("transition_density_analysis".to_string()),
+                    suggestion: None,
             });
         }
         
@@ -605,6 +609,7 @@ impl TextAnalyzer {
                     message: format!("Excessive use of AI pattern '{}' detected ({} times) - possible AI generation", pattern_name, count),
                     line: None,
                     rule: Some("excessive_ai_patterns".to_string()),
+                    suggestion: None,
                 });
             }
         }
@@ -642,6 +647,7 @@ impl TextAnalyzer {
                 ),
                 line: None,
                 rule: Some("ai_confidence_assessment".to_string()),
+                    suggestion: None,
             });
         }
         
@@ -706,6 +712,7 @@ impl TextAnalyzer {
                             message: "Confident factual claim without apparent citation or source".to_string(),
                             line: Some(line_num + 1),
                             rule: Some("unsourced_claims".to_string()),
+                    suggestion: None,
                         });
                     }
                 }

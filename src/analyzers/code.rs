@@ -1122,7 +1122,7 @@ impl CodeAnalyzer {
                         message: pattern.message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some(pattern.name.to_string()),
-                        suggestion: None,
+                    suggestion: None,
                 });
                 }
             }
@@ -1201,7 +1201,7 @@ impl CodeAnalyzer {
                         message: pattern.message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some(pattern.name.to_string()),
-                        suggestion: None,
+                    suggestion: None,
                 });
                 }
             }
@@ -1221,7 +1221,7 @@ impl CodeAnalyzer {
                                 message: format!("{}: {}", pattern.message, line.trim()),
                                 line: Some(line_num + 1),
                                 rule: Some(pattern.name.to_string()),
-                                suggestion: None,
+                    suggestion: None,
                 });
                         }
                     }
@@ -1259,7 +1259,7 @@ impl CodeAnalyzer {
                         message: format!("Hallucinated method signature: {}. Correct usage: {}", pattern.message, pattern.correct_usage),
                         line: Some(line_num + 1),
                         rule: Some("hallucinated_signature".to_string()),
-                        suggestion: None,
+                    suggestion: None,
                 });
                 }
             }
@@ -1288,7 +1288,7 @@ impl CodeAnalyzer {
                         message: format!("Hallucinated method signature: {}. Correct usage: {}", pattern.message, pattern.correct_usage),
                         line: Some(line_num + 1),
                         rule: Some("hallucinated_signature".to_string()),
-                        suggestion: None,
+                    suggestion: None,
                 });
                 }
             }
@@ -1320,7 +1320,7 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on os.path{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                            suggestion: None,
+                    suggestion: None,
                 });
                     }
                 }
@@ -1347,7 +1347,7 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on Python strings{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                            suggestion: None,
+                    suggestion: None,
                 });
                     }
                 }
@@ -1374,7 +1374,7 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on Python lists{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                            suggestion: None,
+                    suggestion: None,
                 });
                     }
                 }
@@ -1399,7 +1399,7 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on json module{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                            suggestion: None,
+                    suggestion: None,
                 });
                     }
                 }
@@ -1479,7 +1479,7 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on {} module{}", method_name, module_name, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                            suggestion: None,
+                    suggestion: None,
                 });
                     }
                     // Method is valid for this module, so we're done - don't run generic checks
@@ -1522,7 +1522,7 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on JavaScript Array{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                            suggestion: None,
+                    suggestion: None,
                 });
                     }
                 }
@@ -1549,7 +1549,7 @@ impl CodeAnalyzer {
                             message: format!("Method '{}' does not exist on JavaScript String{}", method_call, suggestion),
                             line: Some(line_num + 1),
                             rule: Some("nonexistent_method".to_string()),
-                            suggestion: None,
+                    suggestion: None,
                 });
                     }
                 }
@@ -1563,7 +1563,7 @@ impl CodeAnalyzer {
                 message: "Object.keys/values/entries are static methods - use Object.keys(obj), not obj.keys()".to_string(),
                 line: Some(line_num + 1),
                 rule: Some("incorrect_static_method".to_string()),
-                suggestion: None,
+                    suggestion: None,
                 });
         }
     }

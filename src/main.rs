@@ -129,6 +129,15 @@ enum Commands {
         #[command(subcommand)]
         action: BaselineAction,
     },
+    /// Show aggregate statistics from scan history
+    Stats {
+        /// Output in JSON format for machine-readable output
+        #[arg(long)]
+        json: bool,
+        /// Number of recent scans to include in trend analysis
+        #[arg(long, default_value = "10")]
+        last_n: usize,
+    },
 }
 
 #[derive(Subcommand)]
@@ -250,6 +259,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     vow::baseline_clear(path)?;
                 }
             }
+        }
+        Commands::Stats { json, last_n } => {
+            vow::stats::display_stats_from_history(json, last_n)?;
         }
     }
 

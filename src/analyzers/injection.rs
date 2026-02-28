@@ -325,6 +325,7 @@ impl InjectionAnalyzer {
                         message: pattern.message.to_string(),
                         line: Some(line_num + 1),
                         rule: Some(pattern.name.to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -360,6 +361,7 @@ impl InjectionAnalyzer {
                                     message: format!("Suspicious base64 encoded content detected: '{}'", decoded.chars().take(50).collect::<String>()),
                                     line: Some(line_num + 1),
                                     rule: Some("base64_suspicious_content".to_string()),
+                    suggestion: None,
                                 });
                             }
                         }
@@ -396,6 +398,7 @@ impl InjectionAnalyzer {
                         message: "Sensitive environment variable access followed by external HTTP request - potential secret exfiltration".to_string(),
                         line: Some(i + 1),
                         rule: Some("env_var_exfiltration".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -422,6 +425,7 @@ impl InjectionAnalyzer {
                         message: "Sensitive file read + base64 encoding + external HTTP request pattern - likely data exfiltration".to_string(),
                         line: Some(i + 1),
                         rule: Some("file_exfiltration_combo".to_string()),
+                    suggestion: None,
                     });
                 }
             }
@@ -442,6 +446,7 @@ impl InjectionAnalyzer {
                             message: format!("HTTP request with potential secret data to testing/webhook domain: {}", domain),
                             line: Some(line_num + 1),
                             rule: Some("suspicious_domains".to_string()),
+                    suggestion: None,
                         });
                     }
                 }

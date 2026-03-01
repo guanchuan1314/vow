@@ -1,0 +1,22 @@
+name: "JavaScript IDOR Detection"
+description: "Detect Insecure Direct Object Reference (IDOR) vulnerabilities in JavaScript/Express applications"
+severity: "medium"
+file_types: ["js", "ts", "jsx", "tsx"]
+
+patterns:
+  - type: "regex"
+    pattern: "app\\.(get|put|delete|post)\\s*\\(['\"][^'\"]*:[^'\"]*['\"]\\s*,\\s*[^{]*\\{[^}]*\\.(findById|findOne|findOneAndUpdate|findOneAndDelete)\\s*\\(\\s*req\\.params"
+  - type: "regex"
+    pattern: "router\\.(get|put|delete|post)\\s*\\(['\"][^'\"]*:[^'\"]*['\"]\\s*,\\s*[^{]*\\{[^}]*\\.(findById|findOne|findOneAndUpdate|findOneAndDelete)\\s*\\(\\s*req\\.params"
+  - type: "regex"
+    pattern: "User\\.findById\\s*\\(\\s*req\\.params\\.[^)]*\\)"
+  - type: "regex"
+    pattern: "Model\\.findById\\s*\\(\\s*req\\.params\\.[^)]*\\)"
+  - type: "regex"
+    pattern: "\\.(findOne|findOneAndUpdate|findOneAndDelete|updateOne|deleteOne)\\s*\\(\\s*\\{\\s*_id\\s*:\\s*req\\.params\\.[^}]*\\}\\)"
+  - type: "regex"
+    pattern: "SELECT\\s+\\*\\s+FROM\\s+[^\\s]+\\s+WHERE\\s+id\\s*=\\s*req\\.params"
+  - type: "regex"
+    pattern: "WHERE\\s+[^\\s]*id[^\\s]*\\s*=\\s*req\\.params"
+
+fix_suggestion: "Implement proper authorization checks before accessing objects. Verify that the authenticated user owns the requested resource. Use access control lists (ACLs) or role-based permissions to restrict object access."

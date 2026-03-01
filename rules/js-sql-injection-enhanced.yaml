@@ -1,0 +1,26 @@
+name: "JavaScript SQL Injection Enhanced Detection"
+description: "Detect SQL injection vulnerabilities using template literals and string interpolation in JavaScript"
+severity: "high"
+file_types: ["js", "ts", "jsx", "tsx"]
+
+patterns:
+  - type: "regex"
+    pattern: "`SELECT\\s+[^`]*\\$\\{[^}]*\\}[^`]*`"
+  - type: "regex"
+    pattern: "`INSERT\\s+INTO\\s+[^`]*\\$\\{[^}]*\\}[^`]*`"
+  - type: "regex"
+    pattern: "`UPDATE\\s+[^`]*SET\\s+[^`]*\\$\\{[^}]*\\}[^`]*`"
+  - type: "regex"
+    pattern: "`DELETE\\s+FROM\\s+[^`]*\\$\\{[^}]*\\}[^`]*`"
+  - type: "regex"
+    pattern: "`[^`]*WHERE\\s+[^`]*\\$\\{[^}]*\\}[^`]*`"
+  - type: "regex"
+    pattern: "db\\.query\\s*\\(\\s*`[^`]*\\$\\{[^}]*\\}[^`]*`"
+  - type: "regex"
+    pattern: "connection\\.execute\\s*\\(\\s*`[^`]*\\$\\{[^}]*\\}[^`]*`"
+  - type: "regex"
+    pattern: "pool\\.query\\s*\\(\\s*`[^`]*\\$\\{[^}]*\\}[^`]*`"
+  - type: "regex"
+    pattern: "knex\\.raw\\s*\\(\\s*`[^`]*\\$\\{[^}]*\\}[^`]*`"
+
+fix_suggestion: "Use parameterized queries or prepared statements instead of string interpolation. Use query builders like Knex.js with parameter binding, or ORM libraries like Sequelize, TypeORM, or Prisma that provide built-in SQL injection protection."

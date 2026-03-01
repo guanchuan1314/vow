@@ -1,0 +1,22 @@
+name: "JavaScript XSS Detection"
+description: "Detect Cross-Site Scripting (XSS) vulnerabilities in JavaScript/Express applications"
+severity: "high"
+file_types: ["js", "ts", "jsx", "tsx"]
+
+patterns:
+  - type: "regex"
+    pattern: "res\\.send\\s*\\(\\s*`[^`]*\\$\\{[^}]+\\}[^`]*`"
+  - type: "regex"  
+    pattern: "res\\.write\\s*\\(\\s*`[^`]*\\$\\{[^}]+\\}[^`]*`"
+  - type: "regex"
+    pattern: "res\\.end\\s*\\(\\s*`[^`]*\\$\\{[^}]+\\}[^`]*`"
+  - type: "regex"
+    pattern: "innerHTML\\s*=\\s*`[^`]*\\$\\{[^}]+\\}[^`]*`"
+  - type: "regex"
+    pattern: "outerHTML\\s*=\\s*`[^`]*\\$\\{[^}]+\\}[^`]*`"
+  - type: "regex"
+    pattern: "document\\.write\\s*\\(\\s*`[^`]*\\$\\{[^}]+\\}[^`]*`"
+  - type: "regex"
+    pattern: "\\$\\('[^']*'\\)\\.html\\s*\\(\\s*`[^`]*\\$\\{[^}]+\\}[^`]*`"
+
+fix_suggestion: "Sanitize user input using libraries like DOMPurify or escape HTML characters before rendering. Consider using template engines with auto-escaping enabled."

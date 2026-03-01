@@ -1,0 +1,24 @@
+name: "JavaScript Server-Side Template Injection (SSTI) Detection"
+description: "Detect Server-Side Template Injection vulnerabilities in JavaScript template engines"
+severity: "high"
+file_types: ["js", "ts", "jsx", "tsx"]
+
+patterns:
+  - type: "regex"
+    pattern: "res\\.render\\s*\\(\\s*['\"][^'\"]*['\"]\\s*,\\s*\\{[^}]*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "res\\.render\\s*\\(\\s*['\"][^'\"]*['\"]\\s*,\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "ejs\\.render\\s*\\(\\s*['\"][^'\"]*['\"]\\s*,\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "handlebars\\.compile\\s*\\(\\s*['\"][^'\"]*['\"]\\)\\s*\\(\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "mustache\\.render\\s*\\(\\s*['\"][^'\"]*['\"]\\s*,\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "pug\\.render\\s*\\(\\s*['\"][^'\"]*['\"]\\s*,\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "nunjucks\\.render\\s*\\(\\s*['\"][^'\"]*['\"]\\s*,\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "res\\.render\\s*\\(\\s*['\"][^'\"]*['\"]\\s*,\\s*\\{[^}]*\\.\\.\\.[^}]*req\\.(body|query|params)"
+
+fix_suggestion: "Sanitize user input before passing to template engines. Use template engines with sandbox mode enabled. Validate and whitelist template variables. Never pass unsanitized user input directly to template rendering."

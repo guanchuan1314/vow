@@ -1,0 +1,24 @@
+name: "JavaScript Mass Assignment Detection"
+description: "Detect mass assignment vulnerabilities in JavaScript/Express applications"
+severity: "medium"
+file_types: ["js", "ts", "jsx", "tsx"]
+
+patterns:
+  - type: "regex"
+    pattern: "new\\s+[A-Z][a-zA-Z0-9]*\\s*\\(\\s*req\\.body\\s*\\)"
+  - type: "regex"
+    pattern: "\\.(create|save|update|findOneAndUpdate|updateOne|updateMany)\\s*\\(\\s*req\\.body\\s*\\)"
+  - type: "regex"
+    pattern: "User\\.create\\s*\\(\\s*req\\.body\\s*\\)"
+  - type: "regex"
+    pattern: "Model\\.create\\s*\\(\\s*req\\.body\\s*\\)"
+  - type: "regex"
+    pattern: "\\.(findOneAndUpdate|updateOne|updateMany)\\s*\\([^,]*,\\s*req\\.body\\s*\\)"
+  - type: "regex"
+    pattern: "Object\\.assign\\s*\\([^,]*,\\s*req\\.body\\s*\\)"
+  - type: "regex"
+    pattern: "\\{\\.\\.\\.req\\.body\\}"
+  - type: "regex"
+    pattern: "\\{\\.\\.\\.req\\.body\\s*,\\s*[^}]*\\}"
+
+fix_suggestion: "Use field whitelisting to control which fields can be mass-assigned. Create specific DTOs (Data Transfer Objects) or use libraries like Joi for input validation. Never pass req.body directly to data models without filtering allowed fields."

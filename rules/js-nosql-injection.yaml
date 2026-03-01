@@ -1,0 +1,20 @@
+name: "JavaScript NoSQL Injection Detection"
+description: "Detect NoSQL injection vulnerabilities in JavaScript/Express applications using MongoDB"
+severity: "high"
+file_types: ["js", "ts", "jsx", "tsx"]
+
+patterns:
+  - type: "regex"
+    pattern: "\\.(findOne|find|findOneAndUpdate|findOneAndDelete|updateOne|updateMany|deleteOne|deleteMany)\\s*\\(\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "\\.(findOne|find|findOneAndUpdate|findOneAndDelete|updateOne|updateMany|deleteOne|deleteMany)\\s*\\(\\s*\\{[^}]*\\$\\{req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "User\\.findOne\\s*\\(\\s*\\{\\s*username\\s*,\\s*password\\s*\\}\\s*\\)"
+  - type: "regex"
+    pattern: "Model\\.find\\s*\\(\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "collection\\.find\\s*\\(\\s*req\\.(body|query|params)"
+  - type: "regex"
+    pattern: "\\.(where|gt|gte|lt|lte|ne|in|nin|regex)\\s*\\(\\s*req\\.(body|query|params)"
+
+fix_suggestion: "Validate and sanitize user input before using in MongoDB queries. Use parameterized queries, whitelist allowed fields, and validate data types. Consider using Object.keys() to filter allowed fields."

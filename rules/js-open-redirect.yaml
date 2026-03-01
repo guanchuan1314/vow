@@ -1,0 +1,22 @@
+name: "JavaScript Open Redirect Detection"
+description: "Detect open redirect vulnerabilities in JavaScript/Express applications"
+severity: "medium"
+file_types: ["js", "ts", "jsx", "tsx"]
+
+patterns:
+  - type: "regex"
+    pattern: "res\\.redirect\\s*\\(\\s*req\\.(query|params)\\.[^)]*\\)"
+  - type: "regex"
+    pattern: "res\\.redirect\\s*\\(\\s*req\\.query\\.[^)]*\\)"
+  - type: "regex"
+    pattern: "window\\.location\\.href\\s*=\\s*req\\.(query|params)"
+  - type: "regex"
+    pattern: "location\\.href\\s*=\\s*req\\.(query|params)"
+  - type: "regex"
+    pattern: "window\\.location\\s*=\\s*req\\.(query|params)"
+  - type: "regex"
+    pattern: "res\\.redirect\\s*\\(\\s*['\"][^'\"]*['\"]\\s*\\+\\s*req\\.(query|params)"
+  - type: "regex"
+    pattern: "res\\.redirect\\s*\\(\\s*`[^`]*\\$\\{req\\.(query|params)\\.[^}]*\\}"
+
+fix_suggestion: "Validate redirect URLs against a whitelist of allowed domains. Use relative URLs when possible. Check that URLs start with '/' for internal redirects or validate the domain for external redirects."

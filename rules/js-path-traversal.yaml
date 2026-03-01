@@ -1,0 +1,28 @@
+name: "JavaScript Path Traversal Detection"
+description: "Detect path traversal vulnerabilities in JavaScript/Express applications"
+severity: "high"
+file_types: ["js", "ts", "jsx", "tsx"]
+
+patterns:
+  - type: "regex"
+    pattern: "path\\.join\\s*\\([^)]*req\\.(query|params)[^)]*\\)"
+  - type: "regex"
+    pattern: "fs\\.readFile\\s*\\([^)]*req\\.(query|params)[^)]*"
+  - type: "regex"
+    pattern: "fs\\.readFileSync\\s*\\([^)]*req\\.(query|params)[^)]*"
+  - type: "regex"
+    pattern: "fs\\.writeFile\\s*\\([^)]*req\\.(query|params)[^)]*"
+  - type: "regex"
+    pattern: "fs\\.createReadStream\\s*\\([^)]*req\\.(query|params)[^)]*"
+  - type: "regex"
+    pattern: "res\\.sendFile\\s*\\([^)]*req\\.(query|params)[^)]*"
+  - type: "regex"
+    pattern: "express\\.static\\s*\\([^)]*req\\.(query|params)[^)]*"
+  - type: "regex"
+    pattern: "path\\.resolve\\s*\\([^)]*req\\.(query|params)[^)]*"
+  - type: "regex"
+    pattern: "__dirname\\s*\\+\\s*req\\.(query|params)"
+  - type: "regex"
+    pattern: "['\"][^'\"]*['\"]\\s*\\+\\s*req\\.(query|params)\\.[^\\s]*\\s*\\+\\s*['\"][^'\"]*['\"]"
+
+fix_suggestion: "Validate and sanitize file paths. Use path.basename() to extract only the filename, implement whitelist of allowed files/directories, and use path.normalize() to resolve .. sequences. Never concatenate user input directly into file paths."

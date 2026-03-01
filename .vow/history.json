@@ -7,15 +7,15 @@
       "total_issues": 4,
       "avg_score": 37,
       "issues_by_severity": {
-        "critical": 1,
         "high": 2,
+        "critical": 1,
         "medium": 1
       },
       "issues_by_rule": {
+        "system_calls": 1,
         "dangerous_deserialize": 1,
         "exec_usage": 1,
-        "process_injection": 1,
-        "system_calls": 1
+        "process_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -26,16 +26,16 @@
       "total_issues": 10,
       "avg_score": 0,
       "issues_by_severity": {
-        "medium": 1,
         "critical": 3,
-        "high": 6
+        "high": 6,
+        "medium": 1
       },
       "issues_by_rule": {
-        "system_calls": 1,
-        "exec_usage": 1,
         "process_injection": 3,
         "dangerous_deserialize": 3,
-        "eval_usage": 2
+        "exec_usage": 1,
+        "eval_usage": 2,
+        "system_calls": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -47,15 +47,15 @@
       "avg_score": 0,
       "issues_by_severity": {
         "critical": 3,
-        "high": 6,
-        "medium": 1
+        "medium": 1,
+        "high": 6
       },
       "issues_by_rule": {
-        "exec_usage": 1,
+        "dangerous_deserialize": 3,
         "eval_usage": 2,
-        "system_calls": 1,
         "process_injection": 3,
-        "dangerous_deserialize": 3
+        "system_calls": 1,
+        "exec_usage": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -67,8 +67,8 @@
       "avg_score": 52,
       "issues_by_severity": {
         "critical": 1,
-        "medium": 1,
-        "high": 1
+        "high": 1,
+        "medium": 1
       },
       "issues_by_rule": {
         "dangerous_deserialize": 1,
@@ -85,15 +85,55 @@
       "avg_score": 52,
       "issues_by_severity": {
         "critical": 1,
-        "medium": 1,
-        "high": 1
+        "high": 1,
+        "medium": 1
       },
       "issues_by_rule": {
-        "system_calls": 1,
         "process_injection": 1,
+        "system_calls": 1,
         "dangerous_deserialize": 1
       },
       "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-02-28T21:36:20.599408927Z",
+      "total_files": 1,
+      "total_issues": 0,
+      "avg_score": 100,
+      "issues_by_severity": {},
+      "issues_by_rule": {},
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-02-28T21:36:27.670832840Z",
+      "total_files": 1,
+      "total_issues": 0,
+      "avg_score": 100,
+      "issues_by_severity": {},
+      "issues_by_rule": {},
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-03-01T03:32:56.588795108Z",
+      "total_files": 2,
+      "total_issues": 0,
+      "avg_score": 100,
+      "issues_by_severity": {},
+      "issues_by_rule": {},
+      "total_time_seconds": 0.9727846,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-03-01T03:32:57.988567038Z",
+      "total_files": 2,
+      "total_issues": 0,
+      "avg_score": 100,
+      "issues_by_severity": {},
+      "issues_by_rule": {},
+      "total_time_seconds": 0.6153616,
       "files_skipped": 0
     }
   ]

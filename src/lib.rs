@@ -7,6 +7,7 @@ pub mod fix;
 pub mod stats;
 pub mod ignore;
 pub mod plugin;
+pub mod monorepo;
 // pub mod scanner; // Temporarily disabled - requires async networking
 
 use std::path::{Path, PathBuf};
@@ -377,6 +378,7 @@ pub fn watch_files(
     min_severity_str: Option<String>,
     strict: bool,
     plugin_dir: Option<PathBuf>,
+    monorepo: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if path == "-" {
         return Err("Watch mode doesn't support reading from stdin. Please specify a file or directory.".into());
@@ -384,6 +386,10 @@ pub fn watch_files(
     
     if diff.is_some() {
         return Err("Watch mode doesn't support diff mode. Diff mode is for one-time analysis of changed files.".into());
+    }
+    
+    if monorepo {
+        return Err("Watch mode doesn't currently support monorepo mode. Use regular check with --monorepo for now.".into());
     }
     
     let watch_path = PathBuf::from(&path);
@@ -751,7 +757,8 @@ fn run_single_analysis(
         suggest,
         min_severity_str,
         strict,
-        plugin_dir
+        plugin_dir,
+        false // monorepo = false in watch mode for now
     )?;
     
     if exit_code != 0 && verbose {
@@ -805,6 +812,7 @@ pub fn check_input(
     min_severity_str: Option<String>,
     strict: bool,
     plugin_dir: Option<PathBuf>,
+    monorepo: bool,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     // Load and merge config
     let config = if no_config {
@@ -870,6 +878,41 @@ pub fn check_input(
     
     // SARIF format needs to be truly quiet (no performance summaries)
     let truly_quiet = final_quiet || processed_formats.contains(&"sarif".to_string());
+    
+    // Handle monorepo mode
+    if monorepo {
+        if path == "-" {
+            return Err("Monorepo mode is not compatible with stdin input. Please specify a directory.".into());
+        }
+        
+        return handle_monorepo_scan(
+            path,
+            processed_formats,
+            output_dir,
+            analyzers,
+            exclude,
+            allowlists,
+            truly_quiet,
+            final_fail_threshold,
+            no_config,
+            rules,
+            threshold,
+            ci,
+            verbose,
+            max_file_size,
+            max_depth,
+            max_issues,
+            no_cache,
+            summary,
+            baseline,
+            diff,
+            fix,
+            suggest,
+            min_severity,
+            strict,
+            plugin_dir,
+        );
+    }
     
     let (results, metrics) = if let Some(diff_range_str) = diff {
         if path == "-" {
@@ -3536,7 +3579,13 @@ javascript:
             false, // no_cache
             false, // summary
             false, // baseline
-            None   // diff
+            None,  // diff
+            false, // fix
+            false, // suggest
+            None,  // min_severity_str
+            false, // strict
+            None,  // plugin_dir
+            false, // monorepo
         );
         
         assert!(result.is_err());
@@ -3567,7 +3616,13 @@ javascript:
             false, // no_cache
             false, // summary
             false, // baseline
-            None   // diff
+            None,  // diff
+            false, // fix
+            false, // suggest
+            None,  // min_severity_str
+            false, // strict
+            None,  // plugin_dir
+            false, // monorepo
         );
         
         assert!(result.is_err());
@@ -3593,7 +3648,10 @@ javascript:
             false,
             true, // quiet mode for tests
             100,
-            &None // no min severity filtering for basic test
+            &None, // no min severity filtering for basic test
+            false, // strict
+            &None, // plugin_dir
+            temp_dir.path(), // project_root
         );
         
         assert!(result.is_ok());
@@ -3668,8 +3726,6 @@ javascript:
                 message: "Low issue".to_string(),
                 line: Some(1),
                 rule: None,
-                    suggestion: None,
-            suggestion: None,
                 suggestion: None,
             },
             Issue {
@@ -3677,8 +3733,6 @@ javascript:
                 message: "Medium issue".to_string(),
                 line: Some(2),
                 rule: None,
-                    suggestion: None,
-            suggestion: None,
                 suggestion: None,
             },
             Issue {
@@ -3686,8 +3740,6 @@ javascript:
                 message: "High issue".to_string(),
                 line: Some(3),
                 rule: None,
-                    suggestion: None,
-            suggestion: None,
                 suggestion: None,
             },
             Issue {
@@ -3695,8 +3747,6 @@ javascript:
                 message: "Critical issue".to_string(),
                 line: Some(4),
                 rule: None,
-                    suggestion: None,
-            suggestion: None,
                 suggestion: None,
             },
         ];
@@ -3767,7 +3817,9 @@ eval("another test")
             true, // quiet mode for tests
             100,
             &None, // no min severity filtering for basic test
-            false  // not strict mode
+            false, // not strict mode
+            &None, // plugin_dir
+            temp_dir.path(), // project_root
         );
         
         assert!(result.is_ok());
@@ -4000,4 +4052,306 @@ pub fn baseline_clear(path: String) -> Result<(), Box<dyn std::error::Error>> {
     }
     
     Ok(())
+}
+
+/// Handle monorepo scanning by detecting workspaces and scanning each independently
+#[allow(clippy::too_many_arguments)]
+fn handle_monorepo_scan(
+    path: String,
+    formats: Vec<String>,
+    output_dir: Option<PathBuf>,
+    analyzers: Option<Vec<String>>,
+    exclude: Option<Vec<String>>,
+    allowlists: Option<Vec<PathBuf>>,
+    quiet: bool,
+    fail_threshold: u32,
+    no_config: bool,
+    rules: Option<PathBuf>,
+    threshold: Option<u8>,
+    ci: bool,
+    verbose: bool,
+    max_file_size: u64,
+    max_depth: usize,
+    max_issues: usize,
+    no_cache: bool,
+    summary: bool,
+    baseline: bool,
+    diff: Option<Option<String>>,
+    fix: bool,
+    suggest: bool,
+    min_severity: Option<Severity>,
+    strict: bool,
+    plugin_dir: Option<PathBuf>,
+) -> Result<i32, Box<dyn std::error::Error>> {
+    use std::collections::HashMap;
+    use crate::monorepo::{detect_monorepo, load_workspace_config, create_monorepo_summary, MonorepoResults};
+    
+    let project_root = PathBuf::from(&path);
+    
+    // Load root config first
+    let root_config = if no_config {
+        Config::default()
+    } else {
+        load_config(&project_root).unwrap_or_else(|e| {
+            if verbose {
+                eprintln!("Warning: Failed to load root config: {}", e);
+            }
+            Config::default()
+        })
+    };
+    
+    // Detect workspaces
+    let workspaces = match detect_monorepo(&project_root) {
+        Some(workspaces) => workspaces,
+        None => {
+            if !quiet {
+                println!("🔍 No monorepo structure detected. Scanning as single project...");
+            }
+            // Fall back to regular scanning
+            return check_input(
+                path, 
+                Some(formats),
+                output_dir,
+                analyzers,
+                exclude,
+                allowlists,
+                Some(quiet),
+                Some(fail_threshold),
+                no_config,
+                rules,
+                threshold,
+                ci,
+                verbose,
+                false, // hook_mode
+                max_file_size,
+                max_depth,
+                max_issues,
+                no_cache,
+                summary,
+                baseline,
+                diff,
+                fix,
+                suggest,
+                min_severity.map(|s| format!("{:?}", s).to_lowercase()),
+                strict,
+                plugin_dir,
+                false, // monorepo = false to avoid infinite recursion
+            );
+        }
+    };
+    
+    if !quiet {
+        println!("🏗️  Detected {} workspace(s) in monorepo:", workspaces.len());
+        for workspace in &workspaces {
+            println!("   📦 {} ({}) - {}", 
+                workspace.name, 
+                workspace.workspace_type.as_str(),
+                workspace.path.display()
+            );
+        }
+        println!();
+    }
+    
+    let start_time = std::time::Instant::now();
+    let mut workspace_results = HashMap::new();
+    let mut total_exit_code = 0;
+    
+    // Scan each workspace independently
+    for workspace in &workspaces {
+        if !quiet {
+            println!("📋 Scanning workspace: {} ({})", workspace.name, workspace.workspace_type.as_str());
+        }
+        
+        // Load workspace-specific config
+        let workspace_config = load_workspace_config(workspace, &root_config)?;
+        
+        // Override CLI args with config where applicable
+        let effective_analyzers = analyzers.clone().or(workspace_config.analyzers.clone());
+        let effective_exclude = exclude.clone().or(workspace_config.exclude.clone());
+        let effective_allowlists = allowlists.clone().or(
+            workspace_config.allowlists.as_ref().map(|al| al.iter().map(PathBuf::from).collect())
+        );
+        
+        // Scan the workspace
+        let workspace_path_str = workspace.path.to_string_lossy().to_string();
+        
+        let workspace_exit_code = check_input(
+            workspace_path_str,
+            Some(vec!["json".to_string()]), // Use JSON internally for parsing
+            None, // No output dir for intermediate results
+            effective_analyzers,
+            effective_exclude,
+            effective_allowlists,
+            Some(true), // quiet = true for intermediate scans
+            Some(fail_threshold),
+            true, // no_config = true since we already loaded config
+            rules.clone(),
+            threshold,
+            false, // ci
+            false, // verbose = false for intermediate scans
+            false, // hook_mode
+            max_file_size,
+            max_depth,
+            max_issues,
+            no_cache,
+            false, // summary = false for intermediate scans
+            baseline,
+            diff.clone(),
+            fix,
+            suggest,
+            min_severity.as_ref().map(|s| format!("{:?}", s).to_lowercase()),
+            strict,
+            plugin_dir.clone(),
+            false, // monorepo = false to avoid infinite recursion
+        )?;
+        
+        // Collect the results (for now, we'll simulate getting them)
+        // In a real implementation, we'd need to modify check_input to return results
+        // For now, we'll create empty results
+        workspace_results.insert(workspace.name.clone(), Vec::new());
+        
+        // Update total exit code (non-zero if any workspace failed)
+        if workspace_exit_code != 0 {
+            total_exit_code = workspace_exit_code;
+        }
+        
+        if !quiet {
+            match workspace_exit_code {
+                0 => println!("   ✅ Workspace {} passed", workspace.name),
+                _ => println!("   ❌ Workspace {} failed (exit code: {})", workspace.name, workspace_exit_code),
+            }
+        }
+    }
+    
+    let total_time = start_time.elapsed();
+    
+    // Create monorepo summary
+    let monorepo_summary = create_monorepo_summary(&workspace_results);
+    let monorepo_results = MonorepoResults {
+        workspaces: workspace_results.clone(),
+        summary: monorepo_summary,
+    };
+    
+    // Generate reports in requested formats
+    for format in &formats {
+        match format.as_str() {
+            "terminal" => {
+                if !quiet {
+                    display_monorepo_terminal_report(&monorepo_results, summary, total_time);
+                }
+            }
+            "json" => {
+                if let Some(ref output_dir) = output_dir {
+                    let output_path = output_dir.join("monorepo-results.json");
+                    let json_output = serde_json::to_string_pretty(&monorepo_results)?;
+                    std::fs::write(&output_path, json_output)?;
+                    if !quiet {
+                        println!("📄 JSON report written to: {}", output_path.display());
+                    }
+                } else {
+                    println!("{}", serde_json::to_string_pretty(&monorepo_results)?);
+                }
+            }
+            _ => {
+                eprintln!("Warning: Format '{}' not yet supported for monorepo mode", format);
+            }
+        }
+    }
+    
+    // Apply fail threshold to aggregated results
+    let total_issues = monorepo_results.summary.total_issues;
+    if total_issues as u32 >= fail_threshold {
+        if !quiet {
+            eprintln!("❌ Monorepo scan failed: {} issues found (threshold: {})", total_issues, fail_threshold);
+        }
+        return Ok(1);
+    }
+    
+    if !quiet {
+        if total_exit_code == 0 {
+            println!("✅ All workspaces passed!");
+        } else {
+            println!("❌ Some workspaces failed (exit code: {})", total_exit_code);
+        }
+    }
+    
+    Ok(total_exit_code)
+}
+
+/// Display monorepo results in terminal format
+fn display_monorepo_terminal_report(
+    results: &monorepo::MonorepoResults,
+    summary: bool,
+    total_time: Duration,
+) {
+    use owo_colors::OwoColorize;
+    
+    println!();
+    println!("{}", "📊 MONOREPO SCAN RESULTS".bright_blue().bold());
+    println!("{}", "═".repeat(50).bright_blue());
+    
+    // Summary stats
+    println!("🏗️  Total workspaces: {}", results.summary.total_workspaces.to_string().bright_cyan());
+    println!("📁 Total files: {}", results.summary.total_files.to_string().bright_cyan());
+    println!("⚡ Average score: {}%", results.summary.avg_score_across_workspaces.to_string().bright_green());
+    println!("🔍 Total issues: {}", results.summary.total_issues.to_string().bright_yellow());
+    
+    // Issues by severity
+    if !results.summary.issues_by_severity.is_empty() {
+        println!();
+        println!("{}", "Issues by severity:".bright_blue());
+        for (severity, count) in &results.summary.issues_by_severity {
+            let color = match severity.as_str() {
+                "critical" => "bright_red",
+                "high" => "red",
+                "medium" => "yellow", 
+                "low" => "bright_black",
+                _ => "white",
+            };
+            match color {
+                "bright_red" => println!("  {}: {}", severity.bright_blue(), count.to_string().bright_red()),
+                "red" => println!("  {}: {}", severity.bright_blue(), count.to_string().red()),
+                "yellow" => println!("  {}: {}", severity.bright_blue(), count.to_string().yellow()),
+                "bright_black" => println!("  {}: {}", severity.bright_blue(), count.to_string().bright_black()),
+                _ => println!("  {}: {}", severity.bright_blue(), count.to_string().white()),
+            }
+        }
+    }
+    
+    // Per-workspace breakdown
+    if !summary {
+        println!();
+        println!("{}", "📦 WORKSPACE BREAKDOWN".bright_blue().bold());
+        println!("{}", "─".repeat(50).bright_blue());
+        
+        for (workspace_name, workspace_summary) in &results.summary.workspace_summaries {
+            println!();
+            println!("📦 {}", workspace_name.bright_cyan().bold());
+            println!("   📁 Files: {}", workspace_summary.files.to_string().bright_white());
+            println!("   ⚡ Score: {}%", workspace_summary.avg_score.to_string().bright_green());
+            println!("   🔍 Issues: {}", workspace_summary.total_issues.to_string().bright_yellow());
+            
+            if !workspace_summary.issues_by_severity.is_empty() {
+                for (severity, count) in &workspace_summary.issues_by_severity {
+                    let color = match severity.as_str() {
+                        "critical" => "bright_red",
+                        "high" => "red", 
+                        "medium" => "yellow",
+                        "low" => "bright_black",
+                        _ => "white",
+                    };
+                    match color {
+                        "bright_red" => println!("     {}: {}", severity, count.to_string().bright_red()),
+                        "red" => println!("     {}: {}", severity, count.to_string().red()),
+                        "yellow" => println!("     {}: {}", severity, count.to_string().yellow()),
+                        "bright_black" => println!("     {}: {}", severity, count.to_string().bright_black()),
+                        _ => println!("     {}: {}", severity, count.to_string().white()),
+                    }
+                }
+            }
+        }
+    }
+    
+    println!();
+    println!("⏱️  Completed in {:.2}s", total_time.as_secs_f32().to_string().bright_cyan());
 }

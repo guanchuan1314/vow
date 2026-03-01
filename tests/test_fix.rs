@@ -41,6 +41,8 @@ print("Hello world")
         true,  // suggest
         None,  // min_severity
         false, // strict
+        None,  // plugin_dir
+        false, // monorepo
     );
     
     // Should complete successfully even with issues

@@ -1,0 +1,176 @@
+name: "python_ldap_injection"
+description: "Detect LDAP injection vulnerabilities in Python LDAP operations"
+severity: "high"
+patterns:
+  # ldap.search_s with unsanitized input
+  - type: "contains"
+    pattern: 'ldap.search_s(user_input'
+  - type: "contains"
+    pattern: 'ldap.search_s(request.args'
+  - type: "contains"
+    pattern: 'ldap.search_s(request.form'
+  - type: "contains"
+    pattern: 'connection.search_s(user_dn'
+  - type: "contains"
+    pattern: 'connection.search_s(user_filter'
+  - type: "contains"
+    pattern: 'search_s(f"cn={username}'
+  - type: "contains"
+    pattern: 'search_s("cn=" + username'
+  
+  # LDAP filter construction with user input
+  - type: "contains"
+    pattern: 'f"(cn={user_input})"'
+  - type: "contains"
+    pattern: 'f"(uid={username})"'
+  - type: "contains"
+    pattern: 'f"(mail={email})"'
+  - type: "contains"
+    pattern: 'f"(&(objectClass=person)(cn={name}))"'
+  - type: "contains"
+    pattern: '"(cn=" + user_input + ")"'
+  - type: "contains"
+    pattern: '"(uid=" + username + ")"'
+  - type: "contains"
+    pattern: '"(mail=" + email + ")"'
+  
+  # String formatting in LDAP filters
+  - type: "contains"
+    pattern: '"(cn=%s)" % username'
+  - type: "contains"
+    pattern: '"(uid=%s)" % user_id'
+  - type: "contains"
+    pattern: '"(mail=%s)" % email'
+  - type: "contains"
+    pattern: '"(&(objectClass=person)(cn=%s))" % name'
+  - type: "contains"
+    pattern: '"(cn={})".format(username'
+  - type: "contains"
+    pattern: '"(uid={})".format(user_id'
+  - type: "contains"
+    pattern: '"(mail={})".format(email'
+  
+  # LDAP bind with user input
+  - type: "contains"
+    pattern: 'ldap.simple_bind_s(user_dn'
+  - type: "contains"
+    pattern: 'ldap.simple_bind_s(request.form'
+  - type: "contains"
+    pattern: 'connection.simple_bind_s(user_input'
+  - type: "contains"
+    pattern: 'simple_bind_s(f"cn={username}'
+  - type: "contains"
+    pattern: 'simple_bind_s("cn=" + user'
+  
+  # LDAP DN construction
+  - type: "contains"
+    pattern: 'f"cn={username},ou=users"'
+  - type: "contains"
+    pattern: 'f"uid={user_id},dc=example,dc=com"'
+  - type: "contains"
+    pattern: '"cn=" + username + ",ou=users"'
+  - type: "contains"
+    pattern: '"uid=" + user_id + ",dc=example"'
+  - type: "contains"
+    pattern: '"cn=%s,ou=users" % username'
+  - type: "contains"
+    pattern: '"uid=%s,dc=domain" % user_id'
+  
+  # python-ldap operations with user input
+  - type: "contains"
+    pattern: 'ldap.add_s(user_dn'
+  - type: "contains"
+    pattern: 'ldap.modify_s(user_dn'
+  - type: "contains"
+    pattern: 'ldap.delete_s(user_dn'
+  - type: "contains"
+    pattern: 'ldap.modrdn_s(user_dn'
+  - type: "contains"
+    pattern: 'connection.add_s(request.form'
+  - type: "contains"
+    pattern: 'connection.modify_s(user_input'
+  
+  # ldap3 library vulnerable patterns
+  - type: "contains"
+    pattern: 'connection.search(search_filter=user_filter'
+  - type: "contains"
+    pattern: 'connection.search(search_filter=f"cn={user'
+  - type: "contains"
+    pattern: 'connection.search(search_filter="cn=" + user'
+  - type: "contains"
+    pattern: 'search_filter=request.args'
+  - type: "contains"
+    pattern: 'search_filter=request.form'
+  
+  # LDAP authentication bypass patterns
+  - type: "contains"
+    pattern: '(cn=*)'
+  - type: "contains"
+    pattern: '(uid=*)'
+  - type: "contains"
+    pattern: '(objectClass=*)'
+  - type: "contains"
+    pattern: ')(&'
+  - type: "contains"
+    pattern: ')(|'
+  - type: "contains"
+    pattern: '))((|'
+  
+  # ActiveDirectory LDAP patterns
+  - type: "contains"
+    pattern: 'sAMAccountName='
+  - type: "contains"
+    pattern: 'userPrincipalName='
+  - type: "contains"
+    pattern: 'distinguishedName='
+  - type: "contains"
+    pattern: 'f"sAMAccountName={username}"'
+  - type: "contains"
+    pattern: '"sAMAccountName=" + user'
+  
+  # LDAP wildcard injections
+  - type: "contains"
+    pattern: "cn=' + user_input"
+  - type: "contains"
+    pattern: "uid=' + user_input"
+  - type: "contains"
+    pattern: "mail=' + email_input"
+  - type: "contains"
+    pattern: "sAMAccountName=' + username"
+  
+  # LDAP filter operators that can be injected
+  - type: "contains"
+    pattern: '&('
+  - type: "contains"
+    pattern: '|('
+  - type: "contains"
+    pattern: '!('
+  - type: "contains"
+    pattern: '>='
+  - type: "contains"
+    pattern: '<='
+  - type: "contains"
+    pattern: '~='
+  
+  # Base DN manipulation
+  - type: "contains"
+    pattern: 'search_base=user_base'
+  - type: "contains"
+    pattern: 'search_base=request.args'
+  - type: "contains"
+    pattern: 'base_dn=user_input'
+  - type: "contains"
+    pattern: 'f"ou={org_unit}"'
+  - type: "contains"
+    pattern: '"dc=" + domain'
+  
+  # LDAP scope manipulation
+  - type: "contains"
+    pattern: 'search_scope=user_scope'
+  - type: "contains"
+    pattern: 'scope=request.form'
+  - type: "contains"
+    pattern: 'ldap.SCOPE_SUBTREE'
+  - type: "contains"
+    pattern: 'ldap.SCOPE_BASE'
+file_types: ["py"]

@@ -1,0 +1,88 @@
+name: "python_sql_injection"
+description: "Detect potential SQL injection vulnerabilities including blind SQL injection in Python/Flask code"
+severity: "high"
+patterns:
+  # Basic SQL injection patterns - string formatting and concatenation
+  - type: "contains"
+    pattern: 'f"SELECT * FROM {user'
+  - type: "contains"
+    pattern: 'f"SELECT {column} FROM'
+  - type: "contains"
+    pattern: 'f"INSERT INTO {table}'
+  - type: "contains"
+    pattern: 'f"UPDATE {table} SET'
+  - type: "contains"
+    pattern: 'f"DELETE FROM {table}'
+  - type: "contains"
+    pattern: '"SELECT " + user'
+  - type: "contains"
+    pattern: '"INSERT INTO " + table'
+  - type: "contains"
+    pattern: '"UPDATE " + table'
+  - type: "contains"
+    pattern: '"DELETE FROM " + table'
+  - type: "contains"
+    pattern: '"SELECT * FROM " + user_input'
+  - type: "contains"
+    pattern: '% formatting with user input'
+  - type: "contains"
+    pattern: '"SELECT %s FROM" % user'
+  - type: "contains"
+    pattern: '"INSERT INTO %s" % table'
+  - type: "contains"
+    pattern: '"WHERE id = %s" % user_id'
+  
+  # .format() SQL injection patterns
+  - type: "contains"
+    pattern: '"SELECT * FROM {}".format(user'
+  - type: "contains"
+    pattern: '"SELECT {} FROM".format(column'
+  - type: "contains"
+    pattern: '"INSERT INTO {}".format(table'
+  - type: "contains"
+    pattern: '"UPDATE {} SET".format(table'
+  - type: "contains"
+    pattern: '"WHERE id = {}".format(user_id'
+  - type: "contains"
+    pattern: '"ORDER BY {}".format(sort_column'
+  
+  # Raw SQL query execution without parameters
+  - type: "contains"
+    pattern: 'cursor.execute("SELECT'
+  - type: "contains"
+    pattern: 'connection.execute("SELECT'
+  - type: "contains"
+    pattern: 'engine.execute("SELECT'
+  - type: "contains"
+    pattern: 'session.execute("SELECT'
+  - type: "contains"
+    pattern: '.raw("SELECT'
+  
+  # Blind SQL injection patterns
+  - type: "contains"
+    pattern: 'SLEEP('
+  - type: "contains"
+    pattern: 'pg_sleep('
+  - type: "contains"
+    pattern: 'waitfor delay'
+  - type: "contains"
+    pattern: 'BENCHMARK('
+  - type: "contains"
+    pattern: 'extractvalue('
+  - type: "contains"
+    pattern: 'updatexml('
+  - type: "contains"
+    pattern: '"SELECT CASE WHEN'
+  - type: "contains"
+    pattern: 'UNION SELECT'
+  
+  # Flask-specific SQL injection patterns
+  - type: "contains"
+    pattern: 'request.args.get'
+  - type: "contains"
+    pattern: 'request.form.get'
+  - type: "contains"
+    pattern: 'request.json'
+  - type: "contains"
+    pattern: 'g.user'
+file_types: ["py"]

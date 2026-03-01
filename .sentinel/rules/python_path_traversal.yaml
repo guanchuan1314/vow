@@ -1,0 +1,136 @@
+name: "python_path_traversal"
+description: "Detect path traversal vulnerabilities in Python file operations and Flask send_from_directory"
+severity: "high"
+patterns:
+  # Flask send_from_directory with user input
+  - type: "contains"
+    pattern: 'send_from_directory(user_path'
+  - type: "contains"
+    pattern: 'send_from_directory(request.args'
+  - type: "contains"
+    pattern: 'send_from_directory(request.form'
+  - type: "contains"
+    pattern: 'send_from_directory(directory, user_file'
+  - type: "contains"
+    pattern: 'send_from_directory(path, request.args'
+  - type: "contains"
+    pattern: 'send_file(user_path'
+  - type: "contains"
+    pattern: 'send_file(request.args'
+  - type: "contains"
+    pattern: 'send_file(request.form'
+  
+  # File operations with user input
+  - type: "contains"
+    pattern: 'open(user_filename'
+  - type: "contains"
+    pattern: 'open(request.args'
+  - type: "contains"
+    pattern: 'open(request.form'
+  - type: "contains"
+    pattern: 'open(f"uploads/{user_file}"'
+  - type: "contains"
+    pattern: 'open("uploads/" + user_file'
+  - type: "contains"
+    pattern: 'open(os.path.join(user_path'
+  
+  # Path construction with user input
+  - type: "contains"
+    pattern: 'f"./uploads/{user_file}"'
+  - type: "contains"
+    pattern: 'f"/uploads/{user_file}"'
+  - type: "contains"
+    pattern: 'f"/tmp/{user_file}"'
+  - type: "contains"
+    pattern: 'f"/var/www/{user_file}"'
+  - type: "contains"
+    pattern: '"./uploads/" + user_file'
+  - type: "contains"
+    pattern: '"/uploads/" + user_file'
+  - type: "contains"
+    pattern: '"./files/" + request.args'
+  
+  # os.path operations with user input
+  - type: "contains"
+    pattern: 'os.path.join(user_path'
+  - type: "contains"
+    pattern: 'os.path.join(request.args'
+  - type: "contains"
+    pattern: 'os.path.join(directory, user_file'
+  - type: "contains"
+    pattern: 'os.path.join(base_path, request.form'
+  - type: "contains"
+    pattern: 'os.path.abspath(user_path'
+  - type: "contains"
+    pattern: 'os.path.realpath(user_path'
+  
+  # File system operations
+  - type: "contains"
+    pattern: 'os.remove(user_file'
+  - type: "contains"
+    pattern: 'os.unlink(user_file'
+  - type: "contains"
+    pattern: 'os.rmdir(user_dir'
+  - type: "contains"
+    pattern: 'os.makedirs(user_path'
+  - type: "contains"
+    pattern: 'os.listdir(user_path'
+  - type: "contains"
+    pattern: 'os.stat(user_file'
+  - type: "contains"
+    pattern: 'os.chmod(user_file'
+  
+  # shutil operations with user input
+  - type: "contains"
+    pattern: 'shutil.copy(user_src'
+  - type: "contains"
+    pattern: 'shutil.copy2(user_src'
+  - type: "contains"
+    pattern: 'shutil.move(user_src'
+  - type: "contains"
+    pattern: 'shutil.rmtree(user_path'
+  - type: "contains"
+    pattern: 'shutil.copytree(user_src'
+  
+  # pathlib with user input
+  - type: "contains"
+    pattern: 'Path(user_path'
+  - type: "contains"
+    pattern: 'Path(request.args'
+  - type: "contains"
+    pattern: 'Path(request.form'
+  - type: "contains"
+    pattern: 'pathlib.Path(user_file'
+  
+  # Common path traversal patterns
+  - type: "contains"
+    pattern: '../'
+  - type: "contains"
+    pattern: '..%2F'
+  - type: "contains"
+    pattern: '..%5C'
+  - type: "contains"
+    pattern: '..../'
+  - type: "contains"
+    pattern: '....%2F'
+  
+  # File upload handling without validation
+  - type: "contains"
+    pattern: 'file.save(user_filename'
+  - type: "contains"
+    pattern: 'file.save(f"uploads/{filename}"'
+  - type: "contains"
+    pattern: 'file.save("uploads/" + filename'
+  - type: "contains"
+    pattern: 'request.files.get('
+  
+  # Template file loading
+  - type: "contains"
+    pattern: 'get_template(user_template'
+  - type: "contains"
+    pattern: 'get_template(request.args'
+  - type: "contains"
+    pattern: 'render_template(user_template'
+  - type: "contains"
+    pattern: 'render_template(request.form'
+file_types: ["py"]

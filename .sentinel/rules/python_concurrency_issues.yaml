@@ -1,0 +1,228 @@
+name: "python_concurrency_issues"
+description: "Detect race conditions, memory leaks, deadlocks and other concurrency-related security issues in Python"
+severity: "medium"
+patterns:
+  # Race condition patterns - global mutable state without locks
+  - type: "contains"
+    pattern: 'global counter'
+  - type: "contains"
+    pattern: 'global user_count'
+  - type: "contains"
+    pattern: 'global session_data'
+  - type: "contains"
+    pattern: 'global cache'
+  - type: "contains"
+    pattern: 'global users'
+  - type: "contains"
+    pattern: 'global_var ='
+  - type: "contains"
+    pattern: 'shared_state ='
+  
+  # Global list/dict append without synchronization
+  - type: "contains"
+    pattern: 'global_list.append('
+  - type: "contains"
+    pattern: 'shared_dict['
+  - type: "contains"
+    pattern: 'user_sessions.append('
+  - type: "contains"
+    pattern: 'active_connections.add('
+  - type: "contains"
+    pattern: 'logged_users.append('
+  
+  # Memory leak patterns - unbounded global collections
+  - type: "contains"
+    pattern: 'global_cache = []'
+  - type: "contains"
+    pattern: 'global_logs = []'
+  - type: "contains"
+    pattern: 'user_data = []'
+  - type: "contains"
+    pattern: 'session_cache = {}'
+  - type: "contains"
+    pattern: 'request_logs = []'
+  - type: "contains"
+    pattern: 'cache.append('
+  - type: "contains"
+    pattern: 'logs.append('
+  
+  # Threading without proper synchronization
+  - type: "contains"
+    pattern: 'threading.Thread('
+  - type: "contains"
+    pattern: 'Thread(target='
+  - type: "contains"
+    pattern: 'start_new_thread('
+  - type: "contains"
+    pattern: '_thread.start_new_thread('
+  
+  # Shared state access in threading
+  - type: "contains"
+    pattern: 'shared_data'
+  - type: "contains"
+    pattern: 'global_state'
+  - type: "contains"
+    pattern: 'counter +='
+  - type: "contains"
+    pattern: 'user_count += 1'
+  - type: "contains"
+    pattern: 'session_count += 1'
+  
+  # Deadlock patterns - nested lock acquisition
+  - type: "contains"
+    pattern: 'lock1.acquire('
+  - type: "contains"
+    pattern: 'lock2.acquire('
+  - type: "contains"
+    pattern: 'threading.Lock().acquire('
+  - type: "contains"
+    pattern: 'with lock1:'
+  - type: "contains"
+    pattern: 'with lock2:'
+  
+  # GIL-related issues (false sense of security)
+  - type: "contains"
+    pattern: '# GIL protects'
+  - type: "contains"
+    pattern: '# thread safe due to GIL'
+  - type: "contains"
+    pattern: '# single threaded'
+  
+  # Time-of-check to time-of-use (TOCTOU) issues
+  - type: "contains"
+    pattern: 'os.path.exists('
+  - type: "contains"
+    pattern: 'if os.path.isfile('
+  - type: "contains"
+    pattern: 'os.access('
+  - type: "contains"
+    pattern: 'pathlib.Path.exists('
+  
+  # File operations without proper locking
+  - type: "contains"
+    pattern: 'open(filename, "a"'
+  - type: "contains"
+    pattern: 'open(log_file, "w"'
+  - type: "contains"
+    pattern: 'with open(shared_file'
+  
+  # Django/Flask global state issues
+  - type: "contains"
+    pattern: 'g.user'
+  - type: "contains"
+    pattern: 'g.session'
+  - type: "contains"
+    pattern: 'flask.g.'
+  - type: "contains"
+    pattern: 'request.environ'
+  
+  # Multiprocessing shared state without synchronization
+  - type: "contains"
+    pattern: 'multiprocessing.Value('
+  - type: "contains"
+    pattern: 'multiprocessing.Array('
+  - type: "contains"
+    pattern: 'multiprocessing.Manager()'
+  - type: "contains"
+    pattern: 'shared_memory'
+  
+  # Async/await race conditions
+  - type: "contains"
+    pattern: 'asyncio.gather('
+  - type: "contains"
+    pattern: 'await asyncio.sleep('
+  - type: "contains"
+    pattern: 'async def'
+  - type: "contains"
+    pattern: 'asyncio.create_task('
+  
+  # Database connection race conditions
+  - type: "contains"
+    pattern: 'connection = sqlite3.connect('
+  - type: "contains"
+    pattern: 'cursor = connection.cursor('
+  - type: "contains"
+    pattern: 'db_connection ='
+  - type: "contains"
+    pattern: 'shared_connection'
+  
+  # Session fixation/hijacking via race conditions
+  - type: "contains"
+    pattern: 'session_id ='
+  - type: "contains"
+    pattern: 'session_data ='
+  - type: "contains"
+    pattern: 'user_session ='
+  - type: "contains"
+    pattern: 'active_sessions ='
+  
+  # Null pointer dereference patterns
+  - type: "contains"
+    pattern: '.attribute'
+  - type: "contains"
+    pattern: 'user.name'
+  - type: "contains"
+    pattern: 'request.json.'
+  - type: "contains"
+    pattern: 'data.get('
+  
+  # Uncontrolled recursion
+  - type: "contains"
+    pattern: 'def recursive_'
+  - type: "contains"
+    pattern: 'return recursive_'
+  - type: "contains"
+    pattern: 'self.process(self'
+  
+  # Type juggling/confusion
+  - type: "contains"
+    pattern: 'str(int('
+  - type: "contains"
+    pattern: 'int(str('
+  - type: "contains"
+    pattern: 'if user_input == 0:'
+  - type: "contains"
+    pattern: 'if password == 0:'
+  
+  # Format string vulnerabilities  
+  - type: "contains"
+    pattern: '% user_input'
+  - type: "contains"
+    pattern: '% request.args'
+  - type: "contains"
+    pattern: '% request.form'
+  - type: "contains"
+    pattern: 'format(user_input)'
+  
+  # Buffer overflow in bytearray operations
+  - type: "contains"
+    pattern: 'bytearray['
+  - type: "contains"
+    pattern: 'bytearray[user_index'
+  - type: "contains"
+    pattern: 'array[len(array)'
+  - type: "contains"
+    pattern: 'buffer[size'
+  
+  # Unsafe reflection patterns
+  - type: "contains"
+    pattern: 'globals().get(user_input'
+  - type: "contains"
+    pattern: 'getattr(object, user_attr'
+  - type: "contains"
+    pattern: 'hasattr(obj, user_input'
+  - type: "contains"
+    pattern: 'eval(user_input'
+  - type: "contains"
+    pattern: 'exec(user_code'
+  
+  # Mass assignment vulnerabilities
+  - type: "contains"
+    pattern: 'Model(**request.json)'
+  - type: "contains"
+    pattern: 'User(**form_data)'
+  - type: "contains"
+    pattern: 'create(**user_input)'
+  - type: "contains"
+    pattern: 'update(**request.args)'
+file_types: ["py"]

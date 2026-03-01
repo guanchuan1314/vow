@@ -1,0 +1,176 @@
+name: "python_file_upload"
+description: "Detect unrestricted file upload vulnerabilities and insecure file permission settings"
+severity: "high"
+patterns:
+  # Unrestricted file uploads without validation
+  - type: "contains"
+    pattern: 'file.save('
+  - type: "contains"
+    pattern: 'request.files.get('
+  - type: "contains"
+    pattern: 'request.files['
+  - type: "contains"
+    pattern: 'f.save('
+  - type: "contains"
+    pattern: 'uploaded_file.save('
+  
+  # File upload without extension validation
+  - type: "contains"
+    pattern: 'file.save(filename'
+  - type: "contains"
+    pattern: 'file.save(f"uploads/{filename}"'
+  - type: "contains"
+    pattern: 'file.save("uploads/" + filename'
+  - type: "contains"
+    pattern: 'file.save(os.path.join('
+  
+  # Missing file type validation
+  - type: "contains"
+    pattern: 'allowed_file('
+  - type: "contains"
+    pattern: 'ALLOWED_EXTENSIONS'
+  - type: "contains"
+    pattern: 'filename.rsplit('
+  - type: "contains"
+    pattern: '.lower() in'
+  
+  # Direct file execution risk
+  - type: "contains"
+    pattern: 'file.save("static/'
+  - type: "contains"
+    pattern: 'file.save("templates/'
+  - type: "contains"
+    pattern: 'file.save("app/'
+  - type: "contains"
+    pattern: 'file.save("src/'
+  
+  # File size validation missing
+  - type: "contains"
+    pattern: 'MAX_CONTENT_LENGTH'
+  - type: "contains"
+    pattern: 'content_length'
+  - type: "contains"
+    pattern: 'file.content_length'
+  
+  # Insecure file permissions
+  - type: "contains"
+    pattern: 'os.chmod(filename, 0o777'
+  - type: "contains"
+    pattern: 'os.chmod(file_path, 777'
+  - type: "contains"
+    pattern: 'os.chmod(uploaded_file, 0o666'
+  - type: "contains"
+    pattern: 'stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO'
+  - type: "contains"
+    pattern: 'mode=0o777'
+  - type: "contains"
+    pattern: 'mode=777'
+  
+  # File operations without permission checks
+  - type: "contains"
+    pattern: 'open(filename, "w"'
+  - type: "contains"
+    pattern: 'open(file_path, "a"'
+  - type: "contains"
+    pattern: 'open(uploaded_file, "r"'
+  - type: "contains"
+    pattern: 'with open(filename'
+  
+  # Directory creation with weak permissions
+  - type: "contains"
+    pattern: 'os.makedirs(upload_dir, 0o777'
+  - type: "contains"
+    pattern: 'os.makedirs(path, 777'
+  - type: "contains"
+    pattern: 'os.mkdir(directory, 0o777'
+  - type: "contains"
+    pattern: 'pathlib.Path.mkdir(mode=0o777'
+  
+  # File serving without access control
+  - type: "contains"
+    pattern: 'send_file(filename'
+  - type: "contains"
+    pattern: 'send_from_directory(directory, filename'
+  - type: "contains"
+    pattern: 'static_files'
+  - type: "contains"
+    pattern: 'StaticFiles('
+  
+  # Dangerous file types that should be blocked
+  - type: "contains"
+    pattern: '.php'
+  - type: "contains"
+    pattern: '.jsp'
+  - type: "contains"
+    pattern: '.asp'
+  - type: "contains"
+    pattern: '.aspx'
+  - type: "contains"
+    pattern: '.cgi'
+  - type: "contains"
+    pattern: '.pl'
+  - type: "contains"
+    pattern: '.py'
+  - type: "contains"
+    pattern: '.sh'
+  - type: "contains"
+    pattern: '.bat'
+  - type: "contains"
+    pattern: '.exe'
+  
+  # File content validation missing
+  - type: "contains"
+    pattern: 'file.read('
+  - type: "contains"
+    pattern: 'file.stream'
+  - type: "contains"
+    pattern: 'request.files'
+  
+  # Image validation missing
+  - type: "contains"
+    pattern: 'PIL.Image.open('
+  - type: "contains"
+    pattern: 'Image.open('
+  - type: "contains"
+    pattern: 'cv2.imread('
+  - type: "contains"
+    pattern: 'imageio.imread('
+  
+  # Archive extraction without validation
+  - type: "contains"
+    pattern: 'zipfile.ZipFile('
+  - type: "contains"
+    pattern: 'tarfile.open('
+  - type: "contains"
+    pattern: 'extractall('
+  - type: "contains"
+    pattern: '.extract('
+  
+  # File upload to executable directories
+  - type: "contains"
+    pattern: 'upload_to="static"'
+  - type: "contains"
+    pattern: 'UPLOAD_FOLDER = "static"'
+  - type: "contains"
+    pattern: 'uploads_dir = "app"'
+  - type: "contains"
+    pattern: 'save_path = "templates"'
+  
+  # Missing virus/malware scanning
+  - type: "contains"
+    pattern: 'clamav'
+  - type: "contains"
+    pattern: 'virus_scan'
+  - type: "contains"
+    pattern: 'malware_check'
+  
+  # Filename sanitization issues
+  - type: "contains"
+    pattern: 'secure_filename('
+  - type: "contains"
+    pattern: 'werkzeug.utils.secure_filename'
+  - type: "contains"
+    pattern: 'filename.replace('
+  - type: "contains"
+    pattern: 'os.path.basename('
+file_types: ["py"]

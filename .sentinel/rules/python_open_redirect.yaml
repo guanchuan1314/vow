@@ -1,0 +1,134 @@
+name: "python_open_redirect"
+description: "Detect open redirect and unvalidated redirect vulnerabilities in Python/Flask applications"
+severity: "medium"
+patterns:
+  # Flask redirect without validation
+  - type: "contains"
+    pattern: 'redirect(request.args.get('
+  - type: "contains"
+    pattern: 'redirect(request.form.get('
+  - type: "contains"
+    pattern: 'redirect(request.values.get('
+  - type: "contains"
+    pattern: 'redirect(user_url'
+  - type: "contains"
+    pattern: 'redirect(next_url'
+  - type: "contains"
+    pattern: 'redirect(return_url'
+  - type: "contains"
+    pattern: 'redirect(redirect_url'
+  - type: "contains"
+    pattern: 'redirect(callback_url'
+  
+  # Response with Location header
+  - type: "contains"
+    pattern: 'Response(status=302, headers={"Location": user_url'
+  - type: "contains"
+    pattern: 'Response(status=301, headers={"Location": user_url'
+  - type: "contains"
+    pattern: 'make_response("", 302, {"Location": user_url'
+  - type: "contains"
+    pattern: 'make_response("", 301, {"Location": user_url'
+  
+  # URL construction for redirects
+  - type: "contains"
+    pattern: 'f"http://{user_domain}'
+  - type: "contains"
+    pattern: 'f"https://{user_domain}'
+  - type: "contains"
+    pattern: '"http://" + user_host'
+  - type: "contains"
+    pattern: '"https://" + user_host'
+  - type: "contains"
+    pattern: '"//" + user_domain'
+  - type: "contains"
+    pattern: '"http://{}".format(user_host'
+  - type: "contains"
+    pattern: '"https://{}".format(user_host'
+  
+  # Django-style redirects (if using Django patterns in Flask)
+  - type: "contains"
+    pattern: 'HttpResponseRedirect(user_url'
+  - type: "contains"
+    pattern: 'HttpResponseRedirect(request.GET'
+  - type: "contains"
+    pattern: 'HttpResponseRedirect(request.POST'
+  
+  # Common redirect parameter names
+  - type: "contains"
+    pattern: 'next = request.args.get('
+  - type: "contains"
+    pattern: 'return_to = request.form.get('
+  - type: "contains"
+    pattern: 'redirect_to = request.values.get('
+  - type: "contains"
+    pattern: 'url = request.args.get('
+  - type: "contains"
+    pattern: 'target = request.form.get('
+  - type: "contains"
+    pattern: 'destination = request.args.get('
+  
+  # JavaScript redirect injection
+  - type: "contains"
+    pattern: 'f"window.location.href = \\"{user_url}\\""'
+  - type: "contains"
+    pattern: 'f"location.href = \\"{redirect_url}\\""'
+  - type: "contains"
+    pattern: '"window.location = \\"" + user_url'
+  - type: "contains"
+    pattern: 'f"document.location = \\"{target_url}\\""'
+  
+  # Meta refresh redirects
+  - type: "contains"
+    pattern: 'f"<meta http-equiv=\\"refresh\\" content=\\"0; url={user_url}\\""'
+  - type: "contains"
+    pattern: '"<meta http-equiv=\\"refresh\\" content=\\"0; url=" + user_url'
+  
+  # Common vulnerable redirect flows
+  - type: "contains"
+    pattern: 'if next_url:'
+  - type: "contains"
+    pattern: 'if return_url:'
+  - type: "contains"
+    pattern: 'if redirect_url:'
+  - type: "contains"
+    pattern: 'if callback_url:'
+  
+  # OAuth/SAML callback redirects
+  - type: "contains"
+    pattern: 'state = request.args.get('
+  - type: "contains"
+    pattern: 'RelayState = request.form.get('
+  - type: "contains"
+    pattern: 'oauth_callback = request.args.get('
+  - type: "contains"
+    pattern: 'saml_callback = request.form.get('
+  
+  # URL parsing without validation
+  - type: "contains"
+    pattern: 'urlparse(user_url'
+  - type: "contains"
+    pattern: 'urlparse(request.args'
+  - type: "contains"
+    pattern: 'urljoin(base_url, user_path'
+  - type: "contains"
+    pattern: 'urljoin("", user_url'
+  
+  # Common redirect patterns
+  - type: "contains"
+    pattern: 'return redirect('
+  - type: "contains"
+    pattern: 'return Response('
+  - type: "contains"
+    pattern: 'return make_response('
+  
+  # Host header injection patterns
+  - type: "contains"
+    pattern: 'request.headers.get("Host")'
+  - type: "contains"
+    pattern: 'request.host'
+  - type: "contains"
+    pattern: 'request.host_url'
+  - type: "contains"
+    pattern: 'request.url_root'
+file_types: ["py"]

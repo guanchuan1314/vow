@@ -1,0 +1,128 @@
+name: "python_ssrf"
+description: "Detect Server-Side Request Forgery (SSRF) vulnerabilities in Python applications"
+severity: "high"
+patterns:
+  # requests library SSRF patterns
+  - type: "contains"
+    pattern: 'requests.get(user_url'
+  - type: "contains"
+    pattern: 'requests.get(request.args'
+  - type: "contains"
+    pattern: 'requests.get(request.form'
+  - type: "contains"
+    pattern: 'requests.get(request.json'
+  - type: "contains"
+    pattern: 'requests.post(user_url'
+  - type: "contains"
+    pattern: 'requests.post(request.args'
+  - type: "contains"
+    pattern: 'requests.put(user_url'
+  - type: "contains"
+    pattern: 'requests.delete(user_url'
+  - type: "contains"
+    pattern: 'requests.request('
+  
+  # urllib SSRF patterns
+  - type: "contains"
+    pattern: 'urllib.request.urlopen(user_url'
+  - type: "contains"
+    pattern: 'urllib.request.urlopen(request.args'
+  - type: "contains"
+    pattern: 'urllib.request.urlretrieve(user_url'
+  - type: "contains"
+    pattern: 'urllib.parse.urlparse(user_url'
+  - type: "contains"
+    pattern: 'urlopen(user_url'
+  - type: "contains"
+    pattern: 'urlopen(request.form'
+  
+  # httplib/http.client SSRF patterns
+  - type: "contains"
+    pattern: 'http.client.HTTPConnection(user_host'
+  - type: "contains"
+    pattern: 'http.client.HTTPSConnection(user_host'
+  - type: "contains"
+    pattern: 'HTTPConnection(request.args'
+  - type: "contains"
+    pattern: 'HTTPSConnection(request.form'
+  
+  # URL construction with user input
+  - type: "contains"
+    pattern: 'f"http://{user_host}'
+  - type: "contains"
+    pattern: 'f"https://{user_host}'
+  - type: "contains"
+    pattern: 'f"http://{request.args'
+  - type: "contains"
+    pattern: '"http://" + user_input'
+  - type: "contains"
+    pattern: '"https://" + user_domain'
+  - type: "contains"
+    pattern: '"http://{}".format(user_host'
+  - type: "contains"
+    pattern: '"https://{}".format(user_host'
+  
+  # aiohttp SSRF patterns
+  - type: "contains"
+    pattern: 'aiohttp.ClientSession().get(user_url'
+  - type: "contains"
+    pattern: 'session.get(user_url'
+  - type: "contains"
+    pattern: 'session.post(user_url'
+  - type: "contains"
+    pattern: 'session.request('
+  
+  # httpx SSRF patterns
+  - type: "contains"
+    pattern: 'httpx.get(user_url'
+  - type: "contains"
+    pattern: 'httpx.get(request.args'
+  - type: "contains"
+    pattern: 'httpx.post(user_url'
+  - type: "contains"
+    pattern: 'httpx.Client().get(user_url'
+  
+  # Socket connections with user input
+  - type: "contains"
+    pattern: 'socket.connect((user_host'
+  - type: "contains"
+    pattern: 'socket.connect((request.args'
+  - type: "contains"
+    pattern: 'socket.create_connection((user_host'
+  - type: "contains"
+    pattern: 'socket.getaddrinfo(user_host'
+  
+  # FTP and other protocols
+  - type: "contains"
+    pattern: 'ftplib.FTP(user_host'
+  - type: "contains"
+    pattern: 'ftplib.FTP(request.form'
+  - type: "contains"
+    pattern: 'smtplib.SMTP(user_host'
+  - type: "contains"
+    pattern: 'poplib.POP3(user_host'
+  
+  # Flask-specific URL handling patterns
+  - type: "contains"
+    pattern: 'redirect_url = request.args'
+  - type: "contains"
+    pattern: 'callback_url = request.form'
+  - type: "contains"
+    pattern: 'webhook_url = request.json'
+  - type: "contains"
+    pattern: 'api_endpoint = request.args'
+  
+  # Common SSRF payload indicators
+  - type: "contains"
+    pattern: 'localhost'
+  - type: "contains"
+    pattern: '127.0.0.1'
+  - type: "contains"
+    pattern: '0.0.0.0'
+  - type: "contains"
+    pattern: 'file://'
+  - type: "contains"
+    pattern: 'gopher://'
+  - type: "contains"
+    pattern: 'dict://'
+file_types: ["py"]

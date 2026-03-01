@@ -1,0 +1,152 @@
+name: "python_csrf"
+description: "Detect missing CSRF protection in Flask forms and state-changing operations"
+severity: "medium"
+patterns:
+  # Flask forms without CSRF protection
+  - type: "contains"
+    pattern: 'class.*Form(FlaskForm):'
+  - type: "contains"
+    pattern: 'class.*Form(Form):'
+  - type: "contains"
+    pattern: 'FlaskForm()'
+  - type: "contains"
+    pattern: 'wtforms.Form()'
+  
+  # Flask-WTF forms without CSRF token
+  - type: "contains"
+    pattern: 'form = '
+  - type: "contains"
+    pattern: 'form.validate_on_submit()'
+  - type: "contains"
+    pattern: 'form.csrf_token'
+  
+  # POST endpoints without CSRF protection
+  - type: "contains"
+    pattern: '@app.route('
+  - type: "contains"
+    pattern: 'methods=["POST"]'
+  - type: "contains"
+    pattern: "methods=['POST']"
+  - type: "contains"
+    pattern: 'request.method == "POST"'
+  
+  # State-changing operations without CSRF checks
+  - type: "contains"
+    pattern: 'def delete_'
+  - type: "contains"
+    pattern: 'def update_'
+  - type: "contains"
+    pattern: 'def create_'
+  - type: "contains"
+    pattern: 'def modify_'
+  - type: "contains"
+    pattern: 'def change_'
+  - type: "contains"
+    pattern: 'def remove_'
+  
+  # Financial/sensitive operations
+  - type: "contains"
+    pattern: 'def transfer_money'
+  - type: "contains"
+    pattern: 'def change_password'
+  - type: "contains"
+    pattern: 'def update_email'
+  - type: "contains"
+    pattern: 'def delete_account'
+  - type: "contains"
+    pattern: 'def add_user'
+  - type: "contains"
+    pattern: 'def grant_access'
+  - type: "contains"
+    pattern: 'def revoke_access'
+  
+  # Form processing without CSRF validation
+  - type: "contains"
+    pattern: 'request.form.get('
+  - type: "contains"
+    pattern: 'request.form['
+  - type: "contains"
+    pattern: 'request.json'
+  - type: "contains"
+    pattern: 'request.get_json()'
+  
+  # AJAX endpoints without CSRF protection
+  - type: "contains"
+    pattern: 'Content-Type": "application/json"'
+  - type: "contains"
+    pattern: 'jsonify('
+  - type: "contains"
+    pattern: 'return json.dumps('
+  
+  # File upload without CSRF protection
+  - type: "contains"
+    pattern: 'request.files.get('
+  - type: "contains"
+    pattern: 'request.files['
+  - type: "contains"
+    pattern: 'file.save('
+  
+  # Database operations that should have CSRF protection
+  - type: "contains"
+    pattern: 'db.session.add('
+  - type: "contains"
+    pattern: 'db.session.delete('
+  - type: "contains"
+    pattern: 'db.session.commit('
+  - type: "contains"
+    pattern: '.save()'
+  - type: "contains"
+    pattern: '.update('
+  - type: "contains"
+    pattern: '.delete()'
+  
+  # Admin operations
+  - type: "contains"
+    pattern: 'def admin_'
+  - type: "contains"
+    pattern: '@admin_required'
+  - type: "contains"
+    pattern: '@login_required'
+  - type: "contains"
+    pattern: 'if current_user.is_admin'
+  
+  # Session manipulation without CSRF
+  - type: "contains"
+    pattern: 'session['
+  - type: "contains"
+    pattern: 'session.pop('
+  - type: "contains"
+    pattern: 'session.clear()'
+  - type: "contains"
+    pattern: 'session.permanent'
+  
+  # Cookie manipulation
+  - type: "contains"
+    pattern: 'set_cookie('
+  - type: "contains"
+    pattern: 'response.set_cookie('
+  - type: "contains"
+    pattern: 'make_response().set_cookie('
+  
+  # Configuration without CSRF protection
+  - type: "contains"
+    pattern: 'CSRFProtect(app)'
+  - type: "contains"
+    pattern: 'csrf.init_app(app)'
+  - type: "contains"
+    pattern: 'SECRET_KEY'
+  - type: "contains"
+    pattern: 'WTF_CSRF_ENABLED = False'
+  - type: "contains"
+    pattern: 'WTF_CSRF_CHECK_DEFAULT = False'
+  
+  # API endpoints that might need CSRF protection
+  - type: "contains"
+    pattern: '/api/'
+  - type: "contains"
+    pattern: '/ajax/'
+  - type: "contains"
+    pattern: '/webhook/'
+  - type: "contains"
+    pattern: '/callback/'
+file_types: ["py", "html", "jinja2"]

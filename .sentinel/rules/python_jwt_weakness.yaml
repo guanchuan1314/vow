@@ -1,0 +1,206 @@
+name: "python_jwt_weakness"
+description: "Detect JWT implementation weaknesses including weak secrets and insecure algorithms"
+severity: "medium"
+patterns:
+  # Weak JWT secrets
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "secret"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "key"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "123"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "test"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "dev"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "debug"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "admin"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "password"'
+  
+  # Short JWT secrets (HS256 needs at least 256 bits / 32 bytes)
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "'
+  - type: "contains"
+    pattern: 'JWT_SECRET = "'
+  - type: "contains"
+    pattern: 'JWT_KEY = "'
+  - type: "contains"
+    pattern: 'secret_key = "'
+  
+  # None algorithm vulnerability
+  - type: "contains"
+    pattern: 'algorithm="none"'
+  - type: "contains"
+    pattern: "algorithm='none'"
+  - type: "contains"
+    pattern: 'algorithms=["none"]'
+  - type: "contains"
+    pattern: "algorithms=['none']"
+  - type: "contains"
+    pattern: 'algorithms="none"'
+  - type: "contains"
+    pattern: '"alg": "none"'
+  - type: "contains"
+    pattern: "'alg': 'none'"
+  
+  # Missing signature verification
+  - type: "contains"
+    pattern: 'jwt.decode(token, verify=False'
+  - type: "contains"
+    pattern: 'jwt.decode(token, options={"verify_signature": False}'
+  - type: "contains"
+    pattern: 'jwt.decode(token, verify_signature=False'
+  - type: "contains"
+    pattern: 'options={"verify": False}'
+  - type: "contains"
+    pattern: '"verify_signature": False'
+  
+  # Algorithm confusion (RS256/HS256)
+  - type: "contains"
+    pattern: 'algorithm="HS256"'
+  - type: "contains"
+    pattern: "algorithm='HS256'"
+  - type: "contains"
+    pattern: 'algorithms=["HS256", "RS256"]'
+  - type: "contains"
+    pattern: "algorithms=['HS256', 'RS256']"
+  - type: "contains"
+    pattern: 'algorithms=["any"]'
+  - type: "contains"
+    pattern: 'algorithm=None'
+  
+  # Missing algorithm specification
+  - type: "contains"
+    pattern: 'jwt.decode(token, key)'
+  - type: "contains"
+    pattern: 'jwt.decode(token, secret)'
+  - type: "contains"
+    pattern: 'jwt.decode('
+  
+  # Hardcoded RSA keys for RS256
+  - type: "contains"
+    pattern: '-----BEGIN PRIVATE KEY-----'
+  - type: "contains"
+    pattern: '-----BEGIN RSA PRIVATE KEY-----'
+  - type: "contains"
+    pattern: '-----BEGIN PUBLIC KEY-----'
+  - type: "contains"
+    pattern: 'RSA_PRIVATE_KEY = "'
+  - type: "contains"
+    pattern: 'RSA_PUBLIC_KEY = "'
+  - type: "contains"
+    pattern: 'PRIVATE_KEY = "'
+  
+  # Missing expiration validation
+  - type: "contains"
+    pattern: 'options={"verify_exp": False}'
+  - type: "contains"
+    pattern: '"verify_exp": False'
+  - type: "contains"
+    pattern: 'verify_exp=False'
+  
+  # Missing audience validation
+  - type: "contains"
+    pattern: 'options={"verify_aud": False}'
+  - type: "contains"
+    pattern: '"verify_aud": False'
+  - type: "contains"
+    pattern: 'verify_aud=False'
+  
+  # Missing issuer validation
+  - type: "contains"
+    pattern: 'options={"verify_iss": False}'
+  - type: "contains"
+    pattern: '"verify_iss": False'
+  - type: "contains"
+    pattern: 'verify_iss=False'
+  
+  # Predictable JWT secrets
+  - type: "contains"
+    pattern: 'str(time.time())'
+  - type: "contains"
+    pattern: 'str(datetime.now())'
+  - type: "contains"
+    pattern: 'user_id + password'
+  - type: "contains"
+    pattern: 'username + "secret"'
+  
+  # JWT without expiration
+  - type: "contains"
+    pattern: 'jwt.encode(payload'
+  - type: "contains"
+    pattern: 'payload = {'
+  - type: "contains"
+    pattern: '"exp":'
+  - type: "contains"
+    pattern: "'exp':"
+  
+  # Long-lived tokens
+  - type: "contains"
+    pattern: 'timedelta(days=365)'
+  - type: "contains"
+    pattern: 'timedelta(days=30)'
+  - type: "contains"
+    pattern: 'timedelta(weeks=52)'
+  - type: "contains"
+    pattern: 'timedelta(hours=24)'
+  
+  # JWT in URLs (security risk)
+  - type: "contains"
+    pattern: 'f"/api/auth?token={jwt_token}"'
+  - type: "contains"
+    pattern: '"?token=" + jwt_token'
+  - type: "contains"
+    pattern: 'request.args.get("token")'
+  - type: "contains"
+    pattern: 'query_jwt'
+  
+  # JWT storage in localStorage (if mentioned in Python comments/strings)
+  - type: "contains"
+    pattern: 'localStorage.setItem'
+  - type: "contains"
+    pattern: 'sessionStorage.setItem'
+  
+  # Missing CSRF protection for JWT
+  - type: "contains"
+    pattern: 'Authorization: Bearer'
+  - type: "contains"
+    pattern: 'Bearer token'
+  - type: "contains"
+    pattern: 'request.headers.get("Authorization")'
+  
+  # JWT with sensitive data
+  - type: "contains"
+    pattern: '"password":'
+  - type: "contains"
+    pattern: '"credit_card":'
+  - type: "contains"
+    pattern: '"ssn":'
+  - type: "contains"
+    pattern: '"social_security":'
+  - type: "contains"
+    pattern: '"api_key":'
+  - type: "contains"
+    pattern: '"secret":'
+  
+  # Weak JWT libraries or configurations
+  - type: "contains"
+    pattern: 'jose.jwt'
+  - type: "contains"
+    pattern: 'jwt.api_jwt'
+  - type: "contains"
+    pattern: 'jwt.encode('
+  - type: "contains"
+    pattern: 'jwt.decode('
+  
+  # Insecure JWT refresh patterns
+  - type: "contains"
+    pattern: 'refresh_token'
+  - type: "contains"
+    pattern: 'refresh_jwt'
+  - type: "contains"
+    pattern: 'token_refresh'
+file_types: ["py"]

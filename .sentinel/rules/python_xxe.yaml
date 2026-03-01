@@ -1,0 +1,138 @@
+name: "python_xxe"
+description: "Detect XML External Entity (XXE) and XML injection vulnerabilities in Python XML processing"
+severity: "high"
+patterns:
+  # xml.etree.ElementTree XXE patterns - unsafe parsing
+  - type: "contains"
+    pattern: 'ET.parse(user_xml'
+  - type: "contains"
+    pattern: 'ET.parse(request.files'
+  - type: "contains"
+    pattern: 'ET.parse(request.data'
+  - type: "contains"
+    pattern: 'ET.fromstring(user_input'
+  - type: "contains"
+    pattern: 'ET.fromstring(request.args'
+  - type: "contains"
+    pattern: 'ET.fromstring(request.form'
+  - type: "contains"
+    pattern: 'ET.fromstring(request.data'
+  - type: "contains"
+    pattern: 'ElementTree.parse(user_xml'
+  - type: "contains"
+    pattern: 'ElementTree.fromstring(user_xml'
+  
+  # xml.dom.minidom XXE patterns
+  - type: "contains"
+    pattern: 'minidom.parse(user_xml'
+  - type: "contains"
+    pattern: 'minidom.parseString(user_xml'
+  - type: "contains"
+    pattern: 'minidom.parse(request.files'
+  - type: "contains"
+    pattern: 'minidom.parseString(request.data'
+  
+  # xml.sax XXE patterns
+  - type: "contains"
+    pattern: 'xml.sax.parse(user_xml'
+  - type: "contains"
+    pattern: 'xml.sax.parseString(user_xml'
+  - type: "contains"
+    pattern: 'sax.parse(request.files'
+  - type: "contains"
+    pattern: 'sax.parseString(request.data'
+  
+  # lxml XXE patterns (can be vulnerable if not configured properly)
+  - type: "contains"
+    pattern: 'etree.parse(user_xml'
+  - type: "contains"
+    pattern: 'etree.fromstring(user_xml'
+  - type: "contains"
+    pattern: 'etree.XML(user_input'
+  - type: "contains"
+    pattern: 'etree.HTML(user_input'
+  - type: "contains"
+    pattern: 'lxml.etree.parse(user_xml'
+  - type: "contains"
+    pattern: 'lxml.etree.fromstring(user_xml'
+  - type: "contains"
+    pattern: 'lxml.etree.XML(user_input'
+  - type: "contains"
+    pattern: 'XMLParser()'
+  - type: "contains"
+    pattern: 'XMLParse(resolve_entities=True'
+  
+  # BeautifulSoup with xml parser
+  - type: "contains"
+    pattern: 'BeautifulSoup(user_xml, "xml"'
+  - type: "contains"
+    pattern: 'BeautifulSoup(request.data, "xml"'
+  - type: "contains"
+    pattern: 'BeautifulSoup(user_input, "lxml-xml"'
+  
+  # XML injection patterns - user input directly embedded in XML
+  - type: "contains"
+    pattern: 'f"<root>{user_input}</root>"'
+  - type: "contains"
+    pattern: 'f"<{tag}>{content}</{tag}>"'
+  - type: "contains"
+    pattern: 'f"<?xml version=\\"1.0\\"?><data>{user_data}</data>"'
+  - type: "contains"
+    pattern: '"<response>" + user_input + "</response>"'
+  - type: "contains"
+    pattern: '"<xml>" + user_data + "</xml>"'
+  - type: "contains"
+    pattern: '"<?xml " + user_header'
+  
+  # XML attribute injection
+  - type: "contains"
+    pattern: 'f"<element attr=\\"{user_attr}\\""'
+  - type: "contains"
+    pattern: '"<tag id=\\"" + user_id + "\\""'
+  - type: "contains"
+    pattern: 'f"<item name=\\"{user_name}\\">"'
+  
+  # SOAP XML injection
+  - type: "contains"
+    pattern: 'f"<soap:Envelope>{user_body}</soap:Envelope>"'
+  - type: "contains"
+    pattern: '"<soap:Body>" + user_content'
+  - type: "contains"
+    pattern: 'f"<wsdl:{operation}>{params}</wsdl:{operation}>"'
+  
+  # XML-RPC vulnerable patterns
+  - type: "contains"
+    pattern: 'xmlrpc.client.loads(user_xml'
+  - type: "contains"
+    pattern: 'xmlrpc.client.dumps(user_data'
+  - type: "contains"
+    pattern: 'SimpleXMLRPCServer('
+  
+  # Direct XML response without escaping
+  - type: "contains"
+    pattern: 'Response(f"<?xml'
+  - type: "contains"
+    pattern: 'Response(xml_data, content_type="application/xml"'
+  - type: "contains"
+    pattern: 'Response(f"<xml>{user'
+  - type: "contains"
+    pattern: 'return f"<?xml version=\\"1.0\\"?>{user'
+  
+  # XML template processing
+  - type: "contains"
+    pattern: 'xml_template.format(user'
+  - type: "contains"
+    pattern: 'xml_template % user'
+  - type: "contains"
+    pattern: '"<template>{}</template>".format(user_input'
+  
+  # Unsafe XML configuration patterns
+  - type: "contains"
+    pattern: 'resolve_entities=True'
+  - type: "contains"
+    pattern: 'load_dtd=True'
+  - type: "contains"
+    pattern: 'no_network=False'
+  - type: "contains"
+    pattern: 'strip_cdata=False'
+file_types: ["py"]

@@ -1,0 +1,174 @@
+name: "python_weak_authentication"
+description: "Detect weak authentication patterns including hardcoded credentials and weak Flask secret keys"
+severity: "high"
+patterns:
+  # Hardcoded credentials
+  - type: "contains"
+    pattern: 'password = "'
+  - type: "contains"
+    pattern: 'PASSWORD = "'
+  - type: "contains"
+    pattern: 'admin_password = "'
+  - type: "contains"
+    pattern: 'default_password = "'
+  - type: "contains"
+    pattern: 'username = "admin"'
+  - type: "contains"
+    pattern: 'password = "admin"'
+  - type: "contains"
+    pattern: 'password = "password"'
+  - type: "contains"
+    pattern: 'password = "123456"'
+  
+  # Weak Flask secret keys
+  - type: "contains"
+    pattern: 'SECRET_KEY = "secret"'
+  - type: "contains"
+    pattern: 'SECRET_KEY = "dev"'
+  - type: "contains"
+    pattern: 'SECRET_KEY = "development"'
+  - type: "contains"
+    pattern: 'SECRET_KEY = "test"'
+  - type: "contains"
+    pattern: 'SECRET_KEY = "debug"'
+  - type: "contains"
+    pattern: 'SECRET_KEY = "123"'
+  - type: "contains"
+    pattern: 'SECRET_KEY = "abc"'
+  - type: "contains"
+    pattern: 'app.secret_key = "secret"'
+  - type: "contains"
+    pattern: 'app.secret_key = "dev"'
+  - type: "contains"
+    pattern: 'app.config["SECRET_KEY"] = "'
+  
+  # Plain text password comparison
+  - type: "contains"
+    pattern: 'password == user_password'
+  - type: "contains"
+    pattern: 'if password == request.form.get('
+  - type: "contains"
+    pattern: 'user.password == password'
+  - type: "contains"
+    pattern: 'stored_password == input_password'
+  - type: "contains"
+    pattern: 'if pwd == user_pwd:'
+  
+  # No password hashing
+  - type: "contains"
+    pattern: 'User(password=password'
+  - type: "contains"
+    pattern: 'user.password = password'
+  - type: "contains"
+    pattern: 'password=request.form.get('
+  - type: "contains"
+    pattern: 'INSERT INTO users (password) VALUES'
+  
+  # Weak password validation
+  - type: "contains"
+    pattern: 'len(password) < 8'
+  - type: "contains"
+    pattern: 'len(password) < 6'
+  - type: "contains"
+    pattern: 'if password:'
+  - type: "contains"
+    pattern: 'if password != "":'
+  
+  # Insecure session management
+  - type: "contains"
+    pattern: 'session["authenticated"] = True'
+  - type: "contains"
+    pattern: 'session["logged_in"] = True'
+  - type: "contains"
+    pattern: 'session["user_id"] = user_id'
+  - type: "contains"
+    pattern: 'session.permanent = False'
+  
+  # Missing authentication checks
+  - type: "contains"
+    pattern: 'def admin_panel('
+  - type: "contains"
+    pattern: 'def dashboard('
+  - type: "contains"
+    pattern: 'def user_profile('
+  - type: "contains"
+    pattern: 'def delete_user('
+  - type: "contains"
+    pattern: '/admin'
+  - type: "contains"
+    pattern: '/dashboard'
+  - type: "contains"
+    pattern: '/profile'
+  
+  # Token validation issues
+  - type: "contains"
+    pattern: 'if token:'
+  - type: "contains"
+    pattern: 'if len(token) > 0:'
+  - type: "contains"
+    pattern: 'token != None'
+  - type: "contains"
+    pattern: 'token is not None'
+  
+  # Predictable tokens
+  - type: "contains"
+    pattern: 'token = str(user_id)'
+  - type: "contains"
+    pattern: 'token = username + password'
+  - type: "contains"
+    pattern: 'token = str(time.time())'
+  - type: "contains"
+    pattern: 'random.randint('
+  - type: "contains"
+    pattern: 'random.choice('
+  
+  # Basic Auth without encryption
+  - type: "contains"
+    pattern: 'Authorization: Basic'
+  - type: "contains"
+    pattern: 'base64.b64decode('
+  - type: "contains"
+    pattern: 'auth.username'
+  - type: "contains"
+    pattern: 'auth.password'
+  
+  # Debug mode in production
+  - type: "contains"
+    pattern: 'app.run(debug=True'
+  - type: "contains"
+    pattern: 'DEBUG = True'
+  - type: "contains"
+    pattern: 'FLASK_DEBUG = 1'
+  - type: "contains"
+    pattern: 'app.debug = True'
+  
+  # Default Flask security settings
+  - type: "contains"
+    pattern: 'SESSION_COOKIE_SECURE = False'
+  - type: "contains"
+    pattern: 'SESSION_COOKIE_HTTPONLY = False'
+  - type: "contains"
+    pattern: 'PERMANENT_SESSION_LIFETIME'
+  
+  # Weak password storage
+  - type: "contains"
+    pattern: 'md5('
+  - type: "contains"
+    pattern: 'hashlib.md5('
+  - type: "contains"
+    pattern: 'sha1('
+  - type: "contains"
+    pattern: 'hashlib.sha1('
+  - type: "contains"
+    pattern: '.encode().hex()'
+  
+  # Login bypass patterns
+  - type: "contains"
+    pattern: 'if username == "admin" and password:'
+  - type: "contains"
+    pattern: 'if user_exists:'
+  - type: "contains"
+    pattern: 'if len(username) > 0:'
+  - type: "contains"
+    pattern: 'login_user(user, remember=True'
+file_types: ["py"]

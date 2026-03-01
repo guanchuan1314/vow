@@ -1,0 +1,100 @@
+name: "python_nosql_injection"
+description: "Detect NoSQL injection vulnerabilities in Python MongoDB and other NoSQL database interactions"
+severity: "high"
+patterns:
+  # MongoDB injection patterns - unsanitized input in find operations
+  - type: "contains"
+    pattern: 'db.collection.find({user_input'
+  - type: "contains"
+    pattern: 'collection.find(request.args'
+  - type: "contains"
+    pattern: 'collection.find(request.form'
+  - type: "contains"
+    pattern: 'collection.find(request.json'
+  - type: "contains"
+    pattern: 'find({f"name": "{user'
+  - type: "contains"
+    pattern: 'find({"$where": user_input'
+  - type: "contains"
+    pattern: 'find({"$regex": user_pattern'
+  
+  # String formatting in MongoDB queries
+  - type: "contains"
+    pattern: 'f"{{\\\"name\\\": \\\"{user}\\\"}}"'
+  - type: "contains"
+    pattern: 'f"{{\\\"$where\\\": \\\"{condition}\\\"}}"'
+  - type: "contains"
+    pattern: 'f"{{\\\"_id\\\": \\\"{object_id}\\\"}}"'
+  - type: "contains"
+    pattern: 'f"{{\\\"$regex\\\": \\\"{pattern}\\\"}}"'
+  - type: "contains"
+    pattern: '"{\\"name\\": \\"" + user_input + "\\"}"'
+  - type: "contains"
+    pattern: '"{$where: " + user_code + "}"'
+  
+  # .format() in NoSQL queries
+  - type: "contains"
+    pattern: '"{\\"name\\": \\"{}\\"}".format(user'
+  - type: "contains"
+    pattern: '"{\\"$where\\": \\"{}\\"}".format(code'
+  - type: "contains"
+    pattern: '"{\\"_id\\": \\"{}\\"}".format(obj_id'
+  - type: "contains"
+    pattern: '"{\\"$regex\\": \\"{}\\"}".format(pattern'
+  
+  # % formatting in NoSQL queries
+  - type: "contains"
+    pattern: '"{\\"name\\": \\"%s\\"}"\\ % user'
+  - type: "contains"
+    pattern: '"{\\"$where\\": \\"%s\\"}"\\ % condition'
+  - type: "contains"
+    pattern: '"{\\"_id\\": \\"%s\\"}"\\ % object_id'
+  
+  # PyMongo specific injection patterns
+  - type: "contains"
+    pattern: 'collection.find_one({user_input'
+  - type: "contains"
+    pattern: 'collection.update_one({user_filter'
+  - type: "contains"
+    pattern: 'collection.delete_one({user_query'
+  - type: "contains"
+    pattern: 'collection.aggregate([{user_pipeline'
+  - type: "contains"
+    pattern: 'collection.count_documents({user_filter'
+  
+  # Dynamic query construction
+  - type: "contains"
+    pattern: 'query = {user_input'
+  - type: "contains"
+    pattern: 'filter = {user_filter'
+  - type: "contains"
+    pattern: 'criteria = {user_criteria'
+  - type: "contains"
+    pattern: 'conditions = {user_conditions'
+  
+  # $where operator usage (dangerous)
+  - type: "contains"
+    pattern: '"$where":'
+  - type: "contains"
+    pattern: '"$where" :'
+  - type: "contains"
+    pattern: '$where'
+  
+  # JavaScript execution in MongoDB
+  - type: "contains"
+    pattern: '"this." + user_field'
+  - type: "contains"
+    pattern: 'f"this.{field}"'
+  - type: "contains"
+    pattern: '"function() { return this." + user'
+  
+  # Other NoSQL databases
+  - type: "contains"
+    pattern: 'redis.get(user_key'
+  - type: "contains"
+    pattern: 'redis.set(user_key'
+  - type: "contains"
+    pattern: 'elasticsearch.search(body={user_query'
+  - type: "contains"
+    pattern: 'es.search(index=user_index'
+file_types: ["py"]

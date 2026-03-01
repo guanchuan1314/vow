@@ -1,0 +1,232 @@
+name: "python_injection_misc"
+description: "Detect GraphQL injection, CRLF injection, and OAuth misconfiguration vulnerabilities in Python applications"
+severity: "high"
+patterns:
+  # GraphQL injection patterns - raw query execution
+  - type: "contains"
+    pattern: 'graphql.execute(user_query'
+  - type: "contains"
+    pattern: 'graphql.execute(request.args'
+  - type: "contains"
+    pattern: 'graphql.execute(request.form'
+  - type: "contains"
+    pattern: 'execute_graphql(user_input'
+  - type: "contains"
+    pattern: 'schema.execute(user_query'
+  
+  # GraphQL query construction with user input
+  - type: "contains"
+    pattern: 'f"query {{ user(id: {user_id}) }}"'
+  - type: "contains"
+    pattern: 'f"mutation {{ createUser(name: \\"{name}\\") }}"'
+  - type: "contains"
+    pattern: '"query { user(id: " + user_id + ") }"'
+  - type: "contains"
+    pattern: '"mutation { " + user_mutation + " }"'
+  - type: "contains"
+    pattern: 'query = f"{{ {field_name}'
+  
+  # GraphQL string interpolation vulnerabilities
+  - type: "contains"
+    pattern: 'f"{{ \\\"query\\\": \\\"query {{ user(id: {user_id}) }}\\\""'
+  - type: "contains"
+    pattern: '"{\\"query\\": \\"" + user_query + "\\"}"'
+  - type: "contains"
+    pattern: 'graphql_query.format(user_input'
+  - type: "contains"
+    pattern: 'query_template % user_data'
+  
+  # GraphQL field injection
+  - type: "contains"
+    pattern: 'f"{field_name}: {field_value}"'
+  - type: "contains"
+    pattern: 'field + ": " + value'
+  - type: "contains"
+    pattern: '"{ " + user_fields + " }"'
+  
+  # CRLF injection patterns - HTTP header manipulation
+  - type: "contains"
+    pattern: 'response.headers['
+  - type: "contains"
+    pattern: 'Response(headers={'
+  - type: "contains"
+    pattern: 'make_response().headers['
+  - type: "contains"
+    pattern: 'add_header('
+  
+  # CRLF in redirect responses
+  - type: "contains"
+    pattern: 'f"Location: {user_url}"'
+  - type: "contains"
+    pattern: '"Location: " + redirect_url'
+  - type: "contains"
+    pattern: 'redirect_response = f"'
+  
+  # CRLF in Set-Cookie headers
+  - type: "contains"
+    pattern: 'f"Set-Cookie: {cookie_data}"'
+  - type: "contains"
+    pattern: '"Set-Cookie: " + user_cookie'
+  - type: "contains"
+    pattern: 'response.set_cookie(user_name, user_value'
+  
+  # CRLF injection via user input in headers
+  - type: "contains"
+    pattern: 'headers[user_header_name] = user_value'
+  - type: "contains"
+    pattern: 'response.headers[request.args.get('
+  - type: "contains"
+    pattern: 'response.headers[request.form.get('
+  
+  # HTTP response splitting
+  - type: "contains"
+    pattern: '\\r\\n'
+  - type: "contains"
+    pattern: '\\n\\r'
+  - type: "contains"
+    pattern: '%0d%0a'
+  - type: "contains"
+    pattern: '%0a%0d'
+  - type: "contains"
+    pattern: 'chr(13) + chr(10)'
+  
+  # OAuth misconfiguration patterns
+  - type: "contains"
+    pattern: 'client_secret = "'
+  - type: "contains"
+    pattern: 'CLIENT_SECRET = "'
+  - type: "contains"
+    pattern: 'oauth_secret = "'
+  - type: "contains"
+    pattern: 'OAUTH_CLIENT_SECRET = "'
+  
+  # Hardcoded OAuth secrets
+  - type: "contains"
+    pattern: 'client_secret="'
+  - type: "contains"
+    pattern: "client_secret='"
+  - type: "contains"
+    pattern: 'consumer_secret="'
+  - type: "contains"
+    pattern: 'api_secret="'
+  
+  # OAuth redirect_uri without validation
+  - type: "contains"
+    pattern: 'redirect_uri=user_url'
+  - type: "contains"
+    pattern: 'redirect_uri=request.args'
+  - type: "contains"
+    pattern: 'redirect_uri=request.form'
+  - type: "contains"
+    pattern: 'callback_url=user_input'
+  
+  # HTTP redirect_uri (insecure)
+  - type: "contains"
+    pattern: 'redirect_uri="http://'
+  - type: "contains"
+    pattern: "redirect_uri='http://"
+  - type: "contains"
+    pattern: 'redirect_uri=f"http://'
+  - type: "contains"
+    pattern: '"redirect_uri": "http://'
+  
+  # OAuth state parameter issues
+  - type: "contains"
+    pattern: 'state=None'
+  - type: "contains"
+    pattern: 'state=""'
+  - type: "contains"
+    pattern: 'oauth_state = "'
+  - type: "contains"
+    pattern: 'verify_state = False'
+  
+  # Missing OAuth scopes validation
+  - type: "contains"
+    pattern: 'scope=user_scope'
+  - type: "contains"
+    pattern: 'scope=request.args'
+  - type: "contains"
+    pattern: 'requested_scope'
+  - type: "contains"
+    pattern: 'oauth_scope'
+  
+  # OAuth token validation issues
+  - type: "contains"
+    pattern: 'access_token=user_token'
+  - type: "contains"
+    pattern: 'bearer_token=request.headers'
+  - type: "contains"
+    pattern: 'oauth_token=user_input'
+  
+  # HTTP request smuggling patterns
+  - type: "contains"
+    pattern: 'Content-Length:'
+  - type: "contains"
+    pattern: 'Transfer-Encoding:'
+  - type: "contains"
+    pattern: 'Connection:'
+  - type: "contains"
+    pattern: 'request.environ.get("CONTENT_LENGTH"'
+  - type: "contains"
+    pattern: 'request.environ.get("HTTP_TRANSFER_ENCODING"'
+  
+  # Missing Content-Security-Policy header
+  - type: "contains"
+    pattern: 'Content-Security-Policy'
+  - type: "contains"
+    pattern: 'CSP'
+  - type: "contains"
+    pattern: 'X-Content-Type-Options'
+  - type: "contains"
+    pattern: 'X-Frame-Options'
+  
+  # Improper error handling - exposing sensitive information
+  - type: "contains"
+    pattern: 'return str(e)'
+  - type: "contains"
+    pattern: 'return str(exception)'
+  - type: "contains"
+    pattern: 'response = str(error'
+  - type: "contains"
+    pattern: 'jsonify({"error": str(e)'
+  - type: "contains"
+    pattern: 'f"Error: {str(e)}"'
+  - type: "contains"
+    pattern: 'except Exception as e:'
+  
+  # Stack trace exposure
+  - type: "contains"
+    pattern: 'traceback.format_exc()'
+  - type: "contains"
+    pattern: 'traceback.print_exc()'
+  - type: "contains"
+    pattern: 'sys.exc_info()'
+  - type: "contains"
+    pattern: 'exc_info=True'
+  
+  # Debug information in responses
+  - type: "contains"
+    pattern: 'debug=True'
+  - type: "contains"
+    pattern: 'DEBUG=True'
+  - type: "contains"
+    pattern: 'FLASK_DEBUG=1'
+  - type: "contains"
+    pattern: 'app.debug = True'
+  
+  # Template injection via error messages
+  - type: "contains"
+    pattern: 'render_template_string(error'
+  - type: "contains"
+    pattern: 'render_template_string(str(e)'
+  - type: "contains"
+    pattern: 'f"{{ error_message }}"'
+  
+  # Information disclosure via exceptions
+  - type: "contains"
+    pattern: 'raise Exception(user_input'
+  - type: "contains"
+    pattern: 'raise ValueError(f"'
+  - type: "contains"
+    pattern: 'raise RuntimeError(user_data'
+file_types: ["py"]

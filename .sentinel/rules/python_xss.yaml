@@ -1,0 +1,88 @@
+name: "python_xss"
+description: "Detect potential XSS, template injection, and SSTI vulnerabilities in Python/Flask applications"
+severity: "high"
+patterns:
+  # Basic XSS patterns - direct HTML output without escaping
+  - type: "contains"
+    pattern: 'f"<div>{user_input}</div>"'
+  - type: "contains"
+    pattern: 'f"<script>{user_data}'
+  - type: "contains"
+    pattern: 'f"<img src={url}'
+  - type: "contains"
+    pattern: 'f"<a href={user_url}'
+  - type: "contains"
+    pattern: '"<div>" + user_input + "</div>"'
+  - type: "contains"
+    pattern: '"<script>" + user_data'
+  - type: "contains"
+    pattern: '"<input value=" + user_value'
+  
+  # Template injection patterns - render_template_string with user input
+  - type: "contains"
+    pattern: 'render_template_string(user_input'
+  - type: "contains"
+    pattern: 'render_template_string(request.args'
+  - type: "contains"
+    pattern: 'render_template_string(request.form'
+  - type: "contains"
+    pattern: 'render_template_string(request.json'
+  - type: "contains"
+    pattern: 'render_template_string(f"'
+  - type: "contains"
+    pattern: 'render_template_string("{{" + user'
+  - type: "contains"
+    pattern: 'render_template_string(template + user'
+  
+  # Server-Side Template Injection (SSTI) patterns
+  - type: "contains"
+    pattern: 'Template(user_input).render('
+  - type: "contains"
+    pattern: 'Template(request.args.get('
+  - type: "contains"
+    pattern: 'Environment().from_string(user_input'
+  - type: "contains"
+    pattern: 'Environment().from_string(request'
+  - type: "contains"
+    pattern: 'jinja2.Template(user_input'
+  - type: "contains"
+    pattern: 'Markup(user_input'
+  - type: "contains"
+    pattern: 'Markup(request.args'
+  
+  # Flask-specific unsafe patterns
+  - type: "contains"
+    pattern: '|safe'
+  - type: "contains"
+    pattern: 'escape=False'
+  - type: "contains"
+    pattern: 'autoescape=False'
+  
+  # Direct HTML response without escaping
+  - type: "contains"
+    pattern: 'Response(f"<html>'
+  - type: "contains"
+    pattern: 'Response("<div>" + user'
+  - type: "contains"
+    pattern: 'make_response(f"<html>'
+  - type: "contains"
+    pattern: 'return f"<html>{user'
+  
+  # JavaScript injection in templates
+  - type: "contains"
+    pattern: 'f"var data = {user_input}"'
+  - type: "contains"
+    pattern: 'f"alert({user_message})"'
+  - type: "contains"
+    pattern: '"<script>var " + user_var'
+  
+  # Template variable injection
+  - type: "contains"
+    pattern: '{{ request.args'
+  - type: "contains"
+    pattern: '{{ request.form'
+  - type: "contains"
+    pattern: '{{request.args'
+  - type: "contains"
+    pattern: '{{user_input}}'
+file_types: ["py", "html", "jinja2"]

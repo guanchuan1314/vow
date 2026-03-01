@@ -1,0 +1,218 @@
+name: "python_weak_cryptography"
+description: "Detect use of weak or deprecated cryptographic functions in Python applications"
+severity: "medium"
+patterns:
+  # Weak hash algorithms for passwords and security
+  - type: "contains"
+    pattern: 'hashlib.md5('
+  - type: "contains"
+    pattern: 'md5.new('
+  - type: "contains"
+    pattern: 'md5.md5('
+  - type: "contains"
+    pattern: 'hashlib.md5().hexdigest()'
+  - type: "contains"
+    pattern: 'hashlib.md5().digest()'
+  - type: "contains"
+    pattern: 'hashlib.sha1('
+  - type: "contains"
+    pattern: 'sha1.new('
+  - type: "contains"
+    pattern: 'sha1.sha1('
+  - type: "contains"
+    pattern: 'hashlib.sha1().hexdigest()'
+  - type: "contains"
+    pattern: 'hashlib.sha1().digest()'
+  
+  # MD5 for password hashing (specifically dangerous)
+  - type: "contains"
+    pattern: 'md5(password'
+  - type: "contains"
+    pattern: 'hashlib.md5(password'
+  - type: "contains"
+    pattern: 'md5(user_password'
+  - type: "contains"
+    pattern: 'md5(pwd'
+  - type: "contains"
+    pattern: 'md5().update(password'
+  
+  # SHA1 for password hashing (also weak)
+  - type: "contains"
+    pattern: 'sha1(password'
+  - type: "contains"
+    pattern: 'hashlib.sha1(password'
+  - type: "contains"
+    pattern: 'sha1(user_password'
+  - type: "contains"
+    pattern: 'sha1(pwd'
+  - type: "contains"
+    pattern: 'sha1().update(password'
+  
+  # Weak random number generation for security
+  - type: "contains"
+    pattern: 'random.random('
+  - type: "contains"
+    pattern: 'random.randint('
+  - type: "contains"
+    pattern: 'random.choice('
+  - type: "contains"
+    pattern: 'random.uniform('
+  - type: "contains"
+    pattern: 'random.randrange('
+  - type: "contains"
+    pattern: 'random.seed('
+  - type: "contains"
+    pattern: 'numpy.random.'
+  - type: "contains"
+    pattern: 'time.time()'
+  
+  # Random for security tokens/keys (weak)
+  - type: "contains"
+    pattern: 'token = str(random.randint('
+  - type: "contains"
+    pattern: 'key = random.choice('
+  - type: "contains"
+    pattern: 'secret = str(random.random('
+  - type: "contains"
+    pattern: 'session_id = random.randint('
+  - type: "contains"
+    pattern: 'csrf_token = str(random'
+  
+  # Deprecated SSL/TLS versions
+  - type: "contains"
+    pattern: 'ssl.PROTOCOL_SSLv2'
+  - type: "contains"
+    pattern: 'ssl.PROTOCOL_SSLv3'
+  - type: "contains"
+    pattern: 'ssl.PROTOCOL_TLSv1'
+  - type: "contains"
+    pattern: 'ssl.PROTOCOL_TLS'
+  - type: "contains"
+    pattern: 'PROTOCOL_SSLv23'
+  
+  # Weak SSL context configuration
+  - type: "contains"
+    pattern: 'ssl.create_default_context()'
+  - type: "contains"
+    pattern: 'ssl_context.check_hostname = False'
+  - type: "contains"
+    pattern: 'ssl_context.verify_mode = ssl.CERT_NONE'
+  - type: "contains"
+    pattern: 'verify=False'
+  - type: "contains"
+    pattern: 'verify_ssl=False'
+  
+  # DES encryption (broken)
+  - type: "contains"
+    pattern: 'Crypto.Cipher.DES'
+  - type: "contains"
+    pattern: 'DES.new('
+  - type: "contains"
+    pattern: 'from Crypto.Cipher import DES'
+  - type: "contains"
+    pattern: 'cryptography.hazmat.primitives.ciphers.algorithms.TripleDES'
+  
+  # RC4 encryption (broken)
+  - type: "contains"
+    pattern: 'Crypto.Cipher.ARC4'
+  - type: "contains"
+    pattern: 'ARC4.new('
+  - type: "contains"
+    pattern: 'from Crypto.Cipher import ARC4'
+  
+  # Blowfish (weak key schedule)
+  - type: "contains"
+    pattern: 'Crypto.Cipher.Blowfish'
+  - type: "contains"
+    pattern: 'Blowfish.new('
+  - type: "contains"
+    pattern: 'from Crypto.Cipher import Blowfish'
+  
+  # ECB mode (insecure)
+  - type: "contains"
+    pattern: 'MODE_ECB'
+  - type: "contains"
+    pattern: '.ECB'
+  - type: "contains"
+    pattern: 'mode=AES.MODE_ECB'
+  
+  # Weak key derivation
+  - type: "contains"
+    pattern: 'pbkdf2_hmac('
+  - type: "contains"
+    pattern: 'iterations=1000'
+  - type: "contains"
+    pattern: 'iterations=1'
+  - type: "contains"
+    pattern: 'iterations=100'
+  - type: "contains"
+    pattern: 'iterations=10'
+  
+  # Hardcoded keys and IVs
+  - type: "contains"
+    pattern: 'key = b"'
+  - type: "contains"
+    pattern: 'iv = b"'
+  - type: "contains"
+    pattern: 'KEY = "'
+  - type: "contains"
+    pattern: 'SECRET_KEY = "'
+  - type: "contains"
+    pattern: 'ENCRYPTION_KEY = "'
+  
+  # Base64 as "encryption" (encoding, not encryption)
+  - type: "contains"
+    pattern: 'base64.b64encode(password'
+  - type: "contains"
+    pattern: 'base64.encodebytes(secret'
+  - type: "contains"
+    pattern: 'b64encode(token'
+  
+  # ROT13 (trivially weak)
+  - type: "contains"
+    pattern: 'codecs.encode(text, "rot13")'
+  - type: "contains"
+    pattern: 'str.encode("rot_13")'
+  - type: "contains"
+    pattern: 'rot13'
+  
+  # JWT without proper verification
+  - type: "contains"
+    pattern: 'jwt.decode('
+  - type: "contains"
+    pattern: 'verify=False'
+  - type: "contains"
+    pattern: 'verify_signature=False'
+  - type: "contains"
+    pattern: 'algorithm="none"'
+  - type: "contains"
+    pattern: 'algorithms=["none"]'
+  
+  # Weak JWT secrets
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "secret"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "key"'
+  - type: "contains"
+    pattern: 'jwt.encode(payload, "123"'
+  - type: "contains"
+    pattern: 'jwt.decode(token, "secret"'
+  
+  # Simple XOR "encryption"
+  - type: "contains"
+    pattern: 'chr(ord(char) ^ key)'
+  - type: "contains"
+    pattern: 'xor'
+  - type: "contains"
+    pattern: '^='
+  
+  # Deprecated cryptography functions
+  - type: "contains"
+    pattern: 'Crypto.Hash.MD2'
+  - type: "contains"
+    pattern: 'Crypto.Hash.MD4'
+  - type: "contains"
+    pattern: 'hashlib.md4('
+  - type: "contains"
+    pattern: 'hashlib.md2('
+file_types: ["py"]

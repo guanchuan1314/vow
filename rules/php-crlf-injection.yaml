@@ -1,0 +1,28 @@
+name: "PHP CRLF Injection Detection"
+description: "Detect CRLF injection vulnerabilities in PHP applications"
+severity: "medium"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "header\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "header\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "header\\s*\\(\\s*\\$_REQUEST"
+  - type: "regex"
+    pattern: "header\\s*\\(\\s*\\$.*\\r"
+  - type: "regex"
+    pattern: "header\\s*\\(\\s*\\$.*\\n"
+  - type: "regex"
+    pattern: "header\\s*\\(\\s*\\$url.*"
+  - type: "regex"
+    pattern: "setcookie\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "setcookie\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "setcookie\\s*\\(\\s*\\$name.*\\r"
+  - type: "regex"
+    pattern: "setcookie\\s*\\(\\s*\\$value.*\\r"
+
+fix_suggestion: "Sanitize user input before using in HTTP headers. Validate header values don't contain CRLF characters. Use built-in header functions that handle encoding. Remove or reject newlines in user input."

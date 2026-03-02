@@ -1,0 +1,26 @@
+name: "PHP Race Condition Detection"
+description: "Detect race condition vulnerabilities in PHP applications"
+severity: "medium"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "file_put_contents.*flock"
+  - type: "regex"
+    pattern: "fopen.*flock"
+  - type: "regex"
+    pattern: "flock\\s*\\(\\s*\\$"
+  - type: "regex"
+    pattern: "sem_acquire\\s*\\(\\s*\\$"
+  - type: "regex"
+    pattern: "sem_release\\s*\\(\\s*\\$"
+  - type: "regex"
+    pattern: "shm_attach\\s*\\(\\s*\\$"
+  - type: "regex"
+    pattern: "session_start"
+  - type: "regex"
+    pattern: "\\$_SESSION"
+  - type: "regex"
+    pattern: "session_write_close"
+
+fix_suggestion: "Use file locking (flock) for file operations. Use semaphores or mutexes for shared memory operations. Use database transactions for race conditions in database operations. Implement proper session handling with locking."

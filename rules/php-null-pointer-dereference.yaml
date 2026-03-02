@@ -1,0 +1,22 @@
+name: "PHP Null Pointer Dereference Detection"
+description: "Detect null pointer dereference issues in PHP applications"
+severity: "medium"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "->\\$property"
+  - type: "regex"
+    pattern: "\\$[a-zA-Z_]+\\[\\$\\$"
+  - type: "regex"
+    pattern: "\\$[a-zA-Z_]+\s*->"
+  - type: "regex"
+    pattern: "isset\\s*\\(\\s*\\$[a-zA-Z_]+\\["
+  - type: "regex"
+    pattern: "empty\\s*\\(\\s*\\$[a-zA-Z_]+\\["
+  - type: "regex"
+    pattern: "foreach\\s*\\(\\s*\\$"
+  - type: "regex"
+    pattern: "->method\\s*\\(\\s*\\)"
+
+fix_suggestion: "Always check if objects/variables are null before accessing their properties or methods. Use isset() or empty() checks. Implement proper null coalescing. Use type declarations where possible."

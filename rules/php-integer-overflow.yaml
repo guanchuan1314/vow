@@ -1,0 +1,28 @@
+name: "PHP Integer Overflow Detection"
+description: "Detect integer overflow vulnerabilities in PHP applications"
+severity: "medium"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "\\$[a-zA-Z_]+\\s*\\+\\s*\\$[a-zA-Z_]+"
+  - type: "regex"
+    pattern: "\\$[a-zA-Z_]+\\s*-\\s*\\$[a-zA-Z_]+"
+  - type: "regex"
+    pattern: "\\$[a-zA-Z_]+\\s*\\*\\s*\\$[a-zA-Z_]+"
+  - type: "regex"
+    pattern: "\\$[a-zA-Z_]+\\s*/\\s*\\$[a-zA-Z_]+"
+  - type: "regex"
+    pattern: "intval\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "intval\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "\\(int\\)\\s*\\$[a-zA-Z_]+"
+  - type: "regex"
+    pattern: "\\(integer\\)\\s*\\$[a-zA-Z_]+"
+  - type: "regex"
+    pattern: "PHP_INT_MAX"
+  - type: "regex"
+    pattern: "PHP_INT_MIN"
+
+fix_suggestion: "Use proper integer bounds checking. Use gmp_add(), gmp_sub(), gmp_mul() for large integer operations. Use PHP 7+ for proper integer overflow handling. Validate integer ranges before arithmetic operations."

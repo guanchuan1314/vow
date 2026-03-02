@@ -1,0 +1,28 @@
+name: "PHP Prototype Pollution Detection"
+description: "Detect prototype pollution vulnerabilities in PHP applications"
+severity: "high"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "json_decode\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "json_decode\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "json_decode\\s*\\(\\s*\\$_REQUEST"
+  - type: "regex"
+    pattern: "json_decode\\s*\\(\\s*file_get_contents"
+  - type: "regex"
+    pattern: "array_merge\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "array_merge\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "array_merge_recursive\\s*\\(\\s*\\$"
+  - type: "regex"
+    pattern: "object_merge\\s*\\(\\s*\\$"
+  - type: "regex"
+    pattern: "\\$data\\s*=\\s*json_decode"
+  - type: "regex"
+    pattern: "\\$obj\\s*=\\s*json_decode"
+
+fix_suggestion: "Validate and sanitize JSON input. Use json_decode with assoc=true to get arrays instead of objects. Avoid using stdClass. Validate keys in merged arrays. Use deep cloning instead of reference assignment. Implement schema validation."

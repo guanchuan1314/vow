@@ -1,0 +1,28 @@
+name: "PHP WebSocket Hijacking Detection"
+description: "Detect WebSocket hijacking vulnerabilities in PHP applications"
+severity: "high"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "websocket"
+  - type: "regex"
+    pattern: "WebSocket"
+  - type: "regex"
+    pattern: "ws://"
+  - type: "regex"
+    pattern: "wss://"
+  - type: "regex"
+    pattern: "socket.io"
+  - type: "regex"
+    pattern: "Ratchet\\\\Component"
+  - type: "regex"
+    pattern: "stream_socket_server"
+  - type: "regex"
+    pattern: "fsockopen.*websocket"
+  - type: "regex"
+    pattern: "Upgrade: websocket"
+  - type: "regex"
+    pattern: "Sec-WebSocket-Key"
+
+fix_suggestion: "Implement proper origin validation for WebSocket connections. Use wss:// for secure connections. Authenticate WebSocket connections. Validate all messages from clients. Implement rate limiting."

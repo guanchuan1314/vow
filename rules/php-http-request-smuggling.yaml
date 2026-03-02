@@ -1,0 +1,22 @@
+name: "PHP HTTP Request Smuggling Detection"
+description: "Detect HTTP request smuggling vulnerabilities in PHP applications"
+severity: "high"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "curl_setopt\\s*\\(\\s*\\$ch\\s*,\\s*CURLOPT_HTTPHEADER"
+  - type: "regex"
+    pattern: "curl_setopt\\s*\\(\\s*\\$ch\\s*,\\s*CURLOPT_CUSTOMREQUEST"
+  - type: "regex"
+    pattern: "curl_setopt\\s*\\(\\s*\\$ch\\s*,\\s*CURLOPT_HTTP"
+  - type: "regex"
+    pattern: "Content-Length:"
+  - type: "regex"
+    pattern: "Transfer-Encoding:"
+  - type: "regex"
+    pattern: "\\$headers\\s*\\.=.*\\r\\n"
+  - type: "regex"
+    pattern: "stream_context_create"
+
+fix_suggestion: "Use updated web servers and proxies. Avoid using both Content-Length and Transfer-Encoding headers. Validate HTTP request parsing. Use proper Content-Length validation. Keep server software updated."

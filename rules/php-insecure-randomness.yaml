@@ -1,0 +1,26 @@
+name: "PHP Insecure Randomness Detection"
+description: "Detect insecure randomness usage in PHP applications"
+severity: "medium"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "rand\\s*\\(\\s*\\)"
+  - type: "regex"
+    pattern: "mt_rand\\s*\\(\\s*\\)"
+  - type: "regex"
+    pattern: "random_int\\s*\\(\\s*\\)"
+  - type: "regex"
+    pattern: "array_rand\\s*\\(\\s*\\)"
+  - type: "regex"
+    pattern: "str_shuffle\\s*\\(\\s*\\)"
+  - type: "regex"
+    pattern: "uniqid\\s*\\(\\s*\\)"
+  - type: "regex"
+    pattern: "session_id\\s*\\(\\s*\\)"
+  - type: "regex"
+    pattern: "mcrypt_create_iv\\s*\\(\\s*"
+  - type: "regex"
+    pattern: "openssl_random_pseudo_bytes\\s*\\(\\s*"
+
+fix_suggestion: "Use random_int() or random_bytes() for cryptographic randomness. Never use rand(), mt_rand(), or uniqid() for security-sensitive operations. Use session_regenerate_id(true) for session IDs. Use random_bytes() for tokens and keys."

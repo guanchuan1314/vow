@@ -1,0 +1,20 @@
+name: "PHP Use After Free Detection"
+description: "Detect use-after-free patterns in PHP applications"
+severity: "high"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "unset\\s*\\(\\s*\\$"
+  - type: "regex"
+    pattern: "null\\s*=\\s*\\$"
+  - type: "regex"
+    pattern: "\\$ref\\s*=&\\s*\\$"
+  - type: "regex"
+    pattern: "引用传递"
+  - type: "regex"
+    pattern: "=&\\s*new"
+  - type: "regex"
+    pattern: "clone\\s*\\$"
+
+fix_suggestion: "Avoid using references unnecessarily. Be careful with object references and unset(). Set objects to null instead of unsetting when appropriate. Be aware of object lifecycle in PHP 7+."

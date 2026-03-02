@@ -1,0 +1,28 @@
+name: "PHP XML Injection Detection"
+description: "Detect XML injection vulnerabilities in PHP applications"
+severity: "high"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "simplexml_load_string\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "simplexml_load_string\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "simplexml_load_string\\s*\\(\\s*\\$_REQUEST"
+  - type: "regex"
+    pattern: "simplexml_load_file\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "simplexml_load_file\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "DOMDocument\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "DOMDocument\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "xml_parse\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "xml_parse\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "xml_parser_create\\s*\\(\\s*"
+
+fix_suggestion: "Validate and sanitize XML input. Use libxml_disable_entity_loader() to disable external entity loading. Parse XML with proper entity expansion limits. Consider using JSON instead of XML when possible."

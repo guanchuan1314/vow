@@ -1,0 +1,28 @@
+name: "PHP Format String Detection"
+description: "Detect format string vulnerabilities in PHP applications"
+severity: "high"
+file_types: ["php"]
+
+patterns:
+  - type: "regex"
+    pattern: "printf\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "printf\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "sprintf\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "sprintf\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "fprintf\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "fprintf\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "vsprintf\\s*\\(\\s*\\$_GET"
+  - type: "regex"
+    pattern: "vsprintf\\s*\\(\\s*\\$_POST"
+  - type: "regex"
+    pattern: "echo\\s+\\$[a-zA-Z_]+"
+  - type: "regex"
+    pattern: "print\\s+\\$[a-zA-Z_]+"
+
+fix_suggestion: "Never use user input as the format string. Always use a fixed format string with values as additional arguments. Use %s placeholder for user input."

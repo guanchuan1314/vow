@@ -1,0 +1,123 @@
+{
+  "name": "vow",
+  "displayName": "Vow",
+  "description": "AI output verification for VS Code — detect AI-generated code, security issues, and hallucinations",
+  "version": "0.1.0",
+  "publisher": "vow",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "verification",
+    "security",
+    "linter",
+    "hallucination"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:python",
+    "onLanguage:java",
+    "onLanguage:go",
+    "onLanguage:rust",
+    "onLanguage:c",
+    "onLanguage:cpp",
+    "onLanguage:csharp",
+    "onLanguage:php",
+    "onLanguage:swift",
+    "onLanguage:kotlin",
+    "onLanguage:r",
+    "onLanguage:scala",
+    "onLanguage:perl",
+    "onLanguage:lua",
+    "onLanguage:dart",
+    "onLanguage:haskell",
+    "onLanguage:ruby",
+    "onLanguage:markdown",
+    "onLanguage:plaintext",
+    "onLanguage:shellscript",
+    "onLanguage:yaml",
+    "onLanguage:json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vow.checkFile",
+        "title": "Vow: Check Current File"
+      },
+      {
+        "command": "vow.checkWorkspace",
+        "title": "Vow: Check Workspace"
+      },
+      {
+        "command": "vow.showReport",
+        "title": "Vow: Show Report"
+      }
+    ],
+    "configuration": {
+      "title": "Vow",
+      "properties": {
+        "vow.executablePath": {
+          "type": "string",
+          "default": "vow",
+          "description": "Path to the vow binary"
+        },
+        "vow.runOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically run vow check when a file is saved"
+        },
+        "vow.minSeverity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "default": "low",
+          "description": "Minimum severity level to display diagnostics for"
+        },
+        "vow.excludedAnalyzers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "List of analyzer names to exclude from checks"
+        },
+        "vow.exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "node_modules",
+            ".git",
+            "target",
+            "build",
+            "dist"
+          ],
+          "description": "File/directory patterns to exclude from checking"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^5.3.0"
+  }
+}

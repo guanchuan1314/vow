@@ -5,3 +5,7 @@ Cargo.lock
 *.swp
 *.swo
 *~
+
+# VS Code extension
+vscode-extension/node_modules/
+vscode-extension/out/

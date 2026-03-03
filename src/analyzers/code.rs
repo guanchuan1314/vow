@@ -468,6 +468,190 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Insecure file permissions detected - setPermissions with world-writable permissions",
     },
+
+    // Go/net/http vulnerability patterns (#439-#454)
+
+    // #439: SQL injection in Go via fmt.Sprintf
+    SecurityPattern {
+        name: "go_sql_injection_sprintf",
+        regex: Regex::new(r#"(?i)fmt\.Sprintf\s*\(\s*["'][^"']*(?:SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|UNION)[^"']*["']"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in Go - fmt.Sprintf with user input in SQL query",
+    },
+    SecurityPattern {
+        name: "go_sql_injection_concat",
+        regex: Regex::new(r#"(?i)(?:\.Query|\.Exec|\.QueryRow)\s*\(\s*["'][^"']*(?:SELECT|INSERT|UPDATE|DELETE)[^"']*["']\s*\+"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential SQL injection in Go - string concatenation in SQL query",
+    },
+
+    // #440: XSS in Go via fmt.Fprintf
+    SecurityPattern {
+        name: "go_xss_fprintf",
+        regex: Regex::new(r#"fmt\.Fprintf\s*\(\s*w\s*,"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential XSS in Go - fmt.Fprintf writing user input to HTTP response without escaping",
+    },
+    SecurityPattern {
+        name: "go_xss_write_html",
+        regex: Regex::new(r#"(?i)w\.Write\s*\(\s*\[\]byte\s*\(\s*["'][^"']*<[^"']*["']\s*\+"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential XSS in Go - writing HTML with concatenated user input to response",
+    },
+
+    // #441: Path traversal in Go
+    SecurityPattern {
+        name: "go_path_traversal_readfile",
+        regex: Regex::new(r"(?:ioutil\.ReadFile|os\.ReadFile|os\.Open)\s*\(\s*(?:r\.(?:URL\.Query|FormValue|Form\.Get)|filepath\.Join\s*\([^)]*r\.)").unwrap(),
+        severity: Severity::High,
+        message: "Potential path traversal in Go - file operation with user-supplied path",
+    },
+    SecurityPattern {
+        name: "go_path_traversal_http",
+        regex: Regex::new(r"(?:ioutil\.ReadFile|os\.ReadFile|os\.Open)\s*\(\s*(?:[a-zA-Z_][a-zA-Z0-9_]*\s*\+|fmt\.Sprintf)").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential path traversal in Go - file read with dynamic path construction",
+    },
+
+    // #442: SSRF in Go
+    SecurityPattern {
+        name: "go_ssrf_http_get",
+        regex: Regex::new(r"http\.(?:Get|Post|PostForm|Head)\s*\(\s*[a-zA-Z_][a-zA-Z0-9_]*\s*\)").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential SSRF in Go - HTTP request with variable URL (verify not user-controlled)",
+    },
+    SecurityPattern {
+        name: "go_ssrf_http_get_direct",
+        regex: Regex::new(r"http\.(?:Get|Post|PostForm|Head)\s*\(\s*(?:r\.(?:URL\.Query|FormValue|Form\.Get)|fmt\.Sprintf)").unwrap(),
+        severity: Severity::High,
+        message: "Potential SSRF in Go - HTTP request with user-supplied URL",
+    },
+    SecurityPattern {
+        name: "go_ssrf_client",
+        regex: Regex::new(r"(?:client\.(?:Get|Do|Post)|http\.NewRequest)\s*\([^)]*(?:r\.(?:URL\.Query|FormValue)|fmt\.Sprintf)").unwrap(),
+        severity: Severity::High,
+        message: "Potential SSRF in Go - HTTP client request with user-controlled URL",
+    },
+
+    // #443: XXE in Go
+    SecurityPattern {
+        name: "go_xxe_xml_unmarshal",
+        regex: Regex::new(r"xml\.(?:Unmarshal|NewDecoder)\s*\(").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential XXE in Go - XML parsing of untrusted input without entity restriction",
+    },
+
+    // #444: Open redirect in Go
+    SecurityPattern {
+        name: "go_open_redirect",
+        regex: Regex::new(r"http\.Redirect\s*\(\s*w\s*,\s*r\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*\s*,").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential open redirect in Go - http.Redirect with variable URL (verify not user-controlled)",
+    },
+    SecurityPattern {
+        name: "go_open_redirect_direct",
+        regex: Regex::new(r"http\.Redirect\s*\(\s*w\s*,\s*r\s*,\s*(?:r\.(?:URL\.Query|FormValue|Form\.Get)|fmt\.Sprintf)").unwrap(),
+        severity: Severity::High,
+        message: "Potential open redirect in Go - http.Redirect with user-supplied URL",
+    },
+
+    // #445: Template injection in Go
+    SecurityPattern {
+        name: "go_template_injection",
+        regex: Regex::new(r"\.Parse\s*\(\s*(?:r\.(?:FormValue|URL\.Query)|[a-zA-Z_][a-zA-Z0-9_]*\s*\+)").unwrap(),
+        severity: Severity::High,
+        message: "Potential template injection in Go - template.Parse with user input",
+    },
+    SecurityPattern {
+        name: "go_template_injection_sprintf",
+        regex: Regex::new(r"\.Parse\s*\(\s*fmt\.Sprintf").unwrap(),
+        severity: Severity::High,
+        message: "Potential template injection in Go - template.Parse with fmt.Sprintf user input",
+    },
+
+    // #446: IDOR in Go
+    SecurityPattern {
+        name: "go_idor_direct_access",
+        regex: Regex::new(r#"(?:db\.Query|db\.QueryRow|db\.Exec)\s*\(\s*["'][^"']*(?:WHERE|where)[^"']*["']\s*,"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential IDOR in Go - direct database query with user-supplied ID without authorization check",
+    },
+
+    // #447: Integer overflow in Go
+    SecurityPattern {
+        name: "go_integer_overflow",
+        regex: Regex::new(r"(?:strconv\.Atoi|strconv\.ParseInt)\s*\(\s*(?:r\.(?:URL\.Query|FormValue|Form\.Get))").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential integer overflow in Go - unchecked integer conversion from user input",
+    },
+    SecurityPattern {
+        name: "go_integer_overflow_arithmetic",
+        regex: Regex::new(r"(?:strconv\.Atoi|strconv\.ParseInt)[^}]*(?:\*|\+)\s*[a-zA-Z_][a-zA-Z0-9_]*").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential integer overflow in Go - arithmetic on user-supplied integer without bounds checking",
+    },
+
+    // #448: Format string in Go
+    SecurityPattern {
+        name: "go_format_string",
+        regex: Regex::new(r"fmt\.Fprintf\s*\(\s*w\s*,\s*(?:r\.(?:FormValue|URL\.Query)|[a-zA-Z_][a-zA-Z0-9_]*\s*\))").unwrap(),
+        severity: Severity::High,
+        message: "Potential format string vulnerability in Go - user input as format string in fmt.Fprintf",
+    },
+
+    // #449: Weak cryptography in Go
+    SecurityPattern {
+        name: "go_weak_crypto_md5",
+        regex: Regex::new(r"(?:md5\.(?:New|Sum)|crypto/md5)").unwrap(),
+        severity: Severity::High,
+        message: "Weak cryptography in Go - MD5 should not be used for password hashing or security",
+    },
+    SecurityPattern {
+        name: "go_weak_crypto_sha1",
+        regex: Regex::new(r"(?:sha1\.(?:New|Sum)|crypto/sha1)").unwrap(),
+        severity: Severity::Medium,
+        message: "Weak cryptography in Go - SHA1 is deprecated for security purposes",
+    },
+
+    // #450: Missing rate limiting in Go
+    SecurityPattern {
+        name: "go_missing_rate_limit",
+        regex: Regex::new(r"http\.(?:HandleFunc|Handle)\s*\(\s*[^)]*\)\s*$").unwrap(),
+        severity: Severity::Low,
+        message: "Potential missing rate limiting in Go - HTTP endpoint without rate limiter middleware",
+    },
+
+    // #451: Missing CSP in Go
+    SecurityPattern {
+        name: "go_missing_csp_html",
+        regex: Regex::new(r#"(?:w\.Header\(\)\.Set|Header\.Set)\s*\(\s*["']Content-Type["']\s*,\s*["']text/html["']"#).unwrap(),
+        severity: Severity::Low,
+        message: "Potential missing CSP in Go - HTML response without Content-Security-Policy header",
+    },
+
+    // #452: Weak authentication / hardcoded credentials in Go
+    SecurityPattern {
+        name: "go_hardcoded_credentials",
+        regex: Regex::new(r#"(?i)(?:password|passwd|secret|credential)\s*(?::=|=)\s*["'][^"']{4,}["']"#).unwrap(),
+        severity: Severity::High,
+        message: "Hardcoded credentials in Go - password/secret should not be hardcoded",
+    },
+
+    // #453: Unrestricted file upload in Go
+    SecurityPattern {
+        name: "go_unrestricted_upload",
+        regex: Regex::new(r"r\.FormFile\s*\(\s*[^)]*\)").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential unrestricted file upload in Go - file upload without content type or size validation",
+    },
+
+    // #454: LDAP injection in Go
+    SecurityPattern {
+        name: "go_ldap_injection",
+        regex: Regex::new(r#"fmt\.Sprintf\s*\(\s*["'][^"']*(?:uid=|cn=|ou=|dc=|dn=|\([\w]+=)[^"']*["']"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential LDAP injection in Go - fmt.Sprintf with user input in LDAP query",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)
@@ -1101,6 +1285,10 @@ impl CodeAnalyzer {
             "dart_insecure_filemode_0777" | "dart_insecure_filemode_world_write" | 
             "dart_setPermissions_777" | "dart_setPermissions_world_write" => {
                 matches!(file_type, FileType::Dart)
+            },
+            // Go/net/http specific patterns
+            p if p.starts_with("go_") => {
+                matches!(file_type, FileType::Go)
             },
             // General patterns that apply to all code files
             _ => !matches!(file_type, FileType::Unknown)

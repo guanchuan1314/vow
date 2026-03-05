@@ -1,0 +1,29 @@
+# Test .vowignore file for integration tests
+# This file should exclude certain patterns during directory scanning
+
+# Exclude test directories
+**/test/**
+**/tests/**
+**/__tests__/**
+
+# Exclude specific test files
+*.test.py
+*.test.js
+*_test.py
+*_test.js
+test_*.py
+test_*.js
+
+# Exclude build artifacts
+dist/
+build/
+target/
+node_modules/
+
+# Exclude temporary files
+*.tmp
+*.temp
+*.log
+
+# Exclude this specific file for testing exclusions
+excluded_file.py

@@ -1,0 +1,66 @@
+{
+  "version": "0.1.0",
+  "scans": [
+    {
+      "timestamp": "2026-03-01T21:31:11.383454972Z",
+      "total_files": 1,
+      "total_issues": 6,
+      "avg_score": 17,
+      "issues_by_severity": {
+        "medium": 1,
+        "high": 5
+      },
+      "issues_by_rule": {
+        "JavaScript SQL Injection Enhanced Detection": 2,
+        "JavaScript NoSQL Injection Detection": 1,
+        "JavaScript Mass Assignment Detection": 1,
+        "nonexistent_method": 1,
+        "JavaScript XSS Detection": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-03-05T15:27:51.319364068Z",
+      "total_files": 1,
+      "total_issues": 1,
+      "avg_score": 85,
+      "issues_by_severity": {
+        "high": 1
+      },
+      "issues_by_rule": {
+        "base64_instructions": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-03-05T15:30:00.634680811Z",
+      "total_files": 1,
+      "total_issues": 20,
+      "avg_score": 0,
+      "issues_by_severity": {
+        "medium": 8,
+        "critical": 2,
+        "high": 10
+      },
+      "issues_by_rule": {
+        "Ruby SSRF Detection": 1,
+        "Ruby SQL Injection Detection": 3,
+        "Ruby/Sinatra IDOR Detection": 2,
+        "Ruby Insecure Deserialization Detection": 1,
+        "Ruby Command Injection Detection": 1,
+        "base64_instructions": 1,
+        "Ruby/Sinatra CSRF Detection": 4,
+        "Ruby Path Traversal Detection": 1,
+        "Ruby/Sinatra Server-Side Template Injection (SSTI) Detection": 2,
+        "Ruby/ERB XSS Detection": 1,
+        "Ruby Mass Assignment Detection": 1,
+        "Ruby XXE Detection": 1,
+        "Ruby/Sinatra Open Redirect Detection": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    }
+  ]
+}

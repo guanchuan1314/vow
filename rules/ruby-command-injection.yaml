@@ -1,0 +1,22 @@
+name: "Ruby Command Injection Detection"
+description: "Detect command injection vulnerabilities via backticks, system, exec, or %x in Ruby"
+severity: "critical"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "`[^`]*#\\{.*\\}[^`]*`"
+  - type: "regex"
+    pattern: "system\\s*\\(\\s*\"[^\"]*#\\{.*\\}[^\"]*\""
+  - type: "regex"
+    pattern: "system\\s*\\(\\s*'[^']*'\\s*\\+\\s*"
+  - type: "regex"
+    pattern: "exec\\s*\\(\\s*\"[^\"]*#\\{.*\\}[^\"]*\""
+  - type: "regex"
+    pattern: "%x\\([^)]*#\\{.*\\}[^)]*\\)"
+  - type: "regex"
+    pattern: "IO\\.popen\\s*\\(\\s*\"[^\"]*#\\{.*\\}"
+  - type: "regex"
+    pattern: "Open3\\.(capture|popen)\\w*\\s*\\(\\s*\"[^\"]*#\\{.*\\}"
+
+fix_suggestion: "Avoid passing user input to shell commands. Use array form of system/exec (e.g., system('cmd', arg)) which bypasses shell interpretation. Use Shellwords.escape for necessary shell interpolation."

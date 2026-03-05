@@ -1,0 +1,24 @@
+name: "Ruby/Sinatra Server-Side Template Injection (SSTI) Detection"
+description: "Detect template injection vulnerabilities in Ruby/Sinatra ERB rendering"
+severity: "high"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "erb\\s+[a-z_]*input"
+  - type: "regex"
+    pattern: "erb\\s+params\\["
+  - type: "regex"
+    pattern: "erb\\s+\"[^\"]*#\\{.*\\}\""
+  - type: "regex"
+    pattern: "erb\\s+.*request\\.(body|params)"
+  - type: "regex"
+    pattern: "ERB\\.new\\s*\\(\\s*params\\["
+  - type: "regex"
+    pattern: "ERB\\.new\\s*\\(\\s*.*user"
+  - type: "regex"
+    pattern: "Erubis::Eruby\\.new\\s*\\(\\s*.*params\\["
+  - type: "regex"
+    pattern: "render\\s+inline:\\s*.*params\\["
+
+fix_suggestion: "Never pass user input directly to template rendering. Use predefined templates with parameterized data. Sanitize and validate all user input before including in template context. Use template engines with sandboxing enabled."

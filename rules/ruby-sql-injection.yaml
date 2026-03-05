@@ -1,0 +1,22 @@
+name: "Ruby SQL Injection Detection"
+description: "Detect SQL injection vulnerabilities via string interpolation in Ruby"
+severity: "high"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "\"SELECT\\s+.*#\\{.*\\}.*\""
+  - type: "regex"
+    pattern: "\"INSERT\\s+INTO\\s+.*#\\{.*\\}.*\""
+  - type: "regex"
+    pattern: "\"UPDATE\\s+.*SET\\s+.*#\\{.*\\}.*\""
+  - type: "regex"
+    pattern: "\"DELETE\\s+FROM\\s+.*#\\{.*\\}.*\""
+  - type: "regex"
+    pattern: "\".*WHERE\\s+.*#\\{.*\\}.*\""
+  - type: "regex"
+    pattern: "\\.execute\\s*\\(\\s*\"[^\"]*#\\{.*\\}[^\"]*\""
+  - type: "regex"
+    pattern: "\\.query\\s*\\(\\s*\"[^\"]*#\\{.*\\}[^\"]*\""
+
+fix_suggestion: "Use parameterized queries or prepared statements instead of string interpolation. Use ActiveRecord query interface, sanitize_sql, or placeholder syntax (e.g., where('username = ?', username))."

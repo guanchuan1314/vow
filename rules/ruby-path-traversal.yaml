@@ -1,0 +1,18 @@
+name: "Ruby Path Traversal Detection"
+description: "Detect path traversal vulnerabilities in Ruby/Sinatra file operations"
+severity: "high"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "send_file\\s+File\\.join\\s*\\("
+  - type: "regex"
+    pattern: "send_file\\s+.*params\\["
+  - type: "regex"
+    pattern: "File\\.(read|open|write|delete)\\s*\\(\\s*.*params\\["
+  - type: "regex"
+    pattern: "File\\.join\\s*\\(.*params\\["
+  - type: "regex"
+    pattern: "IO\\.(read|write)\\s*\\(\\s*.*params\\["
+
+fix_suggestion: "Validate and sanitize file paths. Use File.basename to strip directory components. Check that the resolved path (File.realpath) stays within the intended directory. Never pass user input directly to file operations."

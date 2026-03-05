@@ -1,0 +1,24 @@
+name: "Ruby SSRF Detection"
+description: "Detect Server-Side Request Forgery vulnerabilities in Ruby"
+severity: "high"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "open\\s*\\(\\s*.*params\\[.*\\].*\\)\\.read"
+  - type: "regex"
+    pattern: "open\\s*\\(\\s*url\\s*\\)"
+  - type: "regex"
+    pattern: "URI\\.open\\s*\\(\\s*.*params\\["
+  - type: "regex"
+    pattern: "Net::HTTP\\.get\\s*\\(\\s*.*params\\["
+  - type: "regex"
+    pattern: "HTTParty\\.(get|post)\\s*\\(\\s*.*params\\["
+  - type: "regex"
+    pattern: "RestClient\\.(get|post)\\s*\\(\\s*.*params\\["
+  - type: "regex"
+    pattern: "Faraday\\.(get|post)\\s*\\(\\s*.*params\\["
+  - type: "regex"
+    pattern: "open-uri.*open\\s*\\(\\s*[a-z_]*url"
+
+fix_suggestion: "Validate and whitelist allowed URLs/domains. Block requests to internal/private IP ranges. Use an allowlist of permitted protocols (http/https only). Avoid passing user-controlled URLs directly to HTTP clients."

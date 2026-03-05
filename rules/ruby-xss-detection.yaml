@@ -1,0 +1,18 @@
+name: "Ruby/ERB XSS Detection"
+description: "Detect cross-site scripting vulnerabilities in Ruby ERB templates with unescaped output"
+severity: "high"
+file_types: ["rb", "erb"]
+
+patterns:
+  - type: "regex"
+    pattern: "<%=\\s*@[a-zA-Z_]\\w*\\s*%>"
+  - type: "regex"
+    pattern: "<%=\\s*params\\[.*\\]\\s*%>"
+  - type: "regex"
+    pattern: "<%=\\s*raw\\s+"
+  - type: "regex"
+    pattern: "\\.html_safe"
+  - type: "regex"
+    pattern: "<%=\\s*request\\."
+
+fix_suggestion: "Use ERB's <%== %> or html_escape/h helper to escape output. Avoid .html_safe on user-controlled data. Use content_security_policy headers and sanitize user input before rendering."

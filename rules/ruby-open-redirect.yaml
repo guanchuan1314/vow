@@ -1,0 +1,20 @@
+name: "Ruby/Sinatra Open Redirect Detection"
+description: "Detect open redirect vulnerabilities in Ruby/Sinatra applications"
+severity: "medium"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "redirect\\s+to\\s*\\(\\s*params\\["
+  - type: "regex"
+    pattern: "redirect\\s+to\\s*\\(\\s*url"
+  - type: "regex"
+    pattern: "redirect\\s+to\\s*\\(\\s*.*request\\."
+  - type: "regex"
+    pattern: "redirect_to\\s+params\\["
+  - type: "regex"
+    pattern: "redirect_to\\s+.*request\\."
+  - type: "regex"
+    pattern: "redirect\\s+.*#\\{.*params"
+
+fix_suggestion: "Validate redirect URLs against a whitelist of allowed destinations. Use relative paths instead of absolute URLs. Check that the redirect target is on the same domain. Never pass user-controlled URLs directly to redirect methods."

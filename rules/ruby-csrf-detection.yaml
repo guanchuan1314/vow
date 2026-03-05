@@ -1,0 +1,16 @@
+name: "Ruby/Sinatra CSRF Detection"
+description: "Detect missing CSRF protection in Ruby/Sinatra POST/PUT/DELETE handlers"
+severity: "medium"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "post\\s+['\"/].*do"
+  - type: "regex"
+    pattern: "put\\s+['\"/].*do"
+  - type: "regex"
+    pattern: "delete\\s+['\"/].*do"
+  - type: "regex"
+    pattern: "patch\\s+['\"/].*do"
+
+fix_suggestion: "Enable CSRF protection in Sinatra using rack_csrf or sinatra-csrf gems. Add 'use Rack::Csrf' middleware. In Rails, ensure 'protect_from_forgery with: :exception' is set in ApplicationController. Include CSRF tokens in all forms."

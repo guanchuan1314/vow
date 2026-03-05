@@ -1,0 +1,18 @@
+name: "Ruby/Sinatra IDOR Detection"
+description: "Detect Insecure Direct Object Reference vulnerabilities in Ruby/Sinatra"
+severity: "medium"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "\\.find\\s*\\(\\s*params\\[:id\\]"
+  - type: "regex"
+    pattern: "\\.find\\s*\\(\\s*params\\[\"id\"\\]"
+  - type: "regex"
+    pattern: "\\.find_by\\s*\\(\\s*id:\\s*params\\["
+  - type: "regex"
+    pattern: "get\\s+['\"]/:id['\"]\\s+do"
+  - type: "regex"
+    pattern: "\\.where\\s*\\(\\s*id:\\s*params\\["
+
+fix_suggestion: "Always verify that the current user is authorized to access the requested resource. Scope queries to the current user (e.g., current_user.records.find(params[:id])). Implement proper authorization checks using gems like Pundit or CanCanCan."

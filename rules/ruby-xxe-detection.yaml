@@ -1,0 +1,18 @@
+name: "Ruby XXE Detection"
+description: "Detect XML External Entity vulnerabilities in Ruby XML parsing"
+severity: "high"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "Nokogiri::XML\\s*\\([^)]*\\)"
+  - type: "regex"
+    pattern: "REXML::Document\\.new\\s*\\("
+  - type: "regex"
+    pattern: "LibXML::XML::Document\\.string\\s*\\("
+  - type: "regex"
+    pattern: "Nokogiri::XML\\s*\\(.*params\\["
+  - type: "regex"
+    pattern: "Nokogiri::XML\\s*\\(.*request\\.body"
+
+fix_suggestion: "Disable external entity processing in XML parsers. For Nokogiri, use Nokogiri::XML(content) { |config| config.nonet } or config.strict. For REXML, set entity_expansion_limit. Never parse untrusted XML with default settings."

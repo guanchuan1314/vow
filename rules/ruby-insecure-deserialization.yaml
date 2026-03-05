@@ -1,0 +1,18 @@
+name: "Ruby Insecure Deserialization Detection"
+description: "Detect insecure deserialization vulnerabilities in Ruby"
+severity: "critical"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "Marshal\\.load\\s*\\("
+  - type: "regex"
+    pattern: "Marshal\\.restore\\s*\\("
+  - type: "regex"
+    pattern: "YAML\\.load\\s*\\("
+  - type: "regex"
+    pattern: "YAML\\.unsafe_load\\s*\\("
+  - type: "regex"
+    pattern: "Oj\\.load\\s*\\(.*params\\["
+
+fix_suggestion: "Never deserialize untrusted data with Marshal.load or YAML.load. Use YAML.safe_load instead of YAML.load. Use JSON for data exchange. If Marshal is necessary, validate and sign the serialized data with HMAC before deserializing."

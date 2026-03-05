@@ -1,0 +1,20 @@
+name: "Ruby Mass Assignment Detection"
+description: "Detect mass assignment vulnerabilities in Ruby/Rails models"
+severity: "medium"
+file_types: ["rb"]
+
+patterns:
+  - type: "regex"
+    pattern: "\\.new\\s*\\(\\s*params\\[.*\\]\\s*\\)"
+  - type: "regex"
+    pattern: "\\.create\\s*\\(\\s*params\\[.*\\]\\s*\\)"
+  - type: "regex"
+    pattern: "\\.update\\s*\\(\\s*params\\[.*\\]\\s*\\)"
+  - type: "regex"
+    pattern: "\\.update_attributes\\s*\\(\\s*params\\["
+  - type: "regex"
+    pattern: "\\.assign_attributes\\s*\\(\\s*params\\["
+  - type: "regex"
+    pattern: "User\\.new\\s*\\(\\s*[a-z_]*params"
+
+fix_suggestion: "Use strong parameters (permit/require) to whitelist allowed attributes. Never pass raw params directly to model constructors or update methods. Define attr_accessible or use ActionController::Parameters#permit."

@@ -469,6 +469,346 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Insecure file permissions detected - setPermissions with world-writable permissions",
     },
 
+    // Java/Servlet vulnerability patterns (#468-#499)
+    
+    // #468: SQL injection via string concatenation in JDBC
+    SecurityPattern {
+        name: "java_servlet_sql_injection",
+        regex: Regex::new(r#"(?i)executeQuery\s*\(\s*"[^"]*"\s*\+|executeQuery\s*\(\s*\w+\s*\+\s*"|\.createStatement\s*\(\s*\).*?executeQuery\s*\(\s*\w+\s*\)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "SQL injection in Java Servlet - string concatenation in JDBC Statement.executeQuery()",
+    },
+    SecurityPattern {
+        name: "java_servlet_sql_injection_concat",
+        regex: Regex::new(r#"(?i)["']SELECT\s+.*?["']\s*\+\s*(?:request\.getParameter|req\.getParameter)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "SQL injection in Java Servlet - user input directly concatenated into SQL query",
+    },
+    // #469: XSS
+    SecurityPattern {
+        name: "java_servlet_xss",
+        regex: Regex::new(r"(?i)getWriter\s*\(\s*\)\s*\.\s*(?:print|println|write|format)\s*\([^)]*getParameter\s*\(").unwrap(),
+        severity: Severity::High,
+        message: "XSS in Java Servlet - unsanitized getParameter() output written to response",
+    },
+    SecurityPattern {
+        name: "java_servlet_xss_variable",
+        regex: Regex::new(r"(?i)(?:String\s+\w+\s*=\s*request\.getParameter\s*\([^)]*\)\s*;[^}]*getWriter\s*\(\s*\)\s*\.\s*(?:print|println|write))").unwrap(),
+        severity: Severity::High,
+        message: "XSS in Java Servlet - user input from getParameter() written to response without sanitization",
+    },
+    // #470: Path traversal
+    SecurityPattern {
+        name: "java_servlet_path_traversal",
+        regex: Regex::new(r"(?i)new\s+File\s*\([^)]*getParameter\s*\(|new\s+FileInputStream\s*\([^)]*getParameter\s*\(").unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Java Servlet - user input in File/FileInputStream constructor",
+    },
+    // #471: SSRF
+    SecurityPattern {
+        name: "java_servlet_ssrf",
+        regex: Regex::new(r"(?i)new\s+URL\s*\([^)]*getParameter\s*\([^)]*\)\s*\)\s*\.\s*openConnection").unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Java Servlet - user-controlled URL in URL.openConnection()",
+    },
+    // #472: Open redirect / #487: Unvalidated redirect
+    SecurityPattern {
+        name: "java_servlet_open_redirect",
+        regex: Regex::new(r"(?i)(?:response|res)\s*\.\s*sendRedirect\s*\([^)]*getParameter\s*\(").unwrap(),
+        severity: Severity::Medium,
+        message: "Open redirect in Java Servlet - user input in response.sendRedirect()",
+    },
+    // #473: Hardcoded secrets
+    SecurityPattern {
+        name: "java_hardcoded_password",
+        regex: Regex::new(r#"(?i)(?:String\s+)?(?:password|passwd|pwd)\s*=\s*["'][^"']{4,}["']"#).unwrap(),
+        severity: Severity::High,
+        message: "Hardcoded password detected in Java source code",
+    },
+    SecurityPattern {
+        name: "java_hardcoded_credential",
+        regex: Regex::new(r#"(?i)(?:private\s+(?:static\s+)?(?:final\s+)?String\s+)(?:API_KEY|SECRET_KEY|ACCESS_TOKEN|PRIVATE_KEY|DB_PASSWORD|AUTH_TOKEN)\s*=\s*["'][^"']{4,}["']"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Hardcoded credential/API key detected in Java source code",
+    },
+    // #474: Insecure deserialization
+    SecurityPattern {
+        name: "java_insecure_deserialization",
+        regex: Regex::new(r"(?i)ObjectInputStream\s*\([^)]*\)\s*;[^}]*\.readObject\s*\(\s*\)").unwrap(),
+        severity: Severity::Critical,
+        message: "Insecure deserialization in Java - ObjectInputStream.readObject() on potentially untrusted data",
+    },
+    SecurityPattern {
+        name: "java_insecure_deserialization_inline",
+        regex: Regex::new(r"(?i)new\s+ObjectInputStream\s*\([^)]*(?:getInputStream|request|socket|input)").unwrap(),
+        severity: Severity::Critical,
+        message: "Insecure deserialization in Java - ObjectInputStream reading from user-controlled input stream",
+    },
+    // #475: CSRF
+    SecurityPattern {
+        name: "java_servlet_csrf_dopost",
+        regex: Regex::new(r"(?i)(?:void\s+doPost\s*\(\s*HttpServletRequest)").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential CSRF in Java Servlet - doPost() handler without visible CSRF token validation",
+    },
+    SecurityPattern {
+        name: "java_servlet_csrf_post_handler",
+        regex: Regex::new(r#"(?i)(?:if\s*\(\s*["']POST["']\s*\.\s*equals(?:IgnoreCase)?\s*\(\s*request\s*\.\s*getMethod)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential CSRF in Java Servlet - POST handler without CSRF token validation",
+    },
+    // #499: GraphQL injection
+    SecurityPattern {
+        name: "java_graphql_injection",
+        regex: Regex::new(r#"(?i)(?:ExecutionInput|graphql\.execute)\s*\([^)]*getParameter\s*\(|["'](?:query|mutation)\s*\{["']\s*\+\s*(?:request\.getParameter|req\.getParameter)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "GraphQL injection in Java - user input directly interpolated into GraphQL query",
+    },
+    SecurityPattern {
+        name: "java_graphql_injection_concat",
+        regex: Regex::new(r#"(?i)["'].*(?:query|mutation)\s+\w+.*["']\s*\+\s*(?:request\.getParameter|req\.getParameter)"#).unwrap(),
+        severity: Severity::High,
+        message: "GraphQL injection in Java - string concatenation in GraphQL query construction",
+    },
+    // #498: NoSQL injection
+    SecurityPattern {
+        name: "java_nosql_injection",
+        regex: Regex::new(r#"(?i)(?:BasicDBObject|Document)\s*\.\s*parse\s*\([^)]*getParameter\s*\(|MongoCollection.*find\s*\([^)]*getParameter"#).unwrap(),
+        severity: Severity::Critical,
+        message: "NoSQL injection in Java - user input in MongoDB query without sanitization",
+    },
+    SecurityPattern {
+        name: "java_nosql_injection_string",
+        regex: Regex::new(r#"(?i)["']\{[^"']*\w+\s*:[^"']*["']\s*\+\s*(?:request\.getParameter|req\.getParameter)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "NoSQL injection in Java - string concatenation in NoSQL query",
+    },
+    // #497: Second-order SQL injection
+    SecurityPattern {
+        name: "java_second_order_sqli",
+        regex: Regex::new(r#"(?i)(?:executeQuery|executeUpdate|execute)\s*\(\s*["'][^"']*["']\s*\+\s*(?:rs\.getString|resultSet\.getString|result\.get)"#).unwrap(),
+        severity: Severity::High,
+        message: "Second-order SQL injection in Java - database-retrieved value used unsanitized in SQL query",
+    },
+    // #496: SSTI
+    SecurityPattern {
+        name: "java_ssti",
+        regex: Regex::new(r#"(?i)(?:VelocityEngine|Velocity)\s*\.\s*evaluate\s*\([^)]*getParameter|(?:Freemarker|Configuration)\s*\.\s*(?:getTemplate|process)\s*\([^)]*getParameter"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Server-side template injection (SSTI) in Java - user input in template engine evaluation",
+    },
+    SecurityPattern {
+        name: "java_ssti_string_template",
+        regex: Regex::new(r#"(?i)new\s+Template\s*\([^)]*getParameter|(?:template|engine)\s*\.\s*(?:merge|evaluate|process|render)\s*\([^)]*getParameter"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Server-side template injection (SSTI) in Java - user input passed to template rendering",
+    },
+    // #494: CRLF injection
+    SecurityPattern {
+        name: "java_crlf_injection",
+        regex: Regex::new(r#"(?i)(?:setHeader|addHeader|setStatus)\s*\([^)]*getParameter\s*\("#).unwrap(),
+        severity: Severity::High,
+        message: "CRLF injection in Java Servlet - user input in HTTP response header without sanitization",
+    },
+    SecurityPattern {
+        name: "java_crlf_injection_cookie",
+        regex: Regex::new(r#"(?i)new\s+Cookie\s*\([^)]*getParameter\s*\("#).unwrap(),
+        severity: Severity::High,
+        message: "CRLF injection in Java Servlet - user input in cookie value without sanitization",
+    },
+    // #489: LDAP injection
+    SecurityPattern {
+        name: "java_ldap_injection",
+        regex: Regex::new(r#"(?i)(?:search|lookup)\s*\([^)]*getParameter\s*\(|(?:DirContext|InitialDirContext|LdapContext)\s*.*?search\s*\([^)]*\+\s*(?:request\.getParameter|req\.getParameter)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "LDAP injection in Java - user input in LDAP search query without sanitization",
+    },
+    SecurityPattern {
+        name: "java_ldap_injection_filter",
+        regex: Regex::new(r#"(?i)["']\(\w+=["']\s*\+\s*(?:request\.getParameter|req\.getParameter)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "LDAP injection in Java - user input concatenated into LDAP filter string",
+    },
+    // #488: XML injection
+    SecurityPattern {
+        name: "java_xml_injection",
+        regex: Regex::new(r#"(?i)["']<\w+[^"']*["']\s*\+\s*(?:request\.getParameter|req\.getParameter)|(?:createElement|createTextNode|setAttribute)\s*\([^)]*getParameter\s*\("#).unwrap(),
+        severity: Severity::High,
+        message: "XML injection in Java - user input directly embedded in XML construction without encoding",
+    },
+    // #476: IDOR
+    SecurityPattern {
+        name: "java_idor",
+        regex: Regex::new(r#"(?i)(?:findById|getById|load|get)\s*\(\s*(?:Integer|Long|UUID)?\s*\.?\s*(?:parse\w*)?\s*\(\s*request\.getParameter"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential IDOR in Java - database lookup using user-supplied ID without authorization check",
+    },
+    SecurityPattern {
+        name: "java_idor_path_variable",
+        regex: Regex::new(r#"(?i)@(?:PathVariable|RequestParam)\s+(?:Long|Integer|String|UUID)\s+\w*[iI]d\b"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential IDOR in Java - user-supplied ID in path/request parameter; ensure authorization check exists",
+    },
+    // #484: Weak authentication
+    SecurityPattern {
+        name: "java_weak_auth_basic",
+        regex: Regex::new(r#"(?i)(?:getHeader\s*\(\s*["']Authorization["']\s*\).*?(?:Base64|decode)|BasicAuth)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Weak authentication in Java - Basic authentication with Base64 decoding (not encryption)",
+    },
+    SecurityPattern {
+        name: "java_weak_auth_equals",
+        regex: Regex::new(r#"(?i)(?:password|token|secret)\s*\.\s*equals\s*\("#).unwrap(),
+        severity: Severity::Medium,
+        message: "Weak authentication in Java - string comparison for credentials (use constant-time comparison)",
+    },
+    // #477: Buffer overflow
+    SecurityPattern {
+        name: "java_buffer_overflow",
+        regex: Regex::new(r#"(?i)(?:System\.arraycopy|ByteBuffer\.(?:allocate|wrap))\s*\([^)]*getParameter|(?:Unsafe)\s*\.\s*(?:putByte|copyMemory|allocateMemory)"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential buffer overflow in Java - unsafe memory/buffer operation with user input or Unsafe API usage",
+    },
+    // #479: Integer overflow
+    SecurityPattern {
+        name: "java_integer_overflow",
+        regex: Regex::new(r#"(?i)(?:Integer|Long)\s*\.\s*parse(?:Int|Long)\s*\(\s*(?:request\.getParameter|req\.getParameter)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential integer overflow in Java - parsing user input without range validation",
+    },
+    SecurityPattern {
+        name: "java_integer_overflow_cast",
+        regex: Regex::new(r#"(?i)\(\s*(?:int|short|byte)\s*\)\s*(?:Long\.parseLong|Integer\.parseInt)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential integer overflow in Java - narrowing cast of parsed numeric value",
+    },
+    // #490: Memory/Resource leak
+    SecurityPattern {
+        name: "java_resource_leak",
+        regex: Regex::new(r#"(?i)(?:new\s+(?:FileInputStream|FileOutputStream|BufferedReader|Connection|Socket|ServerSocket|DatagramSocket))\s*\([^)]*\)\s*;"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential resource leak in Java - closeable resource not in try-with-resources block",
+    },
+    // #491: Null pointer dereference
+    SecurityPattern {
+        name: "java_null_deref",
+        regex: Regex::new(r#"(?i)request\.getParameter\s*\([^)]*\)\s*\.\s*(?:equals|length|trim|split|charAt|substring|toLowerCase|toUpperCase)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential null pointer dereference in Java - calling method on getParameter() which may return null",
+    },
+    // #493: Uncontrolled recursion
+    SecurityPattern {
+        name: "java_uncontrolled_recursion",
+        regex: Regex::new(r#"(?i)(?:return\s+\w+\s*\(|this\s*\.\s*\w+\s*\().*//\s*(?:recursive|recurse)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential uncontrolled recursion in Java - recursive method call without visible depth limit",
+    },
+    // #478: Race condition
+    SecurityPattern {
+        name: "java_race_condition",
+        regex: Regex::new(r#"(?i)static\s+(?:(?:private|public|protected)\s+)?(?:int|long|boolean|String|Map|List|Set|HashMap|ArrayList)\s+\w+\s*[=;]"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential race condition in Java Servlet - mutable static field (servlets are shared across threads)",
+    },
+    // #492: Deadlock
+    SecurityPattern {
+        name: "java_deadlock",
+        regex: Regex::new(r#"(?i)synchronized\s*\([^)]+\)\s*\{[^}]*synchronized\s*\("#).unwrap(),
+        severity: Severity::High,
+        message: "Potential deadlock in Java - nested synchronized blocks detected",
+    },
+    // #481: Insecure randomness
+    SecurityPattern {
+        name: "java_insecure_random",
+        regex: Regex::new(r#"(?i)new\s+(?:java\.util\.)?Random\s*\(\s*\)|Math\s*\.\s*random\s*\(\s*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure randomness in Java - java.util.Random/Math.random() is not cryptographically secure; use SecureRandom",
+    },
+    SecurityPattern {
+        name: "java_insecure_random_seed",
+        regex: Regex::new(r#"(?i)new\s+Random\s*\(\s*(?:System\.currentTimeMillis|System\.nanoTime|0|1|42)\s*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure randomness in Java - Random seeded with predictable value",
+    },
+    // #482: Weak cryptography
+    SecurityPattern {
+        name: "java_weak_crypto",
+        regex: Regex::new(r#"(?i)Cipher\s*\.\s*getInstance\s*\(\s*["'](?:DES|RC2|RC4|Blowfish|DESede|AES/ECB)["']"#).unwrap(),
+        severity: Severity::High,
+        message: "Weak cryptography in Java - using deprecated/insecure cipher algorithm (DES/RC2/RC4/ECB mode)",
+    },
+    SecurityPattern {
+        name: "java_weak_hash",
+        regex: Regex::new(r#"(?i)MessageDigest\s*\.\s*getInstance\s*\(\s*["'](?:MD5|SHA-1|SHA1)["']"#).unwrap(),
+        severity: Severity::High,
+        message: "Weak cryptography in Java - using deprecated hash algorithm (MD5/SHA-1)",
+    },
+    // #485: Insecure file permissions
+    SecurityPattern {
+        name: "java_insecure_file_perms",
+        regex: Regex::new(r#"(?i)(?:PosixFilePermissions\s*\.\s*fromString\s*\(\s*["']rwxrwxrwx["']|(?:setReadable|setWritable|setExecutable)\s*\(\s*true\s*,\s*false\s*\))"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure file permissions in Java - world-readable/writable/executable file permissions",
+    },
+    SecurityPattern {
+        name: "java_insecure_temp_file",
+        regex: Regex::new(r#"(?i)File\s*\.\s*createTempFile\s*\("#).unwrap(),
+        severity: Severity::Medium,
+        message: "Insecure file permissions in Java - File.createTempFile() may have predictable name; use Files.createTempFile()",
+    },
+    // #486: Unrestricted file upload
+    SecurityPattern {
+        name: "java_unrestricted_upload",
+        regex: Regex::new(r#"(?i)(?:@MultipartConfig|getPart\s*\(|getParts\s*\(|MultipartFile|CommonsMultipartFile)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential unrestricted file upload in Java - ensure file type/size validation and secure storage path",
+    },
+    SecurityPattern {
+        name: "java_unrestricted_upload_write",
+        regex: Regex::new(r#"(?i)(?:part|file|upload)\s*\.\s*(?:write|transferTo)\s*\([^)]*getParameter"#).unwrap(),
+        severity: Severity::High,
+        message: "Unrestricted file upload in Java - uploaded file written to user-controlled path",
+    },
+    // #480: Unsafe reflection
+    SecurityPattern {
+        name: "java_unsafe_reflection",
+        regex: Regex::new(r#"(?i)Class\s*\.\s*forName\s*\([^)]*getParameter\s*\(|\.newInstance\s*\(\s*\).*getParameter|(?:getMethod|getDeclaredMethod)\s*\([^)]*getParameter"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Unsafe reflection in Java - user input used to load class or invoke method via reflection",
+    },
+    SecurityPattern {
+        name: "java_unsafe_reflection_invoke",
+        regex: Regex::new(r#"(?i)(?:Method|Constructor)\s*\.\s*invoke\s*\([^)]*getParameter"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Unsafe reflection in Java - user input in reflective method invocation",
+    },
+    // #483: Improper error handling
+    SecurityPattern {
+        name: "java_improper_error_handling",
+        regex: Regex::new(r#"(?i)catch\s*\(\s*(?:Exception|Throwable|RuntimeException)\s+\w+\s*\)\s*\{\s*\}"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Improper error handling in Java - empty catch block swallows exception silently",
+    },
+    SecurityPattern {
+        name: "java_stacktrace_exposure",
+        regex: Regex::new(r#"(?i)(?:printStackTrace\s*\(\s*\)|getWriter\s*\(\s*\)\s*\.\s*(?:print|println)\s*\([^)]*(?:getMessage|getStackTrace|toString)\s*\(\s*\))"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Improper error handling in Java - stack trace/error details exposed to user response",
+    },
+    // #495: HTTP request smuggling
+    SecurityPattern {
+        name: "java_http_smuggling",
+        regex: Regex::new(r#"(?i)(?:getHeader\s*\(\s*["'](?:Transfer-Encoding|Content-Length)["']\s*\).*getHeader\s*\(\s*["'](?:Content-Length|Transfer-Encoding)["'])"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential HTTP request smuggling in Java - both Transfer-Encoding and Content-Length headers processed",
+    },
+    SecurityPattern {
+        name: "java_http_smuggling_forward",
+        regex: Regex::new(r#"(?i)(?:setHeader|addHeader)\s*\(\s*["']Transfer-Encoding["']\s*,\s*["']chunked["']"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential HTTP request smuggling in Java - manually setting Transfer-Encoding header",
+    },
+
     // Go/net/http vulnerability patterns (#439-#454)
 
     // #439: SQL injection in Go via fmt.Sprintf
@@ -1279,6 +1619,10 @@ impl CodeAnalyzer {
             },
             // Java XXE patterns
             "java_xxe_documentbuilder" | "java_xxe_saxparser" | "java_xxe_xmlreader" | "java_xxe_transformer" => {
+                matches!(file_type, FileType::Java)
+            },
+            // Java/Servlet security patterns (#468-#499)
+            p if p.starts_with("java_") => {
                 matches!(file_type, FileType::Java)
             },
             // Dart/Flutter specific patterns

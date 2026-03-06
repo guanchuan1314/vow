@@ -992,6 +992,334 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Potential LDAP injection in Go - fmt.Sprintf with user input in LDAP query",
     },
+
+    // TypeScript/Express vulnerability patterns (#500-#526)
+
+    // #500: XSS — user input reflected in HTML via res.send() with template literals
+    SecurityPattern {
+        name: "ts_express_xss_res_send",
+        regex: Regex::new(r#"res\.send\s*\(\s*`[^`]*\$\{[^}]*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Express - user input from req.body/query/params reflected in res.send() template literal",
+    },
+    SecurityPattern {
+        name: "ts_express_xss_res_send_concat",
+        regex: Regex::new(r#"res\.send\s*\(\s*["']<[^"']*["']\s*\+\s*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Express - user input concatenated into HTML string in res.send()",
+    },
+    SecurityPattern {
+        name: "ts_express_xss_res_send_html",
+        regex: Regex::new(r#"res\.send\s*\(\s*`\s*<(?:html|div|span|p|h[1-6]|script|img|a|form|table|body)[^`]*\$\{"#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Express - HTML template literal with interpolated values in res.send()",
+    },
+
+    // #501: Path traversal — path.join with user input + fs.readFile
+    SecurityPattern {
+        name: "ts_express_path_traversal_join",
+        regex: Regex::new(r#"path\.join\s*\([^)]*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Express - user input in path.join() without sanitization",
+    },
+    SecurityPattern {
+        name: "ts_express_path_traversal_fs",
+        regex: Regex::new(r#"fs\.(readFile|readFileSync|createReadStream|writeFile|writeFileSync|unlink|unlinkSync|access|accessSync|stat|statSync)\s*\([^)]*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Express - user input directly in fs file operation",
+    },
+
+    // #502: SSRF — axios.get/fetch with user-controlled URL
+    SecurityPattern {
+        name: "ts_express_ssrf_axios",
+        regex: Regex::new(r#"axios\.(get|post|put|delete|patch|head|request)\s*\(\s*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Express - user-controlled URL passed to axios without validation",
+    },
+    SecurityPattern {
+        name: "ts_express_ssrf_fetch",
+        regex: Regex::new(r#"fetch\s*\(\s*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Express - user-controlled URL passed to fetch() without validation",
+    },
+    SecurityPattern {
+        name: "ts_express_ssrf_http",
+        regex: Regex::new(r#"(?:http|https)\.(?:get|request)\s*\(\s*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Express - user-controlled URL passed to http.get/request without validation",
+    },
+
+    // #503/#518: Open redirect / Unvalidated redirect — res.redirect with user input
+    SecurityPattern {
+        name: "ts_express_open_redirect",
+        regex: Regex::new(r#"res\.redirect\s*\(\s*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Open redirect in Express - user input in res.redirect() without validation",
+    },
+    SecurityPattern {
+        name: "ts_express_open_redirect_var",
+        regex: Regex::new(r#"res\.redirect\s*\(\s*(?:url|redirect|returnUrl|next|returnTo|destination|goto|target|forward|redir)\s*\)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential open redirect in Express - variable in res.redirect(); ensure URL is validated",
+    },
+
+    // #504: Insecure deserialization — JSON.parse controlling auth/logic
+    SecurityPattern {
+        name: "ts_express_insecure_deserialization",
+        regex: Regex::new(r#"JSON\.parse\s*\(\s*req\.(body|query|params|headers)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Insecure deserialization in Express - JSON.parse on raw user input may control auth/logic flow",
+    },
+
+    // #505/#526: Template injection / SSTI — user input in template rendering
+    SecurityPattern {
+        name: "ts_express_ssti_render",
+        regex: Regex::new(r#"res\.render\s*\(\s*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Server-side template injection in Express - user input controls template name in res.render()",
+    },
+    SecurityPattern {
+        name: "ts_express_ssti_template_literal",
+        regex: Regex::new(r#"res\.send\s*\(\s*`[^`]*\$\{[^}]*\}[^`]*`\s*\)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential template injection in Express - template literal with interpolated values sent as HTML",
+    },
+
+    // #506: Mass assignment — req.body spread/assigned to object with privileged fields
+    SecurityPattern {
+        name: "ts_express_mass_assignment_spread",
+        regex: Regex::new(r#"\.\.\.\s*req\.body"#).unwrap(),
+        severity: Severity::High,
+        message: "Mass assignment in Express - spreading req.body may include privileged fields (role, isAdmin, etc.)",
+    },
+    SecurityPattern {
+        name: "ts_express_mass_assignment_assign",
+        regex: Regex::new(r#"Object\.assign\s*\([^,]*,\s*req\.body"#).unwrap(),
+        severity: Severity::High,
+        message: "Mass assignment in Express - Object.assign with req.body may include privileged fields",
+    },
+    SecurityPattern {
+        name: "ts_express_mass_assignment_create",
+        regex: Regex::new(r#"\.create\s*\(\s*req\.body\s*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Mass assignment in Express - passing req.body directly to .create() without field filtering",
+    },
+    SecurityPattern {
+        name: "ts_express_mass_assignment_typed",
+        regex: Regex::new(r#"(?:const|let|var)\s+\w+\s*(?::\s*\w+)?\s*=\s*req\.body\s*(?:as\s+\w+)?\s*;"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Mass assignment in Express - req.body cast to typed object without field validation",
+    },
+
+    // #507: IDOR — /user/:id endpoint without auth check
+    SecurityPattern {
+        name: "ts_express_idor_params_id",
+        regex: Regex::new(r#"req\.params\.(?:id|userId|user_id)\b"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential IDOR in Express - direct use of req.params.id; ensure authorization check exists",
+    },
+    SecurityPattern {
+        name: "ts_express_idor_findbyid",
+        regex: Regex::new(r#"\.findBy(?:Id|Pk)\s*\(\s*req\.params"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential IDOR in Express - database lookup using req.params without authorization check",
+    },
+
+    // #508: Buffer overflow — writing beyond Buffer.alloc bounds
+    SecurityPattern {
+        name: "ts_express_buffer_overflow",
+        regex: Regex::new(r#"Buffer\.alloc\s*\(\s*\d+\s*\)[^;]*\.write\s*\("#).unwrap(),
+        severity: Severity::High,
+        message: "Potential buffer overflow in Node.js - writing to Buffer.alloc() without bounds checking",
+    },
+    SecurityPattern {
+        name: "ts_express_buffer_overflow_copy",
+        regex: Regex::new(r#"\.copy\s*\(\s*Buffer\.alloc\s*\(\s*\d+\s*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential buffer overflow in Node.js - copy to fixed-size buffer without bounds checking",
+    },
+
+    // #509: Race condition — non-atomic check-then-act
+    SecurityPattern {
+        name: "ts_express_race_condition",
+        regex: Regex::new(r#"(?:if\s*\([^)]*(?:balance|count|stock|quantity|amount|credits|seats|inventory)[^)]*\)[\s\S]*?setTimeout)"#).unwrap(),
+        severity: Severity::High,
+        message: "Race condition in Express - non-atomic check-then-act with setTimeout; use transactions or locks",
+    },
+
+    // #510: Prototype pollution — Object.assign to prototype
+    SecurityPattern {
+        name: "ts_express_prototype_pollution",
+        regex: Regex::new(r#"Object\.assign\s*\(\s*\w+\.prototype\s*,\s*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Prototype pollution in Express - Object.assign to prototype with user input",
+    },
+    SecurityPattern {
+        name: "ts_express_prototype_pollution_bracket",
+        regex: Regex::new(r#"\[req\.(body|query|params)\.\w+\]\s*="#).unwrap(),
+        severity: Severity::High,
+        message: "Potential prototype pollution in Express - dynamic property assignment from user input",
+    },
+
+    // #511: Type juggling — weak comparison with user input
+    SecurityPattern {
+        name: "ts_express_type_juggling",
+        regex: Regex::new(r#"(?:password|token|secret|key|code|pin|otp)\s*==\s*(?:req\.|user\.|.*\.toString\(\))"#).unwrap(),
+        severity: Severity::High,
+        message: "Type juggling in Express - loose equality (==) for security comparison; use strict equality (===)",
+    },
+    SecurityPattern {
+        name: "ts_express_type_juggling_reverse",
+        regex: Regex::new(r#"req\.(body|query|params)\.\w+\s*==\s*(?:user|account|stored)"#).unwrap(),
+        severity: Severity::High,
+        message: "Type juggling in Express - loose equality (==) comparing user input to stored value",
+    },
+
+    // #512: Insecure randomness — Math.random() for tokens
+    SecurityPattern {
+        name: "ts_express_insecure_random",
+        regex: Regex::new(r#"Math\.random\s*\(\s*\).*(?:token|secret|key|session|csrf|nonce|salt|password|otp|code|id)"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure randomness in Node.js - Math.random() used for security token; use crypto.randomBytes()",
+    },
+    SecurityPattern {
+        name: "ts_express_insecure_random_reverse",
+        regex: Regex::new(r#"(?:token|secret|key|session|csrf|nonce|salt|password|otp|code)\s*=.*Math\.random\s*\(\s*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure randomness in Node.js - Math.random() assigned to security-sensitive variable",
+    },
+
+    // #513: Weak cryptography — MD5/SHA1 for password hashing
+    SecurityPattern {
+        name: "ts_express_weak_crypto_md5",
+        regex: Regex::new(r#"crypto\.createHash\s*\(\s*['"]md5['"]\s*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Weak cryptography in Node.js - MD5 used for hashing; use bcrypt/scrypt/argon2 for passwords",
+    },
+    SecurityPattern {
+        name: "ts_express_weak_crypto_sha1",
+        regex: Regex::new(r#"crypto\.createHash\s*\(\s*['"]sha1['"]\s*\)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Weak cryptography in Node.js - SHA1 is deprecated; use SHA-256+ or bcrypt for passwords",
+    },
+
+    // #514: Missing rate limiting — no rate limiter on endpoints
+    SecurityPattern {
+        name: "ts_express_no_rate_limit_login",
+        regex: Regex::new(r#"(?:app|router)\.(post|all)\s*\(\s*['"](?:/login|/auth|/signin|/api/auth|/api/login)['"]"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Missing rate limiting in Express - auth endpoint without rate limiter; use express-rate-limit",
+    },
+
+    // #515: Missing CSP — Express serving HTML without Content-Security-Policy
+    SecurityPattern {
+        name: "ts_express_no_csp",
+        regex: Regex::new(r#"res\.send\s*\(\s*[`'"]\s*<!DOCTYPE|res\.send\s*\(\s*[`'"]\s*<html"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Missing CSP in Express - serving HTML without Content-Security-Policy header; use helmet",
+    },
+
+    // #516: Weak authentication — plaintext password comparison, hardcoded credentials
+    SecurityPattern {
+        name: "ts_express_plaintext_password",
+        regex: Regex::new(r#"(?:password|passwd|pwd)\s*===?\s*(?:req\.body|user|stored|db)\.\w+"#).unwrap(),
+        severity: Severity::High,
+        message: "Weak authentication in Express - plaintext password comparison; use bcrypt.compare()",
+    },
+    SecurityPattern {
+        name: "ts_express_hardcoded_creds",
+        regex: Regex::new(r#"(?:password|passwd|pwd)\s*===?\s*['"][^'"]{4,}['"]\s*(?:\)|&&|\|\|)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Weak authentication in Express - hardcoded password in comparison",
+    },
+
+    // #517: Unrestricted file upload — multer without file type/size validation
+    SecurityPattern {
+        name: "ts_express_unrestricted_upload",
+        regex: Regex::new(r#"multer\s*\(\s*\{?\s*(?:dest|storage)\s*:"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Unrestricted file upload in Express - multer without fileFilter or limits configuration",
+    },
+    SecurityPattern {
+        name: "ts_express_unrestricted_upload_any",
+        regex: Regex::new(r#"(?:upload|multer)\s*\.\s*any\s*\(\s*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Unrestricted file upload in Express - multer.any() accepts all files without restriction",
+    },
+
+    // #519: XML injection — parseString with user input
+    SecurityPattern {
+        name: "ts_express_xml_injection",
+        regex: Regex::new(r#"parseString\s*\(\s*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "XML injection in Express - user input parsed as XML without sanitization; risk of XXE",
+    },
+    SecurityPattern {
+        name: "ts_express_xml_injection_parser",
+        regex: Regex::new(r#"(?:xml2js|libxmljs|fast-xml-parser|xmldom).*(?:parse|parseString)\s*\(\s*req\."#).unwrap(),
+        severity: Severity::High,
+        message: "XML injection in Express - user input in XML parser without sanitization",
+    },
+
+    // #520: LDAP injection — user input in LDAP filter string
+    SecurityPattern {
+        name: "ts_express_ldap_injection",
+        regex: Regex::new(r#"(?:search|bind)\s*\([^)]*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "LDAP injection in Express - user input in LDAP operation without sanitization",
+    },
+    SecurityPattern {
+        name: "ts_express_ldap_injection_filter",
+        regex: Regex::new(r#"`\s*\([^`]*=\s*\$\{[^}]*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "LDAP injection in Express - user input interpolated into LDAP filter string",
+    },
+
+    // #521: Memory leak — unbounded global array push per request
+    SecurityPattern {
+        name: "ts_express_memory_leak_global",
+        regex: Regex::new(r#"(?:const|let|var)\s+\w+\s*(?::\s*\w+(?:\[\])?)?\s*=\s*\[\s*\]\s*;[\s\S]*?(?:app|router)\.\w+\s*\([\s\S]*?\w+\.push\s*\("#).unwrap(),
+        severity: Severity::High,
+        message: "Memory leak in Express - unbounded array grows with each request; implement cleanup or limits",
+    },
+
+    // #522: Deadlock — two DB connections acquiring locks in opposite order
+    SecurityPattern {
+        name: "ts_express_deadlock",
+        regex: Regex::new(r#"(?:BEGIN|LOCK TABLE|SELECT.*FOR UPDATE)[\s\S]*?(?:BEGIN|LOCK TABLE|SELECT.*FOR UPDATE)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential deadlock - multiple lock acquisitions detected; ensure consistent ordering",
+    },
+
+    // #523: Uncontrolled recursion — recursive function without bounds
+    SecurityPattern {
+        name: "ts_express_uncontrolled_recursion",
+        regex: Regex::new(r#"(?:function\s+\w+|const\s+\w+\s*=\s*(?:async\s+)?(?:\([^)]*\)|[a-zA-Z_]\w*)\s*(?::\s*\w+)?\s*=>)\s*[^;]*(?:arguments\.callee|this\.\w+)\s*\("#).unwrap(),
+        severity: Severity::Medium,
+        message: "Uncontrolled recursion - recursive function call without visible depth limit",
+    },
+
+    // #524: CRLF injection — user input in res.download/res.setHeader
+    SecurityPattern {
+        name: "ts_express_crlf_injection",
+        regex: Regex::new(r#"res\.(?:download|attachment|setHeader|set|header)\s*\([^)]*req\.(body|query|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "CRLF injection in Express - user input in response header/download filename",
+    },
+
+    // #525: HTTP request smuggling — forwarding Content-Length/Transfer-Encoding
+    SecurityPattern {
+        name: "ts_express_http_smuggling",
+        regex: Regex::new(r#"(?:req\.headers\s*\[\s*['"](?:content-length|transfer-encoding)['"]\s*\])"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential HTTP request smuggling in Express - forwarding Content-Length/Transfer-Encoding headers",
+    },
+    SecurityPattern {
+        name: "ts_express_http_smuggling_forward",
+        regex: Regex::new(r#"(?:setHeader|set)\s*\(\s*['"]Transfer-Encoding['"]\s*,\s*req\."#).unwrap(),
+        severity: Severity::High,
+        message: "HTTP request smuggling in Express - forwarding Transfer-Encoding header from client request",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)
@@ -1633,6 +1961,10 @@ impl CodeAnalyzer {
             // Go/net/http specific patterns
             p if p.starts_with("go_") => {
                 matches!(file_type, FileType::Go)
+            },
+            // TypeScript/Express specific patterns (#500-#526)
+            p if p.starts_with("ts_express_") => {
+                matches!(file_type, FileType::JavaScript | FileType::TypeScript)
             },
             // General patterns that apply to all code files
             _ => !matches!(file_type, FileType::Unknown)

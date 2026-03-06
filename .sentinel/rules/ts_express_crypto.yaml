@@ -1,0 +1,33 @@
+name: "ts_express_crypto"
+description: "Detect cryptographic vulnerabilities in TypeScript/Express — insecure randomness, weak hashing"
+severity: "high"
+patterns:
+  # Insecure randomness
+  - type: "contains"
+    pattern: "Math.random().toString(36)"
+  - type: "contains"
+    pattern: "token = Math.random()"
+  - type: "contains"
+    pattern: "sessionId = Math.random()"
+  - type: "contains"
+    pattern: "Math.random() * "
+  - type: "contains"
+    pattern: "nonce = Math.random()"
+  - type: "contains"
+    pattern: "otp = Math.random()"
+  - type: "contains"
+    pattern: "code = Math.random()"
+  # Weak cryptography
+  - type: "contains"
+    pattern: "crypto.createHash('md5')"
+  - type: "contains"
+    pattern: 'crypto.createHash("md5")'
+  - type: "contains"
+    pattern: "crypto.createHash('sha1')"
+  - type: "contains"
+    pattern: 'crypto.createHash("sha1")'
+  - type: "contains"
+    pattern: "createHash('md5').update(password"
+  - type: "contains"
+    pattern: "createHash('sha1').update(password"
+file_types: ["ts", "js", "tsx", "jsx"]

@@ -1,0 +1,28 @@
+name: "ts_express_xss"
+description: "Detect XSS vulnerabilities in TypeScript/Express applications — user input reflected in HTML via res.send()"
+severity: "high"
+patterns:
+  # Template literal XSS in res.send()
+  - type: "contains"
+    pattern: 'res.send(`<h1>${req.query.'
+  - type: "contains"
+    pattern: 'res.send(`<div>${req.body.'
+  - type: "contains"
+    pattern: 'res.send(`<p>${req.params.'
+  - type: "contains"
+    pattern: 'res.send(`<html><body>${req.'
+  - type: "contains"
+    pattern: 'res.send(`<script>${req.'
+  # String concatenation XSS
+  - type: "contains"
+    pattern: 'res.send("<div>" + req.query.'
+  - type: "contains"
+    pattern: 'res.send("<h1>" + req.body.'
+  - type: "contains"
+    pattern: 'res.send("<p>" + req.params.'
+  # Unsafe HTML response
+  - type: "contains"
+    pattern: 'res.send(`<html>'
+  - type: "contains"
+    pattern: 'res.send(`<!DOCTYPE'
+file_types: ["ts", "js", "tsx", "jsx"]

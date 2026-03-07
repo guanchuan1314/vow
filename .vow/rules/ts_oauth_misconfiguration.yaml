@@ -1,0 +1,66 @@
+name: "ts_oauth_misconfiguration"
+description: "Detect OAuth security misconfigurations in TypeScript/Express applications"
+severity: "high"
+patterns:
+  # Insecure callbackURL using HTTP
+  - type: "regex"
+    pattern: 'callbackURL\s*[:=]\s*["\x27]http://'
+  - type: "regex"
+    pattern: 'redirect_uri\s*[:=]\s*["\x27]http://'
+  - type: "regex"
+    pattern: 'redirectUri\s*[:=]\s*["\x27]http://'
+
+  # Callback pointing to localhost in non-dev context
+  - type: "regex"
+    pattern: 'callbackURL\s*[:=]\s*["\x27].*localhost'
+  - type: "regex"
+    pattern: 'callbackURL\s*[:=]\s*["\x27].*127\.0\.0\.1'
+
+  # Missing state parameter validation (passport OAuth2)
+  - type: "contains"
+    pattern: "state: false"
+  - type: "regex"
+    pattern: 'skipUserProfile\s*[:=]\s*true'
+
+  # Weak client secrets
+  - type: "regex"
+    pattern: 'clientSecret\s*[:=]\s*["\x27](secret|password|123456|test|changeme)["\x27]'
+  - type: "regex"
+    pattern: 'client_secret\s*[:=]\s*["\x27](secret|password|123456|test|changeme)["\x27]'
+
+  # Hardcoded client secret
+  - type: "regex"
+    pattern: 'clientSecret\s*[:=]\s*["\x27][a-zA-Z0-9_-]+["\x27]'
+
+  # OAuth2Strategy callback not validating tokens
+  - type: "regex"
+    pattern: 'OAuth2Strategy\(\s*\{[^}]*\}\s*,\s*function\s*\(\s*accessToken\s*,\s*refreshToken\s*,\s*profile\s*,\s*(done|cb|callback)\s*\)\s*\{'
+  - type: "regex"
+    pattern: 'OAuth2Strategy\(\s*\{[^}]*\}\s*,\s*\(\s*accessToken\s*,\s*refreshToken\s*,\s*profile\s*,\s*(done|cb|callback)\s*\)\s*=>'
+
+  # Implicit grant flow (insecure)
+  - type: "regex"
+    pattern: 'response_type\s*[:=]\s*["\x27]token["\x27]'
+  - type: "regex"
+    pattern: 'responseType\s*[:=]\s*["\x27]token["\x27]'
+
+  # Deprecated password grant
+  - type: "regex"
+    pattern: 'grant_type\s*[:=]\s*["\x27]password["\x27]'
+
+  # Overly broad scopes
+  - type: "regex"
+    pattern: 'scope\s*[:=]\s*["\x27].*admin.*["\x27]'
+  - type: "regex"
+    pattern: 'scope\s*[:=]\s*["\x27].*\*.*["\x27]'
+
+  # Token stored in URL query params
+  - type: "regex"
+    pattern: 'access_token\s*=.*req\.(query|params)'
+  - type: "regex"
+    pattern: 'token\s*=\s*req\.query'
+
+  # Missing token validation - direct use without verify
+  - type: "regex"
+    pattern: 'passport\.use\(.*new\s+OAuth2Strategy'
+file_types: ["ts", "tsx", "js", "jsx"]

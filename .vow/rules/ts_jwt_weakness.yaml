@@ -1,0 +1,62 @@
+name: "ts_jwt_weakness"
+description: "Detect JWT security weaknesses in TypeScript/Express applications"
+severity: "high"
+patterns:
+  # Weak JWT secrets - hardcoded short/common strings
+  - type: "regex"
+    pattern: 'jwt\.sign\(.*,\s*["\x27](secret|password|weaksecret|123456|test|key|changeme|default)["\x27]'
+  - type: "regex"
+    pattern: 'jwt\.verify\(.*,\s*["\x27](secret|password|weaksecret|123456|test|key|changeme|default)["\x27]'
+  - type: "regex"
+    pattern: 'jwt\.sign\(.*,\s*["\x27][^"\x27]{1,8}["\x27]'
+  - type: "regex"
+    pattern: 'jwt\.verify\(.*,\s*["\x27][^"\x27]{1,8}["\x27]'
+
+  # Hardcoded secret assigned to variable then used
+  - type: "regex"
+    pattern: '(secret|SECRET|jwtSecret|JWT_SECRET)\s*[:=]\s*["\x27][^"\x27]+["\x27]\s*[;,]?$'
+
+  # Algorithm "none" - signature bypass
+  - type: "regex"
+    pattern: 'algorithm[s]?\s*[:=]\s*.*["\x27]none["\x27]'
+  - type: "contains"
+    pattern: "algorithms: ['none']"
+  - type: "contains"
+    pattern: 'algorithms: ["none"]'
+
+  # jwt.decode without verify (jsonwebtoken)
+  - type: "contains"
+    pattern: "jwt.decode("
+  - type: "regex"
+    pattern: 'jwtDecode\('
+  - type: "regex"
+    pattern: 'jwt_decode\('
+
+  # Ignoring expiration
+  - type: "contains"
+    pattern: "ignoreExpiration: true"
+  - type: "contains"
+    pattern: "ignoreExpiration:true"
+
+  # No algorithm specification in verify options
+  - type: "regex"
+    pattern: 'jwt\.verify\(.*,.*,\s*\{\s*\}'
+
+  # Insecure JWT storage (client-side)
+  - type: "contains"
+    pattern: "localStorage.setItem('jwt"
+  - type: "contains"
+    pattern: 'localStorage.setItem("jwt'
+  - type: "contains"
+    pattern: "localStorage.setItem('token"
+  - type: "contains"
+    pattern: 'localStorage.setItem("token'
+  - type: "contains"
+    pattern: "sessionStorage.setItem('jwt"
+  - type: "contains"
+    pattern: 'sessionStorage.setItem("jwt'
+
+  # JWT with sensitive data in payload
+  - type: "regex"
+    pattern: 'jwt\.sign\(\s*\{[^}]*(password|creditCard|ssn|socialSecurity)[^}]*\}'
+file_types: ["ts", "tsx", "js", "jsx"]

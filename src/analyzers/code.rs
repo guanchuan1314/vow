@@ -1469,6 +1469,148 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "HTTP request smuggling in Express - forwarding Transfer-Encoding header from client request",
     },
+
+    // JavaScript/React/Next.js specific vulnerability patterns
+
+    // JavaScript XSS - innerHTML/dangerouslySetInnerHTML
+    SecurityPattern {
+        name: "js_xss_innerHTML",
+        regex: Regex::new(r"(?i)(?:innerHTML|outerHTML)\s*=\s*[^=]+").unwrap(),
+        severity: Severity::High,
+        message: "XSS in JavaScript - direct innerHTML/outerHTML assignment; use textContent or sanitize",
+    },
+    SecurityPattern {
+        name: "js_xss_dangerously_set_inner_html",
+        regex: Regex::new(r"(?i)dangerouslySetInnerHTML\s*=\s*\{").unwrap(),
+        severity: Severity::High,
+        message: "XSS in React - dangerouslySetInnerHTML without proper sanitization; use DOMPurify",
+    },
+    SecurityPattern {
+        name: "js_xss_document_write",
+        regex: Regex::new(r"(?i)document\.write\s*\(").unwrap(),
+        severity: Severity::High,
+        message: "XSS in JavaScript - document.write() is dangerous; use safe DOM methods",
+    },
+    SecurityPattern {
+        name: "js_eval",
+        regex: Regex::new(r"(?i)\beval\s*\(").unwrap(),
+        severity: Severity::High,
+        message: "Code injection in JavaScript - eval() executes arbitrary code; avoid if possible",
+    },
+    SecurityPattern {
+        name: "js_functionConstructor",
+        regex: Regex::new(r"(?i)new\s+Function\s*\(").unwrap(),
+        severity: Severity::High,
+        message: "Code injection in JavaScript - Function constructor is similar to eval",
+    },
+    SecurityPattern {
+        name: "js_setTimeout_string",
+        regex: Regex::new(r"(?i)setTimeout\s*\(\s*[']").unwrap(),
+        severity: Severity::Medium,
+        message: "Code injection risk in JavaScript - setTimeout with string argument; use function reference",
+    },
+    SecurityPattern {
+        name: "js_setInterval_string",
+        regex: Regex::new(r"(?i)setInterval\s*\(\s*[']").unwrap(),
+        severity: Severity::Medium,
+        message: "Code injection risk in JavaScript - setInterval with string argument; use function reference",
+    },
+
+    // JavaScript SQL injection
+    SecurityPattern {
+        name: "js_sql_injection_concat",
+        regex: Regex::new(r#"(?i)(?:query|execute|all|run)\s*\(\s*['"]SELECT.*\+.*req\."#).unwrap(),
+        severity: Severity::High,
+        message: "SQL injection in JavaScript - user input concatenated in SQL query",
+    },
+    SecurityPattern {
+        name: "js_sql_injection_template",
+        regex: Regex::new(r#"(?i)(?:query|execute|all|run)\s*\(\s*`.*\$\{.*req\."#).unwrap(),
+        severity: Severity::High,
+        message: "SQL injection in JavaScript - template literal with user input in SQL query",
+    },
+
+    // JavaScript Command Injection
+    SecurityPattern {
+        name: "js_command_injection_exec",
+        regex: Regex::new(r#"(?i)(?:exec|execSync|spawn|spawnSync)\s*\([^)]*\+"#).unwrap(),
+        severity: Severity::High,
+        message: "Command injection in JavaScript - user input in command execution",
+    },
+    SecurityPattern {
+        name: "js_command_injection_template",
+        regex: Regex::new(r#"(?i)(?:exec|execSync|spawn|spawnSync)\s*\(\s*`[^`]*\$\{"#).unwrap(),
+        severity: Severity::High,
+        message: "Command injection in JavaScript - template literal with user input in command",
+    },
+
+    // JavaScript Path Traversal
+    SecurityPattern {
+        name: "js_path_traversal",
+        regex: Regex::new(r#"(?i)(?:readFile|readFileSync|writeFile|writeFileSync|open|readdir|stat)\s*\([^)]*\+[^)]*req\."#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in JavaScript - user input concatenated in file path",
+    },
+
+    // JavaScript SSRF
+    SecurityPattern {
+        name: "js_ssrf_fetch",
+        regex: Regex::new(r#"(?i)fetch\s*\(\s*[^,)]*\+[^,)]*req\."#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in JavaScript - user input in fetch URL",
+    },
+    SecurityPattern {
+        name: "js_ssrf_axios",
+        regex: Regex::new(r#"(?i)(?:axios|request|http)\.[a-z]+\s*\([^)]*\+[^)]*req\."#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in JavaScript - user input in HTTP request URL",
+    },
+
+    // JavaScript Path Traversal in Next.js API routes
+    SecurityPattern {
+        name: "js_nextjs_path_traversal",
+        regex: Regex::new(r#"(?i)(?:fs\.(?:readFile|readFileSync|readdir)|path\.join)\s*\([^)]*req\.(?:query|body|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Next.js API route - user input in file system operation",
+    },
+
+    // JavaScript/Next.js Hardcoded secrets
+    SecurityPattern {
+        name: "js_hardcoded_api_key",
+        regex: Regex::new(r#"(?i)(?:api[_-]?key|apikey|secret[_-]?key|access[_-]?token)\s*[=:]\s*['"][a-zA-Z0-9_\-]{20,}['"]"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Hardcoded secret in JavaScript - API key or token in source code",
+    },
+
+    // JavaScript Insecure Randomness
+    SecurityPattern {
+        name: "js_insecure_random",
+        regex: Regex::new(r"(?i)Math\.random\s*\(\s*\)").unwrap(),
+        severity: Severity::Medium,
+        message: "Insecure randomness in JavaScript - Math.random() is not cryptographically secure",
+    },
+
+    // JavaScript/Next.js No Rate Limit on API
+    SecurityPattern {
+        name: "js_no_rate_limit",
+        regex: Regex::new(r#"(?i)(?:app|router|NextApiRoute)\.(?:get|post|put|delete|patch)\s*\(\s*['"]\/api"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Missing rate limiting in JavaScript API - no rate limiter detected",
+    },
+
+    // Next.js specific patterns
+    SecurityPattern {
+        name: "js_nextjs_server_component_exec",
+        regex: Regex::new(r#"(?i)(?:exec|spawn|execSync)\s*\([^)]*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Command execution in Next.js server component - ensure no user input in command",
+    },
+    SecurityPattern {
+        name: "js_nextjs_dangerous_env",
+        regex: Regex::new(r#"(?i)process\.env\.[A-Z_]*\s*===\s*['"]"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Next.js environment check - sensitive env vars exposed to client",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)
@@ -2119,6 +2261,10 @@ impl CodeAnalyzer {
             },
             // TypeScript/Express specific patterns (#500-#526)
             p if p.starts_with("ts_express_") => {
+                matches!(file_type, FileType::JavaScript | FileType::TypeScript)
+            },
+            // JavaScript/React/Next.js specific patterns
+            p if p.starts_with("js_nextjs_") || p.starts_with("js_") => {
                 matches!(file_type, FileType::JavaScript | FileType::TypeScript)
             },
             // General patterns that apply to all code files

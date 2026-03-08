@@ -7,15 +7,15 @@
       "total_issues": 4,
       "avg_score": 37,
       "issues_by_severity": {
-        "high": 2,
         "medium": 1,
-        "critical": 1
+        "critical": 1,
+        "high": 2
       },
       "issues_by_rule": {
         "system_calls": 1,
         "process_injection": 1,
-        "exec_usage": 1,
-        "dangerous_deserialize": 1
+        "dangerous_deserialize": 1,
+        "exec_usage": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -26,16 +26,16 @@
       "total_issues": 10,
       "avg_score": 0,
       "issues_by_severity": {
+        "critical": 3,
         "medium": 1,
-        "high": 6,
-        "critical": 3
+        "high": 6
       },
       "issues_by_rule": {
+        "system_calls": 1,
         "exec_usage": 1,
         "dangerous_deserialize": 3,
-        "process_injection": 3,
-        "system_calls": 1,
-        "eval_usage": 2
+        "eval_usage": 2,
+        "process_injection": 3
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -51,11 +51,11 @@
         "medium": 1
       },
       "issues_by_rule": {
-        "system_calls": 1,
-        "exec_usage": 1,
-        "dangerous_deserialize": 3,
         "process_injection": 3,
-        "eval_usage": 2
+        "dangerous_deserialize": 3,
+        "eval_usage": 2,
+        "system_calls": 1,
+        "exec_usage": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -66,14 +66,14 @@
       "total_issues": 3,
       "avg_score": 52,
       "issues_by_severity": {
-        "high": 1,
+        "medium": 1,
         "critical": 1,
-        "medium": 1
+        "high": 1
       },
       "issues_by_rule": {
-        "process_injection": 1,
+        "dangerous_deserialize": 1,
         "system_calls": 1,
-        "dangerous_deserialize": 1
+        "process_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -89,9 +89,9 @@
         "high": 1
       },
       "issues_by_rule": {
-        "system_calls": 1,
+        "process_injection": 1,
         "dangerous_deserialize": 1,
-        "process_injection": 1
+        "system_calls": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -145,10 +145,10 @@
         "critical": 9
       },
       "issues_by_rule": {
+        "ssh_key_injection": 1,
         "reverse_shell": 5,
         "process_injection": 1,
-        "cron_injection": 2,
-        "ssh_key_injection": 1
+        "cron_injection": 2
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -162,10 +162,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "cron_injection": 2,
+        "ssh_key_injection": 1,
         "process_injection": 1,
-        "reverse_shell": 5,
-        "ssh_key_injection": 1
+        "cron_injection": 2,
+        "reverse_shell": 5
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -179,10 +179,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "reverse_shell": 5,
         "process_injection": 1,
         "cron_injection": 2,
-        "ssh_key_injection": 1
+        "ssh_key_injection": 1,
+        "reverse_shell": 5
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -214,8 +214,8 @@
       },
       "issues_by_rule": {
         "reverse_shell": 5,
-        "process_injection": 1,
         "cron_injection": 2,
+        "process_injection": 1,
         "ssh_key_injection": 1
       },
       "total_time_seconds": 0.0,
@@ -230,10 +230,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "cron_injection": 2,
-        "ssh_key_injection": 1,
         "reverse_shell": 5,
-        "process_injection": 1
+        "process_injection": 1,
+        "cron_injection": 2,
+        "ssh_key_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -276,10 +276,10 @@
         "critical": 3
       },
       "issues_by_rule": {
-        "sudo_nopasswd": 1,
         "reverse_shell": 2,
-        "insecure_telnet": 1,
         "shell_backticks_injection": 1,
+        "insecure_telnet": 1,
+        "sudo_nopasswd": 1,
         "shell_weak_crypto": 1,
         "shell_hardcoded_secrets": 1
       },
@@ -296,15 +296,15 @@
         "high": 7
       },
       "issues_by_rule": {
+        "shell_hardcoded_secrets": 1,
         "shell_unsafe_reflection": 1,
-        "reverse_shell": 2,
         "shell_path_traversal": 1,
-        "insecure_telnet": 1,
-        "shell_ssrf": 1,
-        "shell_backticks_injection": 1,
         "shell_weak_crypto": 1,
-        "sudo_nopasswd": 1,
-        "shell_hardcoded_secrets": 1
+        "shell_ssrf": 1,
+        "reverse_shell": 2,
+        "shell_backticks_injection": 1,
+        "insecure_telnet": 1,
+        "sudo_nopasswd": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -319,16 +319,16 @@
         "critical": 3
       },
       "issues_by_rule": {
-        "shell_eval_injection": 3,
+        "shell_ssrf": 1,
         "shell_weak_crypto": 1,
         "insecure_telnet": 1,
-        "shell_unsafe_reflection": 1,
-        "shell_ssrf": 1,
-        "shell_hardcoded_secrets": 1,
-        "shell_path_traversal": 1,
         "reverse_shell": 2,
         "sudo_nopasswd": 1,
-        "shell_backticks_injection": 1
+        "shell_backticks_injection": 1,
+        "shell_path_traversal": 1,
+        "shell_hardcoded_secrets": 1,
+        "shell_eval_injection": 3,
+        "shell_unsafe_reflection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -339,22 +339,65 @@
       "total_issues": 14,
       "avg_score": 0,
       "issues_by_severity": {
-        "medium": 1,
+        "high": 10,
         "critical": 3,
-        "high": 10
+        "medium": 1
       },
       "issues_by_rule": {
-        "shell_weak_crypto": 1,
-        "shell_ssrf": 1,
-        "shell_hardcoded_secrets": 1,
-        "shell_backticks_injection": 1,
-        "sudo_nopasswd": 1,
-        "shell_unsafe_reflection": 1,
         "shell_missing_rate_limit": 1,
-        "insecure_telnet": 1,
         "reverse_shell": 2,
+        "shell_unsafe_reflection": 1,
+        "shell_ssrf": 1,
         "shell_eval_injection": 3,
-        "shell_path_traversal": 1
+        "shell_weak_crypto": 1,
+        "shell_path_traversal": 1,
+        "sudo_nopasswd": 1,
+        "shell_backticks_injection": 1,
+        "insecure_telnet": 1,
+        "shell_hardcoded_secrets": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-03-08T21:32:47.818241354Z",
+      "total_files": 1,
+      "total_issues": 40,
+      "avg_score": 0,
+      "issues_by_severity": {
+        "medium": 5,
+        "high": 26,
+        "critical": 9
+      },
+      "issues_by_rule": {
+        "rm_rf": 1,
+        "ts_express_path_traversal_fs": 2,
+        "js_path_traversal": 1,
+        "js_ssrf_axios": 1,
+        "js_hardcoded_api_key": 2,
+        "js_setInterval_string": 1,
+        "eval_usage": 1,
+        "js_ssrf_fetch": 1,
+        "js_functionConstructor": 1,
+        "js_xss_innerHTML": 3,
+        "js_eval": 1,
+        "api_keys": 2,
+        "js_insecure_random": 1,
+        "js_sql_injection_concat": 1,
+        "js_command_injection_exec": 2,
+        "exec_usage": 1,
+        "js_xss_dangerously_set_inner_html": 1,
+        "js_sql_injection_template": 1,
+        "insecure_http": 1,
+        "js_nextjs_server_component_exec": 3,
+        "js_nextjs_path_traversal": 2,
+        "js_setTimeout_string": 1,
+        "dangerous_deserialize": 2,
+        "js_xss_document_write": 1,
+        "process_injection": 2,
+        "rust_hardcoded_secrets": 2,
+        "system_calls": 1,
+        "js_command_injection_template": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0

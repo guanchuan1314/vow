@@ -1611,6 +1611,36 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::Medium,
         message: "Next.js environment check - sensitive env vars exposed to client",
     },
+
+    // JavaScript CSRF patterns
+    SecurityPattern {
+        name: "js_csrf_missing_token",
+        regex: Regex::new(r#"(?i)(?:app|router)\.(?:post|put|delete|patch)\s*\(\s*['"]\/api"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential CSRF in JavaScript - state-changing endpoint without CSRF token validation",
+    },
+
+    // JavaScript IDOR patterns
+    SecurityPattern {
+        name: "js_idor_params_access",
+        regex: Regex::new(r#"(?i)(?:req|request)\.params\.(?:id|userId|user_id|accountId)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential IDOR in JavaScript - direct use of params.id without authorization check",
+    },
+
+    // JavaScript Unsafe Reflection
+    SecurityPattern {
+        name: "js_unsafe_reflection",
+        regex: Regex::new(r#"(?i)(?:eval|Function|setTimeout|setInterval)\("#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe reflection in JavaScript - dynamic code execution with user input",
+    },
+    SecurityPattern {
+        name: "js_dynamic_method_call",
+        regex: Regex::new(r#"(?i)(?:obj|target|action)\[[^\]]+\]\s*\("#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe reflection in JavaScript - dynamic method invocation with user input",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)

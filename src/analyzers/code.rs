@@ -1590,12 +1590,34 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Insecure randomness in JavaScript - Math.random() is not cryptographically secure",
     },
 
+    // JavaScript Weak Cryptography
+    SecurityPattern {
+        name: "js_weak_crypto_md5",
+        regex: Regex::new(r"(?i)(?:createHash.*md5|crypto.*md5|md5\(|MD5\()").unwrap(),
+        severity: Severity::High,
+        message: "Weak cryptography in JavaScript - MD5 is deprecated for security purposes; use SHA-256 or stronger",
+    },
+    SecurityPattern {
+        name: "js_weak_crypto_des",
+        regex: Regex::new(r"(?i)(?:createCipher.*des|createDecipher.*des|desecb|DES\.encrypt)").unwrap(),
+        severity: Severity::High,
+        message: "Weak cryptography in JavaScript - DES is insecure; use AES-256 or stronger",
+    },
+
     // JavaScript/Next.js No Rate Limit on API
     SecurityPattern {
         name: "js_no_rate_limit",
         regex: Regex::new(r#"(?i)(?:app|router|NextApiRoute)\.(?:get|post|put|delete|patch)\s*\(\s*['"]\/api"#).unwrap(),
         severity: Severity::Medium,
         message: "Missing rate limiting in JavaScript API - no rate limiter detected",
+    },
+
+    // JavaScript/Next.js Missing CSP
+    SecurityPattern {
+        name: "js_missing_csp",
+        regex: Regex::new(r"(?i)(?:getServerSideProps|getStaticProps|export.*function.*Page)").unwrap(),
+        severity: Severity::Low,
+        message: "Missing CSP in Next.js - ensure Content-Security-Policy header is set",
     },
 
     // Next.js specific patterns

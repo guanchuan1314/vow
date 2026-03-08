@@ -189,6 +189,155 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::Critical,
         message: "Dangerous wget | sh pattern detected - executing remote script",
     },
+    
+    // Shell security vulnerabilities - Issue #X: Reverse shell detection
+    SecurityPattern {
+        name: "reverse_shell_bash_i",
+        regex: Regex::new(r"(?i)bash\s+-i\s+.*?\/dev\/tcp").unwrap(),
+        severity: Severity::Critical,
+        message: "Reverse shell detected - bash -i with /dev/tcp",
+    },
+    SecurityPattern {
+        name: "reverse_shell_nc_e",
+        regex: Regex::new(r"(?i)nc\s+-[elvp]\s+\d+\s+.*?(/bin/sh|bash|-i)").unwrap(),
+        severity: Severity::Critical,
+        message: "Reverse shell detected - netcat with -e flag executing shell",
+    },
+    SecurityPattern {
+        name: "reverse_shell_perl",
+        regex: Regex::new(r"(?i)perl\s+.*?[^-]*-e\s+.*?socket").unwrap(),
+        severity: Severity::Critical,
+        message: "Reverse shell detected - Perl socket-based reverse shell",
+    },
+    SecurityPattern {
+        name: "reverse_shell_python",
+        regex: Regex::new(r"(?i)python.*?socket\.connect").unwrap(),
+        severity: Severity::Critical,
+        message: "Reverse shell detected - Python socket connection",
+    },
+    SecurityPattern {
+        name: "reverse_shell_rm_nc",
+        regex: Regex::new(r"(?i)rm\s+/tmp/f.*?;.*?mkfifo\s+.*?nc\s+").unwrap(),
+        severity: Severity::Critical,
+        message: "Reverse shell detected - named pipe reverse shell pattern",
+    },
+    
+    // Shell security: Cron injection
+    SecurityPattern {
+        name: "cron_injection",
+        regex: Regex::new(r"(?i)(crontab|cron)\s+[^&]*&&?\s*\*\s*\*\s*\*").unwrap(),
+        severity: Severity::High,
+        message: "Potential cron injection - dynamic command in cron expression",
+    },
+    SecurityPattern {
+        name: "cron_write_crontab",
+        regex: Regex::new(r"(?i)(echo|cat)\s+[^>]*>\s*\/etc\/crontabs?").unwrap(),
+        severity: Severity::High,
+        message: "Potential cron hijacking - direct crontab file modification",
+    },
+    SecurityPattern {
+        name: "ssh_key_injection",
+        regex: Regex::new(r"(?i)(echo|cat)\s+[^>]*>>\s*~?\/.ssh\/authorized_keys").unwrap(),
+        severity: Severity::Critical,
+        message: "SSH backdoor detected - adding key to authorized_keys",
+    },
+    
+    // Shell security: Eval with user input
+    SecurityPattern {
+        name: "shell_eval_injection",
+        regex: Regex::new(r"(?i)\beval\s+").unwrap(),
+        severity: Severity::High,
+        message: "Shell eval injection - executing unvalidated user input",
+    },
+    SecurityPattern {
+        name: "shell_backticks_injection",
+        regex: Regex::new(r"`.*?\$").unwrap(),
+        severity: Severity::High,
+        message: "Command injection via backticks with variable",
+    },
+    SecurityPattern {
+        name: "shell_unsafe_reflection",
+        regex: Regex::new(r"(?i)^\s*\$[a-zA-Z_][a-zA-Z0-9_]*\s*$").unwrap(),
+        severity: Severity::High,
+        message: "Shell unsafe reflection - executing variable as command",
+    },
+    
+    // Shell security: Insecure tempfile usage
+    SecurityPattern {
+        name: "insecure_temp_file",
+        regex: Regex::new(r"(?i)\/tmp\/[a-zA-Z0-9_]+\s+(cat|echo|grep|chmod|chown)").unwrap(),
+        severity: Severity::Medium,
+        message: "Insecure temp file usage - race condition possible",
+    },
+    
+    // Shell security: sudo without password
+    SecurityPattern {
+        name: "sudo_nopasswd",
+        regex: Regex::new(r"(?i)sudo\s+[^&]*NOPASSWD").unwrap(),
+        severity: Severity::High,
+        message: "sudo without password - privilege escalation risk",
+    },
+    
+    // Shell security: Insecure network commands
+    SecurityPattern {
+        name: "insecure_telnet",
+        regex: Regex::new(r"(?i)telnet\s+").unwrap(),
+        severity: Severity::High,
+        message: "Insecure protocol - telnet sends data in plain text",
+    },
+    SecurityPattern {
+        name: "insecure_ftp",
+        regex: Regex::new(r"(?i)(ftp\s+|lftp\s+|wget\s+.*?ftp:|curl\s+.*?ftp:)").unwrap(),
+        severity: Severity::High,
+        message: "Insecure protocol - FTP transmits credentials in plain text",
+    },
+    SecurityPattern {
+        name: "insecure_rsh",
+        regex: Regex::new(r"(?i)(rsh|rexec|rlogin)\s+").unwrap(),
+        severity: Severity::High,
+        message: "Insecure remote shell - rsh/rexec/rlogin are unencrypted",
+    },
+    
+    // Shell security: Weak cryptography
+    SecurityPattern {
+        name: "shell_weak_crypto",
+        regex: Regex::new(r"(?i)(openssl\s+.*?des|openssl\s+.*?md5|openssl\s+.*?sha1|\$\(.*?md5sum|\$\(.*?sha1sum)").unwrap(),
+        severity: Severity::High,
+        message: "Weak cryptography in shell - using deprecated algorithm (DES/MD5/SHA1)",
+    },
+    
+    // Shell security: Path traversal
+    SecurityPattern {
+        name: "shell_path_traversal",
+        regex: Regex::new(r"(?i)(cat|rm|chmod|chown|wget|curl|open|read)\s+.*?\/.*?\$[a-zA-Z_]").unwrap(),
+        severity: Severity::High,
+        message: "Shell path traversal - unsanitized user input in file path",
+    },
+    
+    // Shell security: SSRF (curl/wget with user URL)
+    SecurityPattern {
+        name: "shell_ssrf",
+        regex: Regex::new(r"(?i)(curl|wget)\s+.*?\$[a-zA-Z_]").unwrap(),
+        severity: Severity::High,
+        message: "Shell SSRF - curl/wget with user-controlled URL",
+    },
+    
+    // Shell security: Rate limiting (for API-like scripts)
+    SecurityPattern {
+        name: "shell_missing_rate_limit",
+        regex: Regex::new(r"(?i)(while\s+true|for\s+;;|until\s+false).*?(curl|wget|http)").unwrap(),
+        severity: Severity::Medium,
+        message: "Potential missing rate limiting - HTTP request in loop without sleep/throttle",
+    },
+    
+    // Shell security: Command with untrusted input
+    SecurityPattern {
+        name: "shell_var_injection",
+        regex: Regex::new(r"(?i)\$\{?[a-zA-Z_][a-zA-Z0-9_]*\}?\s*;&&\s*(rm|cat|chmod|chown|wget|curl)").unwrap(),
+        severity: Severity::High,
+        message: "Shell command injection - unvalidated variable in dangerous command",
+    },
+    
     // Issue #7: Path traversal vulnerabilities
     SecurityPattern {
         name: "path_traversal_open",
@@ -1924,8 +2073,14 @@ impl CodeAnalyzer {
                 })
             },
             // Shell script patterns - only apply to shell files
-            "shell_hardcoded_secrets" | "remote_script_pipe" | "curl_bash_oneliner" | "wget_sh_oneliner" => {
-                matches!(file_type, FileType::Unknown) && 
+            "shell_hardcoded_secrets" | "remote_script_pipe" | "curl_bash_oneliner" | "wget_sh_oneliner" |
+            "reverse_shell_bash_i" | "reverse_shell_nc_e" | "reverse_shell_perl" | "reverse_shell_python" |
+            "reverse_shell_rm_nc" | "cron_injection" | "cron_write_crontab" | "ssh_key_injection" |
+            "shell_eval_injection" | "shell_backticks_injection" | "shell_unsafe_reflection" | "insecure_temp_file" |
+            "sudo_nopasswd" | "insecure_telnet" | "insecure_ftp" | "insecure_rsh" |
+            "shell_var_injection" | "shell_weak_crypto" | "shell_missing_rate_limit" |
+            "shell_path_traversal" | "shell_ssrf" => {
+                matches!(file_type, FileType::Unknown | FileType::Shell) && 
                 path.extension().map_or(false, |ext| {
                     matches!(ext.to_str(), Some("sh") | Some("bash") | Some("zsh") | Some("fish"))
                 })

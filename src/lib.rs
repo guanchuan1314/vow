@@ -1322,7 +1322,7 @@ pub fn analyze_content_verbose(path: &Path, content: &str, verbose: bool) -> Res
             if matches!(file_type, FileType::Python | FileType::JavaScript | FileType::TypeScript | FileType::Rust | FileType::Java | 
                        FileType::Go | FileType::Ruby | FileType::C | FileType::Cpp | FileType::CSharp | FileType::PHP | 
                        FileType::Swift | FileType::Kotlin | FileType::R | FileType::MQL5 | FileType::Scala | 
-                       FileType::Perl | FileType::Lua | FileType::Dart | FileType::Haskell) {
+                       FileType::Perl | FileType::Lua | FileType::Dart | FileType::Haskell | FileType::Shell) {
                 let analyzer_start = if verbose { Some(Instant::now()) } else { None };
                 let custom_allowlist = analyzers::code::CodeAnalyzer::load_custom_allowlist();
                 let code_analyzer = analyzers::code::CodeAnalyzer::with_custom_allowlist(custom_allowlist);

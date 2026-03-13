@@ -1663,6 +1663,22 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Unsafe reflection in JavaScript - dynamic method invocation with user input",
     },
+
+    // JavaScript Race Condition
+    SecurityPattern {
+        name: "js_race_condition",
+        regex: Regex::new(r"(?i)(?:if\s*\([^)]*(?:balance|stock|amount|quantity)[^)]*\).*await|await.*setTimeout)").unwrap(),
+        severity: Severity::High,
+        message: "Race condition in JavaScript - non-atomic check-then-act; use transactions or locks",
+    },
+
+    // JavaScript Prototype Pollution
+    SecurityPattern {
+        name: "js_prototype_pollution",
+        regex: Regex::new(r#"(?i)(?:Object\.assign|Object\.merge|deepAssign|deepMerge)\s*\([^)]*req\."#).unwrap(),
+        severity: Severity::Critical,
+        message: "Prototype pollution in JavaScript - user input in Object.assign/merge without __proto__ guards",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)

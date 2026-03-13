@@ -516,6 +516,39 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Potential open redirect in Actix - redirect header with user input",
     },
     
+    // Rust/Axum specific patterns
+    // SQL injection in sqlx
+    SecurityPattern {
+        name: "rust_sqlx_injection",
+        regex: Regex::new(r#"(?i)(sqlx::query|Query::new)\s*\(\s*format!"#).unwrap(),
+        severity: Severity::High,
+        message: "SQL injection in Rust/Axum - format! macro with user input in sqlx::query",
+    },
+    
+    // XSS in Axum with Html
+    SecurityPattern {
+        name: "rust_axum_xss_html",
+        regex: Regex::new(r#"(?i)axum::response::Html\s*\(\s*[^)]*req\."#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Axum - Html response with user input without escaping",
+    },
+    
+    // SSRF in Rust reqwest
+    SecurityPattern {
+        name: "rust_reqwest_ssrf",
+        regex: Regex::new(r#"(?i)(reqwest::Client|Client::new)\(\)[^;]*(?:\.get|\.post|\.put)\s*\(\s*&?[a-zA-Z_][a-zA-Z0-9_]*"#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Rust - reqwest with user-controlled URL",
+    },
+    
+    // Open redirect in Axum
+    SecurityPattern {
+        name: "rust_axum_redirect",
+        regex: Regex::new(r#"(?i)(Redirect::to|Redirect::temporary|Redirect::permanent)\s*\(\s*&?[a-zA-Z_][a-zA-Z0-9_]*"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Open redirect in Axum - Redirect with user-controlled URL",
+    },
+    
     // Issue #22: Eval-like injection in Rust
     SecurityPattern {
         name: "rust_eval_injection",

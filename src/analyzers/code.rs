@@ -133,6 +133,95 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Potential SQL injection in Python - string concatenation in SQL query",
     },
+
+    // Python/Flask vulnerability patterns
+    // XSS in Flask
+    SecurityPattern {
+        name: "python_flask_xss",
+        regex: Regex::new(r#"render_template_string\s*\([^)]*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Python/Flask - render_template_string with user input without escaping",
+    },
+
+    // Path traversal
+    SecurityPattern {
+        name: "python_path_traversal",
+        regex: Regex::new(r#"os\.path\.join\s*\([^)]*request\.|pathlib\.[A-Z][a-z]+\([^)]*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Python - user input in file path without sanitization",
+    },
+
+    // SSRF
+    SecurityPattern {
+        name: "python_ssrf",
+        regex: Regex::new(r#"requests\.(get|post|put|delete|head|patch)\s*\(\s*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Python - requests with user-controlled URL",
+    },
+
+    // Template injection (SSTI)
+    SecurityPattern {
+        name: "python_template_injection",
+        regex: Regex::new(r#"render_template_string\s*\(\s*f["']"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Template injection (SSTI) in Python - render_template_string with f-string user input",
+    },
+
+    // XML injection
+    SecurityPattern {
+        name: "python_xml_injection",
+        regex: Regex::new(r#"ET\.fromstring\s*\(\s*request\.|xml\.parse\s*\(\s*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "XML injection in Python - parsing user XML without safe settings",
+    },
+
+    // Open redirect
+    SecurityPattern {
+        name: "python_flask_redirect",
+        regex: Regex::new(r#"redirect\s*\(\s*request\."#).unwrap(),
+        severity: Severity::Medium,
+        message: "Open redirect in Python/Flask - redirect with user-controlled URL",
+    },
+
+    // Header injection
+    SecurityPattern {
+        name: "python_header_injection",
+        regex: Regex::new(r#"response\.headers\[[^\]]*\]\s*=.*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in Python - user input in HTTP headers without validation",
+    },
+
+    // Format string
+    SecurityPattern {
+        name: "python_format_string",
+        regex: Regex::new(r#"(format\(|%s|\{request\.)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Format string vulnerability in Python - user input as format string operand",
+    },
+
+    // XPath injection
+    SecurityPattern {
+        name: "python_xpath_injection",
+        regex: Regex::new(r#"xpath\([^)]*request\.|etree\.xpath\s*\([^)]*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "XPath injection in Python - user input in XPath query",
+    },
+
+    // Unsafe file upload
+    SecurityPattern {
+        name: "python_unsafe_upload",
+        regex: Regex::new(r#"file\.filename\s*=\s*request\.|upload_folder\s*=.*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe file upload in Python - user-controlled filename without validation",
+    },
+
+    // XXE injection
+    SecurityPattern {
+        name: "python_xxe",
+        regex: Regex::new(r#"XMLParser\s*\(\s*\)|lxml\.etree\.XMLParser\s*\(\s*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "XXE injection in Python - XMLParser without XXE protection",
+    },
     SecurityPattern {
         name: "sql_injection_php",
         regex: Regex::new(r#"(mysql_query|mysqli_query|query)\s*\(\s*['"][^'"]*['"]\s*\.\s*\$[^;)]*\s*\.\s*['"][^'"]*['"]"#).unwrap(),
@@ -2567,6 +2656,10 @@ impl CodeAnalyzer {
             },
             // Language-specific SQL injection patterns
             "sql_injection_python" => matches!(file_type, FileType::Python),
+            "python_flask_xss" | "python_path_traversal" | "python_ssrf" |
+            "python_template_injection" | "python_xml_injection" | "python_flask_redirect" |
+            "python_header_injection" | "python_format_string" | "python_xpath_injection" |
+            "python_unsafe_upload" | "python_xxe" => matches!(file_type, FileType::Python),
             "sql_injection_php" => matches!(file_type, FileType::PHP),
             "sql_injection_js" => matches!(file_type, FileType::JavaScript | FileType::TypeScript),
             "sql_injection_java" => matches!(file_type, FileType::Java),

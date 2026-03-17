@@ -220,6 +220,55 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::Critical,
         message: "Insecure deserialization in Ruby - Marshal.load with user input can lead to RCE",
     },
+
+    // Additional Ruby/Rails patterns
+    // LDAP injection
+    SecurityPattern {
+        name: "ruby_ldap_injection",
+        regex: Regex::new(r#"LDAP\.[a-z_]+\s*\(\s*params\["#).unwrap(),
+        severity: Severity::High,
+        message: "LDAP injection in Ruby/Rails - user input in LDAP filter without sanitization",
+    },
+
+    // Header injection
+    SecurityPattern {
+        name: "ruby_header_injection",
+        regex: Regex::new(r#"headers\[[^\]]*\]\s*=\s*params\["#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in Ruby/Rails - user input in HTTP headers without validation",
+    },
+
+    // Open redirect
+    SecurityPattern {
+        name: "ruby_open_redirect",
+        regex: Regex::new(r#"redirect_to\s+params\["#).unwrap(),
+        severity: Severity::Medium,
+        message: "Open redirect in Ruby/Rails - redirect_to with user-controlled URL",
+    },
+
+    // Mass assignment
+    SecurityPattern {
+        name: "ruby_mass_assignment",
+        regex: Regex::new(r#"\w+\.create\s*\(\s*params\[:\w+\]"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Mass assignment in Ruby/Rails - Model.create with params without strong parameters",
+    },
+
+    // Unsafe file upload
+    SecurityPattern {
+        name: "ruby_unsafe_upload",
+        regex: Regex::new(r#"(?:params|upload)\[:\w+\]\[:filename\]"#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe file upload in Ruby/Rails - user-controlled filename without sanitization",
+    },
+
+    // ReDoS
+    SecurityPattern {
+        name: "ruby_redos",
+        regex: Regex::new(r#"Regexp\.new\s*\(\s*params\["#).unwrap(),
+        severity: Severity::High,
+        message: "ReDoS in Ruby - user-controlled input in Regexp can cause denial of service",
+    },
     // Issue #5: Shell script hardcoded secrets
     SecurityPattern {
         name: "shell_hardcoded_secrets",
@@ -2525,7 +2574,9 @@ impl CodeAnalyzer {
             "sql_injection_ruby" => matches!(file_type, FileType::Ruby),
             // Ruby/Rails patterns
             "ruby_xss_erb" | "ruby_path_traversal" | "ruby_ssrf" | "ruby_yaml_load" | 
-            "ruby_xxe" | "ruby_template_injection" | "ruby_insecure_deserialization" => matches!(file_type, FileType::Ruby),
+            "ruby_xxe" | "ruby_template_injection" | "ruby_insecure_deserialization" |
+            "ruby_ldap_injection" | "ruby_header_injection" | "ruby_open_redirect" |
+            "ruby_mass_assignment" | "ruby_unsafe_upload" | "ruby_redos" => matches!(file_type, FileType::Ruby),
             // Node.js specific patterns
             "node_tls_reject_disabled" => matches!(file_type, FileType::JavaScript | FileType::TypeScript),
             // Python specific patterns

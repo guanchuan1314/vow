@@ -846,7 +846,72 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Insecure file permissions detected - setPermissions with world-writable permissions",
     },
 
-    // Java/Servlet vulnerability patterns (#468-#499)
+    // Dart/Flutter vulnerability patterns
+    // SQL injection
+    SecurityPattern {
+        name: "dart_sql_injection",
+        regex: Regex::new(r#"(?:rawQuery|execute)\s*\(\s*['\"][^'\"]*\$\{[^}]+\}|['\"][^'\"]*\+[^;]*params"#).unwrap(),
+        severity: Severity::High,
+        message: "SQL injection in Dart/Flutter - string interpolation in rawQuery",
+    },
+
+    // Command injection
+    SecurityPattern {
+        name: "dart_command_injection",
+        regex: Regex::new(r#"Process\.run\s*\([^)]*\+[^)]*params|Process\.runSync\s*\([^)]*\+[^)]*params"#).unwrap(),
+        severity: Severity::High,
+        message: "Command injection in Dart - user input in Process.run",
+    },
+
+    // Path traversal
+    SecurityPattern {
+        name: "dart_path_traversal",
+        regex: Regex::new(r#"File\s*\(\s*[^)]*params\["#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Dart - user input in File path",
+    },
+
+    // SSRF
+    SecurityPattern {
+        name: "dart_ssrf",
+        regex: Regex::new(r#"http\.(?:get|post|put|delete|head|patch)\s*\(\s*[^,)]*params"#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Dart/Flutter - http request with user-controlled URL",
+    },
+
+    // XSS
+    SecurityPattern {
+        name: "dart_xss",
+        regex: Regex::new(r#"Html\s*\(\s*['\"][^'\"]*\$\{[^}]+\}|Html\.escape\s*\(\s*params"#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Dart/Flutter - user input in HTML without escaping",
+    },
+
+    // Unsafe deserialization
+    SecurityPattern {
+        name: "dart_unsafe_deserialization",
+        regex: Regex::new(r#"fromJson\s*\(\s*params|fromJson\s*\(\s*request\.body"#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe deserialization in Dart - fromJson with user input",
+    },
+
+    // Intent injection
+    SecurityPattern {
+        name: "dart_intent_injection",
+        regex: Regex::new(r#"Process\.run\s*\(\s*['\"]am\s+start['\"][^)]*params"#).unwrap(),
+        severity: Severity::High,
+        message: "Intent injection in Dart/Flutter - Android intent with user input",
+    },
+
+    // Deeplink injection
+    SecurityPattern {
+        name: "dart_deeplink_injection",
+        regex: Regex::new(r#"uri\.queryParameters\[[^\]]+\]\s*\+\s*['\"]|uri\.toString\s*\(\s*\)\s*\+\s*params"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Deeplink injection in Dart - URI params used unsanitized",
+    },
+
+    // Java/Servlet vulnerability patterns
     
     // #468: SQL injection via string concatenation in JDBC
     SecurityPattern {
@@ -2688,7 +2753,10 @@ impl CodeAnalyzer {
             },
             // Dart/Flutter specific patterns
             "dart_insecure_filemode_0777" | "dart_insecure_filemode_world_write" | 
-            "dart_setPermissions_777" | "dart_setPermissions_world_write" => {
+            "dart_setPermissions_777" | "dart_setPermissions_world_write" |
+            "dart_sql_injection" | "dart_command_injection" | "dart_path_traversal" |
+            "dart_ssrf" | "dart_xss" | "dart_unsafe_deserialization" |
+            "dart_intent_injection" | "dart_deeplink_injection" => {
                 matches!(file_type, FileType::Dart)
             },
             // Go/net/http specific patterns

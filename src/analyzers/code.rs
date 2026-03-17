@@ -159,9 +159,66 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
     },
     SecurityPattern {
         name: "sql_injection_ruby",
-        regex: Regex::new(r#"(execute|query|find_by_sql)\s*\(\s*['"][^'"]*['"]\s*\+[^,)]*\+[^,)]*['"][^'"]*['"]"#).unwrap(),
+        regex: Regex::new(r#"where\s*\([^)]*\+\s*params"#).unwrap(),
         severity: Severity::High,
         message: "Potential SQL injection in Ruby - string concatenation in SQL query",
+    },
+
+    // Ruby/Rails vulnerability patterns
+    // XSS in ERB
+    SecurityPattern {
+        name: "ruby_xss_erb",
+        regex: Regex::new(r#"<%=\s*[^%]*params\[[^\]]+\]|<%=\s*[^%]*request\.[a-z_]+|<%=\s*[^%]*\[params"#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Ruby/Rails - unescaped user input in ERB template",
+    },
+
+    // Path traversal
+    SecurityPattern {
+        name: "ruby_path_traversal",
+        regex: Regex::new(r#"(?:File\.read|File\.open|File\.join|readfile)\s*\([^)]*params\["#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Ruby/Rails - user input in file operation without sanitization",
+    },
+
+    // SSRF
+    SecurityPattern {
+        name: "ruby_ssrf",
+        regex: Regex::new(r#"(?:Net::HTTP|RestClient|URI\.open|URI\.parse)\s*\(.*?params"#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Ruby/Rails - user-controlled URL in HTTP request",
+    },
+
+    // YAML deserialization
+    SecurityPattern {
+        name: "ruby_yaml_load",
+        regex: Regex::new(r#"YAML\.load\s*\(\s*params"#).unwrap(),
+        severity: Severity::Critical,
+        message: "YAML deserialization in Ruby - YAML.load with user input; use YAML.safe_load",
+    },
+
+    // XXE
+    SecurityPattern {
+        name: "ruby_xxe",
+        regex: Regex::new(r#"Nokogiri::XML\s*\([^)]*\(params|XML\s*\(\s*\.open\("#).unwrap(),
+        severity: Severity::High,
+        message: "XXE vulnerability in Ruby - Nokogiri parsing XML from user input without safe settings",
+    },
+
+    // Template injection (ERB)
+    SecurityPattern {
+        name: "ruby_template_injection",
+        regex: Regex::new(r#"ERB\.new\s*\(\s*params\["#).unwrap(),
+        severity: Severity::Critical,
+        message: "Template injection in Ruby - ERB.new with user input; can lead to RCE",
+    },
+
+    // Insecure deserialization
+    SecurityPattern {
+        name: "ruby_insecure_deserialization",
+        regex: Regex::new(r#"Marshal\.load\s*\(\s*(?:params|request|cookies|session)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Insecure deserialization in Ruby - Marshal.load with user input can lead to RCE",
     },
     // Issue #5: Shell script hardcoded secrets
     SecurityPattern {
@@ -2400,6 +2457,9 @@ impl CodeAnalyzer {
             "sql_injection_java" => matches!(file_type, FileType::Java),
             "sql_injection_go" => matches!(file_type, FileType::Go),
             "sql_injection_ruby" => matches!(file_type, FileType::Ruby),
+            // Ruby/Rails patterns
+            "ruby_xss_erb" | "ruby_path_traversal" | "ruby_ssrf" | "ruby_yaml_load" | 
+            "ruby_xxe" | "ruby_template_injection" | "ruby_insecure_deserialization" => matches!(file_type, FileType::Ruby),
             // Node.js specific patterns
             "node_tls_reject_disabled" => matches!(file_type, FileType::JavaScript | FileType::TypeScript),
             // Python specific patterns

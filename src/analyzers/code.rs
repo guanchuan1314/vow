@@ -1257,6 +1257,23 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Header injection in Go - user input in Header.Set without validation",
     },
 
+    // Go/Fiber specific patterns
+    // Header injection in Fiber
+    SecurityPattern {
+        name: "go_fiber_header_injection",
+        regex: Regex::new(r#"Header\.Set\([^)]*c\.(Query|FormValue|Params)"#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in Fiber - user input in Header.Set without validation",
+    },
+
+    // Unvalidated redirect in Fiber
+    SecurityPattern {
+        name: "go_fiber_redirect",
+        regex: Regex::new(r#"c\.(Redirect|RedirectTo)\s*\(\s*\d+\s*,\s*c\.(Query|FormValue|Params)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Unvalidated redirect in Fiber - c.Redirect with user-controlled URL",
+    },
+
     // #586: Log injection
     SecurityPattern {
         name: "go_log_injection",

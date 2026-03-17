@@ -12,10 +12,10 @@
         "critical": 1
       },
       "issues_by_rule": {
-        "dangerous_deserialize": 1,
-        "exec_usage": 1,
         "system_calls": 1,
-        "process_injection": 1
+        "dangerous_deserialize": 1,
+        "process_injection": 1,
+        "exec_usage": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -27,15 +27,15 @@
       "avg_score": 0,
       "issues_by_severity": {
         "critical": 3,
-        "high": 6,
-        "medium": 1
+        "medium": 1,
+        "high": 6
       },
       "issues_by_rule": {
+        "system_calls": 1,
+        "dangerous_deserialize": 3,
         "exec_usage": 1,
         "process_injection": 3,
-        "dangerous_deserialize": 3,
-        "eval_usage": 2,
-        "system_calls": 1
+        "eval_usage": 2
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -46,15 +46,15 @@
       "total_issues": 10,
       "avg_score": 0,
       "issues_by_severity": {
-        "critical": 3,
         "high": 6,
-        "medium": 1
+        "medium": 1,
+        "critical": 3
       },
       "issues_by_rule": {
         "dangerous_deserialize": 3,
         "process_injection": 3,
-        "system_calls": 1,
         "eval_usage": 2,
+        "system_calls": 1,
         "exec_usage": 1
       },
       "total_time_seconds": 0.0,
@@ -66,13 +66,13 @@
       "total_issues": 3,
       "avg_score": 52,
       "issues_by_severity": {
-        "critical": 1,
+        "medium": 1,
         "high": 1,
-        "medium": 1
+        "critical": 1
       },
       "issues_by_rule": {
-        "system_calls": 1,
         "dangerous_deserialize": 1,
+        "system_calls": 1,
         "process_injection": 1
       },
       "total_time_seconds": 0.0,
@@ -84,8 +84,8 @@
       "total_issues": 3,
       "avg_score": 52,
       "issues_by_severity": {
-        "medium": 1,
         "critical": 1,
+        "medium": 1,
         "high": 1
       },
       "issues_by_rule": {
@@ -145,10 +145,10 @@
         "critical": 9
       },
       "issues_by_rule": {
+        "ssh_key_injection": 1,
         "cron_injection": 2,
         "reverse_shell": 5,
-        "process_injection": 1,
-        "ssh_key_injection": 1
+        "process_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -162,8 +162,8 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "ssh_key_injection": 1,
         "cron_injection": 2,
+        "ssh_key_injection": 1,
         "reverse_shell": 5,
         "process_injection": 1
       },
@@ -180,9 +180,9 @@
       },
       "issues_by_rule": {
         "ssh_key_injection": 1,
-        "cron_injection": 2,
         "reverse_shell": 5,
-        "process_injection": 1
+        "process_injection": 1,
+        "cron_injection": 2
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -196,10 +196,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "reverse_shell": 5,
-        "cron_injection": 2,
+        "ssh_key_injection": 1,
         "process_injection": 1,
-        "ssh_key_injection": 1
+        "reverse_shell": 5,
+        "cron_injection": 2
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -213,10 +213,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "reverse_shell": 5,
         "cron_injection": 2,
         "ssh_key_injection": 1,
-        "process_injection": 1
+        "process_injection": 1,
+        "reverse_shell": 5
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -230,10 +230,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "cron_injection": 2,
         "reverse_shell": 5,
-        "ssh_key_injection": 1,
-        "process_injection": 1
+        "cron_injection": 2,
+        "process_injection": 1,
+        "ssh_key_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -272,16 +272,16 @@
       "total_issues": 7,
       "avg_score": 0,
       "issues_by_severity": {
-        "critical": 3,
-        "high": 4
+        "high": 4,
+        "critical": 3
       },
       "issues_by_rule": {
-        "insecure_telnet": 1,
-        "shell_backticks_injection": 1,
-        "sudo_nopasswd": 1,
-        "reverse_shell": 2,
         "shell_hardcoded_secrets": 1,
-        "shell_weak_crypto": 1
+        "reverse_shell": 2,
+        "sudo_nopasswd": 1,
+        "shell_backticks_injection": 1,
+        "shell_weak_crypto": 1,
+        "insecure_telnet": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -298,12 +298,12 @@
       "issues_by_rule": {
         "shell_ssrf": 1,
         "shell_unsafe_reflection": 1,
-        "shell_backticks_injection": 1,
-        "shell_hardcoded_secrets": 1,
-        "reverse_shell": 2,
-        "sudo_nopasswd": 1,
         "shell_weak_crypto": 1,
+        "shell_hardcoded_secrets": 1,
         "shell_path_traversal": 1,
+        "sudo_nopasswd": 1,
+        "shell_backticks_injection": 1,
+        "reverse_shell": 2,
         "insecure_telnet": 1
       },
       "total_time_seconds": 0.0,
@@ -315,20 +315,20 @@
       "total_issues": 13,
       "avg_score": 0,
       "issues_by_severity": {
-        "critical": 3,
-        "high": 10
+        "high": 10,
+        "critical": 3
       },
       "issues_by_rule": {
-        "insecure_telnet": 1,
         "shell_eval_injection": 3,
-        "shell_backticks_injection": 1,
-        "shell_unsafe_reflection": 1,
-        "sudo_nopasswd": 1,
-        "shell_path_traversal": 1,
-        "shell_weak_crypto": 1,
+        "insecure_telnet": 1,
         "shell_ssrf": 1,
         "reverse_shell": 2,
-        "shell_hardcoded_secrets": 1
+        "shell_unsafe_reflection": 1,
+        "sudo_nopasswd": 1,
+        "shell_hardcoded_secrets": 1,
+        "shell_backticks_injection": 1,
+        "shell_path_traversal": 1,
+        "shell_weak_crypto": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -339,22 +339,22 @@
       "total_issues": 14,
       "avg_score": 0,
       "issues_by_severity": {
-        "critical": 3,
         "medium": 1,
+        "critical": 3,
         "high": 10
       },
       "issues_by_rule": {
-        "shell_hardcoded_secrets": 1,
-        "shell_backticks_injection": 1,
-        "sudo_nopasswd": 1,
-        "shell_weak_crypto": 1,
-        "shell_unsafe_reflection": 1,
-        "shell_missing_rate_limit": 1,
         "shell_eval_injection": 3,
-        "reverse_shell": 2,
-        "shell_path_traversal": 1,
         "shell_ssrf": 1,
-        "insecure_telnet": 1
+        "sudo_nopasswd": 1,
+        "shell_unsafe_reflection": 1,
+        "insecure_telnet": 1,
+        "shell_path_traversal": 1,
+        "reverse_shell": 2,
+        "shell_weak_crypto": 1,
+        "shell_backticks_injection": 1,
+        "shell_hardcoded_secrets": 1,
+        "shell_missing_rate_limit": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -365,39 +365,39 @@
       "total_issues": 40,
       "avg_score": 0,
       "issues_by_severity": {
-        "high": 26,
         "critical": 9,
+        "high": 26,
         "medium": 5
       },
       "issues_by_rule": {
-        "js_path_traversal": 1,
-        "js_setTimeout_string": 1,
-        "rm_rf": 1,
-        "js_xss_dangerously_set_inner_html": 1,
+        "js_nextjs_server_component_exec": 3,
+        "eval_usage": 1,
         "js_hardcoded_api_key": 2,
-        "exec_usage": 1,
+        "dangerous_deserialize": 2,
         "js_ssrf_fetch": 1,
-        "js_nextjs_path_traversal": 2,
+        "exec_usage": 1,
+        "js_command_injection_exec": 2,
+        "js_sql_injection_template": 1,
         "js_insecure_random": 1,
+        "js_xss_dangerously_set_inner_html": 1,
+        "rm_rf": 1,
+        "js_setTimeout_string": 1,
         "process_injection": 2,
         "js_xss_document_write": 1,
-        "js_command_injection_exec": 2,
-        "api_keys": 2,
-        "dangerous_deserialize": 2,
-        "js_sql_injection_template": 1,
-        "js_functionConstructor": 1,
-        "js_nextjs_server_component_exec": 3,
+        "js_path_traversal": 1,
         "rust_hardcoded_secrets": 2,
-        "js_setInterval_string": 1,
         "js_command_injection_template": 1,
+        "api_keys": 2,
         "js_xss_innerHTML": 3,
         "ts_express_path_traversal_fs": 2,
+        "js_eval": 1,
+        "js_nextjs_path_traversal": 2,
+        "system_calls": 1,
+        "js_functionConstructor": 1,
         "insecure_http": 1,
         "js_ssrf_axios": 1,
-        "js_eval": 1,
         "js_sql_injection_concat": 1,
-        "eval_usage": 1,
-        "system_calls": 1
+        "js_setInterval_string": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -414,16 +414,16 @@
       },
       "issues_by_rule": {
         "ts_express_idor_params_id": 2,
-        "process_injection": 1,
         "js_unsafe_reflection": 2,
-        "dangerous_deserialize": 1,
         "js_idor_params_access": 2,
-        "js_no_rate_limit": 4,
-        "js_dynamic_method_call": 2,
+        "dangerous_deserialize": 1,
         "ts_express_prototype_pollution_bracket": 1,
-        "eval_usage": 1,
-        "js_eval": 1,
         "ts_express_idor_findbyid": 2,
+        "js_no_rate_limit": 4,
+        "eval_usage": 1,
+        "process_injection": 1,
+        "js_eval": 1,
+        "js_dynamic_method_call": 2,
         "js_csrf_missing_token": 2
       },
       "total_time_seconds": 0.0,
@@ -440,15 +440,15 @@
         "medium": 5
       },
       "issues_by_rule": {
-        "ts_express_insecure_random_reverse": 2,
-        "ts_express_no_rate_limit_login": 1,
-        "js_weak_crypto_des": 1,
-        "js_no_rate_limit": 1,
-        "js_weak_crypto_md5": 1,
+        "js_csrf_missing_token": 1,
+        "js_insecure_random": 2,
         "js_missing_csp": 1,
         "ts_express_weak_crypto_md5": 1,
-        "js_csrf_missing_token": 1,
-        "js_insecure_random": 2
+        "js_no_rate_limit": 1,
+        "js_weak_crypto_md5": 1,
+        "js_weak_crypto_des": 1,
+        "ts_express_insecure_random_reverse": 2,
+        "ts_express_no_rate_limit_login": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -459,26 +459,26 @@
       "total_issues": 18,
       "avg_score": 0,
       "issues_by_severity": {
-        "critical": 2,
-        "medium": 8,
         "high": 7,
-        "low": 1
+        "critical": 2,
+        "low": 1,
+        "medium": 8
       },
       "issues_by_rule": {
-        "js_csrf_missing_token": 2,
-        "js_no_rate_limit": 3,
-        "js_eval": 1,
-        "js_dynamic_method_call": 1,
-        "ts_express_no_rate_limit_login": 1,
-        "dangerous_deserialize": 1,
-        "js_prototype_pollution": 1,
-        "js_missing_csp": 1,
-        "ts_express_idor_params_id": 1,
-        "js_unsafe_reflection": 2,
+        "eval_usage": 1,
         "process_injection": 1,
+        "js_missing_csp": 1,
+        "dangerous_deserialize": 1,
+        "js_no_rate_limit": 3,
+        "js_unsafe_reflection": 2,
+        "js_csrf_missing_token": 2,
+        "js_dynamic_method_call": 1,
+        "js_eval": 1,
+        "ts_express_no_rate_limit_login": 1,
+        "js_prototype_pollution": 1,
+        "ts_express_idor_params_id": 1,
         "ts_express_idor_findbyid": 1,
-        "js_idor_params_access": 1,
-        "eval_usage": 1
+        "js_idor_params_access": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -489,17 +489,17 @@
       "total_issues": 8,
       "avg_score": 0,
       "issues_by_severity": {
-        "high": 7,
-        "medium": 1
+        "medium": 1,
+        "high": 7
       },
       "issues_by_rule": {
-        "rust_axum_redirect": 1,
-        "rust_path_traversal_format": 1,
-        "rust_xss_format_html": 1,
         "rust_sql_injection_format": 2,
         "rust_command_format": 1,
+        "rust_reqwest_ssrf": 1,
+        "rust_path_traversal_format": 1,
         "rust_sqlx_injection": 1,
-        "rust_reqwest_ssrf": 1
+        "rust_axum_redirect": 1,
+        "rust_xss_format_html": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -513,10 +513,10 @@
         "high": 4
       },
       "issues_by_rule": {
+        "rust_sqlx_injection": 1,
         "rust_sql_injection_format": 1,
         "rust_reqwest_ssrf": 1,
-        "rust_command_format": 1,
-        "rust_sqlx_injection": 1
+        "rust_command_format": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -527,21 +527,43 @@
       "total_issues": 10,
       "avg_score": 0,
       "issues_by_severity": {
-        "high": 5,
         "medium": 3,
-        "critical": 2
+        "critical": 2,
+        "high": 5
       },
       "issues_by_rule": {
-        "js_prototype_pollution": 1,
-        "dangerous_deserialize": 1,
-        "js_idor_params_access": 1,
         "process_injection": 1,
-        "ts_express_idor_findbyid": 1,
-        "js_eval": 1,
-        "js_unsafe_reflection": 1,
         "eval_usage": 1,
         "js_no_rate_limit": 1,
-        "ts_express_idor_params_id": 1
+        "js_unsafe_reflection": 1,
+        "js_idor_params_access": 1,
+        "ts_express_idor_params_id": 1,
+        "js_prototype_pollution": 1,
+        "dangerous_deserialize": 1,
+        "js_eval": 1,
+        "ts_express_idor_findbyid": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-03-17T03:27:11.470773898Z",
+      "total_files": 1,
+      "total_issues": 8,
+      "avg_score": 1,
+      "issues_by_severity": {
+        "medium": 3,
+        "high": 5
+      },
+      "issues_by_rule": {
+        "go_ssrf_http_get": 1,
+        "go_buffer_overflow": 1,
+        "go_xss_fprintf": 1,
+        "go_unsafe_reflection": 1,
+        "go_template_injection": 1,
+        "base64_instructions": 1,
+        "go_unsafe_deserialization": 1,
+        "go_insecure_random": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0

@@ -1175,6 +1175,71 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Potential LDAP injection in Go - fmt.Sprintf with user input in LDAP query",
     },
 
+    // Additional Go vulnerability patterns
+    // #582: Unsafe deserialization
+    SecurityPattern {
+        name: "go_unsafe_deserialization",
+        regex: Regex::new(r#"gob\.Decode|encoding\/binary\.Read\([^)]*io\.Reader[^)]*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe deserialization in Go - gob.Decode or binary.Read with untrusted data",
+    },
+
+    // #584: Unsafe reflection
+    SecurityPattern {
+        name: "go_unsafe_reflection",
+        regex: Regex::new(r#"reflect\.ValueOf\([^)]*\)\.Elem\(\)\.FieldByName\("#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe reflection in Go - reflect.ValueOf with user input accessing struct fields",
+    },
+
+    // #585: Header injection
+    SecurityPattern {
+        name: "go_header_injection",
+        regex: Regex::new(r#"Header\.Set\s*\([^)]*(?:req\.|r\.|user|input)"#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in Go - user input in Header.Set without validation",
+    },
+
+    // #586: Log injection
+    SecurityPattern {
+        name: "go_log_injection",
+        regex: Regex::new(r#"(?:log\.|fmt\.Print|print|println)\s*\([^)]*(?:req\.|r\.|user|input)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Log injection in Go - user input in logging without sanitization",
+    },
+
+    // #587: ReDoS (Regex DoS)
+    SecurityPattern {
+        name: "go_redos",
+        regex: Regex::new(r#"regexp\.Compile\([^)]*\+[^)]*\)|regexp\.MustCompile\([^)]*\+[^)]*\)"#).unwrap(),
+        severity: Severity::High,
+        message: "ReDoS in Go - user-controlled input in regexp.Compile can cause denial of service",
+    },
+
+    // #588: Unsafe JSON unmarshal
+    SecurityPattern {
+        name: "go_json_unmarshal_any",
+        regex: Regex::new(r#"json\.Unmarshal\([^,]*,\s*&[a-zA-Z_][a-zA-Z0-9_]*\{"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Unsafe JSON unmarshal in Go - Unmarshal into interface{} can cause type confusion",
+    },
+
+    // #590: Buffer overflow (unsafe pointer)
+    SecurityPattern {
+        name: "go_buffer_overflow",
+        regex: Regex::new(r#"unsafe\.Pointer|unsafe\.Addr|unsafe\.SliceData"#).unwrap(),
+        severity: Severity::High,
+        message: "Buffer overflow risk in Go - unsafe pointer operations require careful bounds checking",
+    },
+
+    // #591: Insecure random
+    SecurityPattern {
+        name: "go_insecure_random",
+        regex: Regex::new(r#"math\/rand\.Intn|math\/rand\.Int63n|rand\.Intn|rand\.Int63n"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Insecure random in Go - math/rand is not cryptographically secure; use crypto/rand",
+    },
+
     // TypeScript/Express vulnerability patterns (#500-#526)
 
     // #500: XSS — user input reflected in HTML via res.send() with template literals

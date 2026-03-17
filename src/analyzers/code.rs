@@ -1851,6 +1851,55 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::Critical,
         message: "Prototype pollution in JavaScript - user input in Object.assign/merge without __proto__ guards",
     },
+
+    // Fastify-specific patterns
+    // #606 Header injection
+    SecurityPattern {
+        name: "js_fastify_header_injection",
+        regex: Regex::new(r#"reply\.header\s*\([^)]*request\.(query|body|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in Fastify - user input in response header without validation",
+    },
+
+    // #607 LDAP injection
+    SecurityPattern {
+        name: "js_fastify_ldap_injection",
+        regex: Regex::new(r#"ldap\.search\s*\([^)]*request\.(query|body|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "LDAP injection in Fastify - user input in LDAP query without sanitization",
+    },
+
+    // #608 XML injection
+    SecurityPattern {
+        name: "js_fastify_xml_injection",
+        regex: Regex::new(r#"xml2js|fast-xml-parser\([^)]*request\.(query|body|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "XML injection in Fastify - user input in XML parser without safe settings",
+    },
+
+    // #609 ReDoS
+    SecurityPattern {
+        name: "js_fastify_redos",
+        regex: Regex::new(r#"new\s+RegExp\s*\(\s*request\.(query|body|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "ReDoS in Fastify - user-controlled input in RegExp can cause denial of service",
+    },
+
+    // #610 Zip slip
+    SecurityPattern {
+        name: "js_fastify_zip_slip",
+        regex: Regex::new(r#"(?:unzipper|decompress|adm-zip|jszip)\.Extract\s*\([^)]*request\.(query|body|params)"#).unwrap(),
+        severity: Severity::High,
+        message: "Zip slip in Fastify - extraction without path validation can overwrite arbitrary files",
+    },
+
+    // #611 Unsafe redirect
+    SecurityPattern {
+        name: "js_fastify_unsafe_redirect",
+        regex: Regex::new(r#"reply\.redirect\s*\(\s*request\.(query|body|params)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Unsafe redirect in Fastify - reply.redirect with user-controlled URL",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)

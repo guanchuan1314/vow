@@ -2090,6 +2090,79 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Path traversal in JavaScript - user input concatenated in file path",
     },
 
+    // Nuxt.js/h3 specific patterns
+    // SQL injection in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_sql_injection",
+        regex: Regex::new(r#"sqlite3\.[a-z_]+\([^)]*\$\{.*getQuery|db\.run\s*\(\s*`[^`]*\$\{"#).unwrap(),
+        severity: Severity::High,
+        message: "SQL injection in Nuxt/h3 - string interpolation in SQL query",
+    },
+
+    // Path traversal in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_path_traversal",
+        regex: Regex::new(r#"path\.join\([^)]*getQuery\(|join\([^)]*getQuery\("#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Nuxt/h3 - join with unsanitized user input from getQuery",
+    },
+
+    // SSRF in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_ssrf",
+        regex: Regex::new(r#"fetch\s*\([^)]*getQuery\(|fetch\s*\([^)]*await readBody\("#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Nuxt/h3 - fetch with user-controlled URL from getQuery",
+    },
+
+    // Template injection in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_template_injection",
+        regex: Regex::new(r#"Handlebars\.compile\s*\([^)]*await readBody\("#).unwrap(),
+        severity: Severity::Critical,
+        message: "Template injection in Nuxt/h3 - Handlebars.compile with user-supplied template",
+    },
+
+    // LDAP injection in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_ldap_injection",
+        regex: Regex::new(r#"ldap\.[a-z_]+\([^)]*getQuery\(|LDAP\([^)]*getQuery\("#).unwrap(),
+        severity: Severity::High,
+        message: "LDAP injection in Nuxt/h3 - user input in LDAP filter via getQuery",
+    },
+
+    // NoSQL injection in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_nosql_injection",
+        regex: Regex::new(r#"mongo|collection\.[a-z_]+\s*\([^)]*await readBody\("#).unwrap(),
+        severity: Severity::High,
+        message: "NoSQL injection in Nuxt/h3 - MongoDB filter from readBody without sanitization",
+    },
+
+    // Open redirect in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_open_redirect",
+        regex: Regex::new(r#"sendRedirect\s*\([^)]*getQuery\(|sendRedirect\s*\([^)]*await readBody\("#).unwrap(),
+        severity: Severity::Medium,
+        message: "Open redirect in Nuxt/h3 - sendRedirect with unvalidated URL from user input",
+    },
+
+    // Header injection in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_header_injection",
+        regex: Regex::new(r#"setHeader\s*\([^)]*getQuery\(|setHeader\s*\([^)]*getHeader\("#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in Nuxt/h3 - setHeader with unsanitized user input",
+    },
+
+    // Prototype pollution in Nuxt
+    SecurityPattern {
+        name: "js_nuxt_prototype_pollution",
+        regex: Regex::new(r#"Object\.assign\s*\([^)]*await readBody\("#).unwrap(),
+        severity: Severity::Critical,
+        message: "Prototype pollution in Nuxt/h3 - Object.assign with unsanitized readBody",
+    },
+
     // JavaScript SSRF
     SecurityPattern {
         name: "js_ssrf_fetch",

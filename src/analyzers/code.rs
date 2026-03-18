@@ -2103,6 +2103,47 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::Medium,
         message: "Unsafe redirect in Fastify - reply.redirect with user-controlled URL",
     },
+
+    // Swift/Vapor vulnerability patterns
+    // XSS
+    SecurityPattern {
+        name: "swift_xss",
+        regex: Regex::new(r#"Response\(html:\s*["'\)].*?request\."#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Swift/Vapor - unescaped user input in HTML response",
+    },
+
+    // Path traversal
+    SecurityPattern {
+        name: "swift_path_traversal",
+        regex: Regex::new(r#"FileManager\.|Data\.contentsOf:|contents\s*atPath:"#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Swift/Vapor - user input in file path without validation",
+    },
+
+    // SSRF
+    SecurityPattern {
+        name: "swift_ssrf",
+        regex: Regex::new(r#"Client\.|try await Client\."#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Swift/Vapor - HTTP client with user-controlled URL",
+    },
+
+    // Insecure deserialization
+    SecurityPattern {
+        name: "swift_insecure_deserialization",
+        regex: Regex::new(r#"JSONDecoder\(\)\.decode|JSONSerialization\.jsonObject"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure deserialization in Swift - decoding untrusted JSON",
+    },
+
+    // XXE injection
+    SecurityPattern {
+        name: "swift_xxe",
+        regex: Regex::new(r#"XMLParser\(|XMLDocument\("#).unwrap(),
+        severity: Severity::High,
+        message: "XXE injection in Swift - parsing XML from user input",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)
@@ -2758,6 +2799,11 @@ impl CodeAnalyzer {
             "dart_ssrf" | "dart_xss" | "dart_unsafe_deserialization" |
             "dart_intent_injection" | "dart_deeplink_injection" => {
                 matches!(file_type, FileType::Dart)
+            },
+            // Swift/Vapor patterns
+            "swift_xss" | "swift_path_traversal" | "swift_ssrf" |
+            "swift_insecure_deserialization" | "swift_xxe" => {
+                matches!(file_type, FileType::Swift)
             },
             // Go/net/http specific patterns
             p if p.starts_with("go_") => {

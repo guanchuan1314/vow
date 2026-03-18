@@ -190,6 +190,12 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::Medium,
         message: "Open redirect in Python/Flask - redirect with user-controlled URL",
     },
+    SecurityPattern {
+        name: "python_fastapi_redirect",
+        regex: Regex::new(r#"RedirectResponse\s*\(\s*[^,)]*request|redirect\s*\(\s*[^,)]*request"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Unvalidated redirect in Python/FastAPI - RedirectResponse with user-controlled URL",
+    },
 
     // Header injection
     SecurityPattern {

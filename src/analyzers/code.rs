@@ -222,6 +222,40 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "XXE injection in Python - XMLParser without XXE protection",
     },
+
+    // FastAPI-specific patterns
+    // XSS in FastAPI
+    SecurityPattern {
+        name: "python_fastapi_xss",
+        regex: Regex::new(r#"HTMLResponse\s*\([^)]*f["']"#).unwrap(),
+        severity: Severity::High,
+        message: "XSS in Python/FastAPI - HTMLResponse with f-string user input",
+    },
+
+    // Path traversal in FastAPI
+    SecurityPattern {
+        name: "python_fastapi_path_traversal",
+        regex: Regex::new(r#"os\.path\.join\s*\([^)]*(?:request|param)"#).unwrap(),
+        severity: Severity::High,
+        message: "Path traversal in Python/FastAPI - file operation with user input",
+    },
+
+    // SSRF in FastAPI (httpx)
+    SecurityPattern {
+        name: "python_fastapi_ssrf",
+        regex: Regex::new(r#"httpx\.[a-zA-Z]+\s*\(\s*(?:request|url|param)"#).unwrap(),
+        severity: Severity::High,
+        message: "SSRF in Python/FastAPI - httpx with user-controlled URL",
+    },
+
+    // LDAP injection in FastAPI
+    SecurityPattern {
+        name: "python_fastapi_ldap_injection",
+        regex: Regex::new(r#"f["'].*?\{(?:request|param)"#).unwrap(),
+        severity: Severity::High,
+        message: "LDAP injection in Python - f-string user input in query",
+    },
+
     SecurityPattern {
         name: "sql_injection_php",
         regex: Regex::new(r#"(mysql_query|mysqli_query|query)\s*\(\s*['"][^'"]*['"]\s*\.\s*\$[^;)]*\s*\.\s*['"][^'"]*['"]"#).unwrap(),
@@ -2854,7 +2888,9 @@ impl CodeAnalyzer {
             "python_flask_xss" | "python_path_traversal" | "python_ssrf" |
             "python_template_injection" | "python_xml_injection" | "python_flask_redirect" |
             "python_header_injection" | "python_format_string" | "python_xpath_injection" |
-            "python_unsafe_upload" | "python_xxe" => matches!(file_type, FileType::Python),
+            "python_unsafe_upload" | "python_xxe" |
+            "python_fastapi_xss" | "python_fastapi_path_traversal" | 
+            "python_fastapi_ssrf" | "python_fastapi_ldap_injection" => matches!(file_type, FileType::Python),
             "sql_injection_php" => matches!(file_type, FileType::PHP),
             "sql_injection_js" => matches!(file_type, FileType::JavaScript | FileType::TypeScript),
             "sql_injection_java" => matches!(file_type, FileType::Java),

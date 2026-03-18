@@ -2307,6 +2307,39 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "XXE injection in Swift - parsing XML from user input",
     },
+
+    // Additional Swift/Vapor patterns
+    // Unsafe file upload
+    SecurityPattern {
+        name: "swift_unsafe_upload",
+        regex: Regex::new(r#"(?:FileManager|FileHandle|write)\([^)]*request\.files|uploadPath\s*="#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe file upload in Swift - user-controlled filename without validation",
+    },
+
+    // Insecure random
+    SecurityPattern {
+        name: "swift_insecure_random",
+        regex: Regex::new(r#"Int\.random\(|UInt\.random\(|Double\.random\("#).unwrap(),
+        severity: Severity::Medium,
+        message: "Insecure random in Swift - Int.random is not cryptographically secure for tokens",
+    },
+
+    // Weak crypto
+    SecurityPattern {
+        name: "swift_weak_crypto",
+        regex: Regex::new(r#"Insecure\.|MD5\(|SHA1\(|MessageDigest\.md5"#).unwrap(),
+        severity: Severity::High,
+        message: "Weak cryptography in Swift - using deprecated MD5/SHA1 for security purposes",
+    },
+
+    // Header injection
+    SecurityPattern {
+        name: "swift_header_injection",
+        regex: Regex::new(r#"headers\[[^\]]*\]\s*=.*request\.|Message\s*\([^)]*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in Swift - user input in email/HTTP headers without validation",
+    },
 ]);
 
 // Known hallucinated packages that AI commonly invents (instead of flagging everything NOT in known lists)
@@ -2971,7 +3004,9 @@ impl CodeAnalyzer {
             },
             // Swift/Vapor patterns
             "swift_xss" | "swift_path_traversal" | "swift_ssrf" |
-            "swift_insecure_deserialization" | "swift_xxe" => {
+            "swift_insecure_deserialization" | "swift_xxe" |
+            "swift_unsafe_upload" | "swift_insecure_random" |
+            "swift_weak_crypto" | "swift_header_injection" => {
                 matches!(file_type, FileType::Swift)
             },
             // Go/net/http specific patterns

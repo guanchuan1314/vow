@@ -167,6 +167,14 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Template injection (SSTI) in Python - render_template_string with f-string user input",
     },
 
+    // Jinja2 SSTI - from_string with user input
+    SecurityPattern {
+        name: "python_jinja2_ssti",
+        regex: Regex::new(r#"jinja2\.Environment\.\w*from_string|from_string\s*\([^)]*request|from_string\s*\([^)]*f["']"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Jinja2 SSTI in Python - from_string with user input can lead to RCE",
+    },
+
     // XML injection
     SecurityPattern {
         name: "python_xml_injection",
@@ -1730,6 +1738,22 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         regex: Regex::new(r#"res\.send\s*\(\s*`[^`]*\$\{[^}]*\}[^`]*`\s*\)"#).unwrap(),
         severity: Severity::Medium,
         message: "Potential template injection in Express - template literal with interpolated values sent as HTML",
+    },
+
+    // EJS template injection
+    SecurityPattern {
+        name: "ts_express_ejs_ssti",
+        regex: Regex::new(r#"ejs\.render\s*\([^)]*request|res\.render\s*\([^)]*request\."#).unwrap(),
+        severity: Severity::Critical,
+        message: "EJS template injection in Express - render with user-controlled template or data",
+    },
+
+    // Math expression injection
+    SecurityPattern {
+        name: "ts_express_math_injection",
+        regex: Regex::new(r#"math\.(evaluate|compile)\s*\([^)]*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "Expression language injection in Express - math.evaluate/compile with user input",
     },
 
     // #506: Mass assignment — req.body spread/assigned to object with privileged fields

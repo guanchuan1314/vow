@@ -204,6 +204,12 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Header injection in Python - user input in HTTP headers without validation",
     },
+    SecurityPattern {
+        name: "python_fastapi_header_injection",
+        regex: Regex::new(r#"Response\s*\(\s*headers\s*=\s*\{[^}]*request"#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in Python/FastAPI - user input in Response headers",
+    },
 
     // Format string
     SecurityPattern {

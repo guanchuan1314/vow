@@ -911,6 +911,95 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Deeplink injection in Dart - URI params used unsanitized",
     },
 
+    // Additional Dart/Flutter patterns
+    // Hardcoded secrets
+    SecurityPattern {
+        name: "dart_hardcoded_secrets",
+        regex: Regex::new(r#"const\s+(?:API_KEY|SECRET|PASSWORD|TOKEN|PRIVATE_KEY)\s*=\s*['\"][a-zA-Z0-9_\-]{20,}['\"]"#).unwrap(),
+        severity: Severity::Critical,
+        message: "Hardcoded secrets in Dart - API key or token in source code",
+    },
+
+    // Unsafe reflection
+    SecurityPattern {
+        name: "dart_unsafe_reflection",
+        regex: Regex::new(r#"currentMirrorSystem|reflectClass|reflectInstance"#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe reflection in Dart - runtime reflection with user input",
+    },
+
+    // Insecure random
+    SecurityPattern {
+        name: "dart_insecure_random",
+        regex: Regex::new(r#"Random\(\)\.nextInt|Random\.secure"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Insecure random in Dart - Random() is not cryptographically secure",
+    },
+
+    // Buffer overflow (FFI)
+    SecurityPattern {
+        name: "dart_buffer_overflow",
+        regex: Regex::new(r#"Pointer<[^>]*>\.fromAddress|malloc\("#).unwrap(),
+        severity: Severity::High,
+        message: "Buffer overflow risk in Dart - FFI pointer operations require bounds checking",
+    },
+
+    // Unsafe URI handling
+    SecurityPattern {
+        name: "dart_unsafe_uri",
+        regex: Regex::new(r#"launchUrl\s*\(\s*[^)]*params|Uri\.parse\s*\(\s*params"#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe URI handling in Dart - user-controlled URL in launchUrl",
+    },
+
+    // Insecure webview navigation
+    SecurityPattern {
+        name: "dart_insecure_webview",
+        regex: Regex::new(r#"WebViewController.*?loadRequest\s*\(\s*params"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure webview in Dart - WebView with user-controlled URL",
+    },
+
+    // Unvalidated redirect
+    SecurityPattern {
+        name: "dart_unvalidated_redirect",
+        regex: Regex::new(r#"Navigator\.|push\([^)]*params\.|pushReplacement\([^)]*params\."#).unwrap(),
+        severity: Severity::Medium,
+        message: "Unvalidated redirect in Dart - navigation with user-controlled URL",
+    },
+
+    // Insecure asset access
+    SecurityPattern {
+        name: "dart_insecure_asset",
+        regex: Regex::new(r#"rootBundle\.(loadString|load)\s*\(\s*params"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure asset access in Dart - user-controlled path in asset loading",
+    },
+
+    // Unsafe dynamic code loading
+    SecurityPattern {
+        name: "dart_dynamic_code",
+        regex: Regex::new(r#"LibraryMirror|loadLibraryName|compute\s*\(\s*params"#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe dynamic code loading in Dart - executing user-supplied code",
+    },
+
+    // ReDoS
+    SecurityPattern {
+        name: "dart_redos",
+        regex: Regex::new(r#"RegExp\s*\(\s*params\["#).unwrap(),
+        severity: Severity::High,
+        message: "ReDoS in Dart - user-controlled input in RegExp can cause denial of service",
+    },
+
+    // Unvalidated intent data
+    SecurityPattern {
+        name: "dart_unvalidated_intent",
+        regex: Regex::new(r#"ReceiveSharingIntent"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Unvalidated intent data in Dart - sharing intent data used without validation",
+    },
+
     // Java/Servlet vulnerability patterns
     
     // #468: SQL injection via string concatenation in JDBC
@@ -2797,7 +2886,11 @@ impl CodeAnalyzer {
             "dart_setPermissions_777" | "dart_setPermissions_world_write" |
             "dart_sql_injection" | "dart_command_injection" | "dart_path_traversal" |
             "dart_ssrf" | "dart_xss" | "dart_unsafe_deserialization" |
-            "dart_intent_injection" | "dart_deeplink_injection" => {
+            "dart_intent_injection" | "dart_deeplink_injection" |
+            "dart_hardcoded_secrets" | "dart_unsafe_reflection" | "dart_insecure_random" |
+            "dart_buffer_overflow" | "dart_unsafe_uri" | "dart_insecure_webview" |
+            "dart_unvalidated_redirect" | "dart_insecure_asset" | "dart_dynamic_code" |
+            "dart_redos" | "dart_unvalidated_intent" => {
                 matches!(file_type, FileType::Dart)
             },
             // Swift/Vapor patterns

@@ -2042,6 +2042,46 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Command injection in JavaScript - template literal with user input in command",
     },
 
+    // NoSQL injection in JS
+    SecurityPattern {
+        name: "js_nosql_injection",
+        regex: Regex::new(r#"(?:db|collection)\.find\s*\(\s*request\.|db\.findOne\s*\(\s*\{[^}]*request\.|MongoClient\.connect\([^)]*request"#).unwrap(),
+        severity: Severity::High,
+        message: "NoSQL injection in JavaScript - MongoDB query with user input without sanitization",
+    },
+
+    // LDAP injection in JS
+    SecurityPattern {
+        name: "js_ldap_injection",
+        regex: Regex::new(r#"(?:ldap|LDAP)\.[a-z_]+\([^)]*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "LDAP injection in JavaScript - user input in LDAP query without sanitization",
+    },
+
+    // Header injection in JS
+    SecurityPattern {
+        name: "js_header_injection",
+        regex: Regex::new(r#"res\.setHeader\s*\([^)]*request\.|response\.headers\[[^\]]*\]\s*=.*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "Header injection in JavaScript - user input in response headers without validation",
+    },
+
+    // ReDoS in JS
+    SecurityPattern {
+        name: "js_redos",
+        regex: Regex::new(r#"new\s+RegExp\s*\(\s*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "ReDoS in JavaScript - user-controlled input in RegExp can cause denial of service",
+    },
+
+    // Insecure file upload in JS
+    SecurityPattern {
+        name: "js_insecure_upload",
+        regex: Regex::new(r#"(?:writeFile|writeFileSync|createWriteStream)\s*\(\s*request\.|fs\.writeFile\([^)]*request\.files"#).unwrap(),
+        severity: Severity::High,
+        message: "Insecure file upload in JavaScript - user-controlled filename without validation",
+    },
+
     // JavaScript Path Traversal
     SecurityPattern {
         name: "js_path_traversal",

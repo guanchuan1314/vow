@@ -216,6 +216,12 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Header injection in Python/FastAPI - user input in Response headers",
     },
+    SecurityPattern {
+        name: "python_fastapi_redos",
+        regex: Regex::new(r#"re\.(?:search|match|findall|compile)\s*\(\s*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "ReDoS in Python/FastAPI - user-controlled input in regex pattern",
+    },
 
     // Format string
     SecurityPattern {
@@ -3078,7 +3084,8 @@ impl CodeAnalyzer {
             "python_header_injection" | "python_format_string" | "python_xpath_injection" |
             "python_unsafe_upload" | "python_xxe" |
             "python_fastapi_xss" | "python_fastapi_path_traversal" | 
-            "python_fastapi_ssrf" | "python_fastapi_ldap_injection" => matches!(file_type, FileType::Python),
+            "python_fastapi_ssrf" | "python_fastapi_ldap_injection" |
+            "python_fastapi_redos" => matches!(file_type, FileType::Python),
             "sql_injection_php" => matches!(file_type, FileType::PHP),
             "sql_injection_js" => matches!(file_type, FileType::JavaScript | FileType::TypeScript),
             "sql_injection_java" => matches!(file_type, FileType::Java),

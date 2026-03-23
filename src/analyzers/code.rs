@@ -133,6 +133,12 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Potential SQL injection in Python - string concatenation in SQL query",
     },
+    SecurityPattern {
+        name: "python_sql_injection_fstring",
+        regex: Regex::new(r#"(cursor\.execute|execute|query)\s*\(\s*f['\"]"#).unwrap(),
+        severity: Severity::High,
+        message: "SQL injection in Python - f-string with user input in SQL query",
+    },
 
     // Python/Flask vulnerability patterns
     // XSS in Flask

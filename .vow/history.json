@@ -7,15 +7,15 @@
       "total_issues": 4,
       "avg_score": 37,
       "issues_by_severity": {
-        "medium": 1,
+        "critical": 1,
         "high": 2,
-        "critical": 1
+        "medium": 1
       },
       "issues_by_rule": {
-        "exec_usage": 1,
-        "process_injection": 1,
         "system_calls": 1,
-        "dangerous_deserialize": 1
+        "process_injection": 1,
+        "dangerous_deserialize": 1,
+        "exec_usage": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -26,15 +26,15 @@
       "total_issues": 10,
       "avg_score": 0,
       "issues_by_severity": {
-        "medium": 1,
+        "high": 6,
         "critical": 3,
-        "high": 6
+        "medium": 1
       },
       "issues_by_rule": {
         "exec_usage": 1,
-        "eval_usage": 2,
         "system_calls": 1,
         "dangerous_deserialize": 3,
+        "eval_usage": 2,
         "process_injection": 3
       },
       "total_time_seconds": 0.0,
@@ -46,16 +46,16 @@
       "total_issues": 10,
       "avg_score": 0,
       "issues_by_severity": {
-        "medium": 1,
+        "high": 6,
         "critical": 3,
-        "high": 6
+        "medium": 1
       },
       "issues_by_rule": {
-        "system_calls": 1,
         "process_injection": 3,
+        "system_calls": 1,
+        "dangerous_deserialize": 3,
         "exec_usage": 1,
-        "eval_usage": 2,
-        "dangerous_deserialize": 3
+        "eval_usage": 2
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -66,14 +66,14 @@
       "total_issues": 3,
       "avg_score": 52,
       "issues_by_severity": {
+        "critical": 1,
         "high": 1,
-        "medium": 1,
-        "critical": 1
+        "medium": 1
       },
       "issues_by_rule": {
-        "process_injection": 1,
+        "system_calls": 1,
         "dangerous_deserialize": 1,
-        "system_calls": 1
+        "process_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -84,14 +84,14 @@
       "total_issues": 3,
       "avg_score": 52,
       "issues_by_severity": {
-        "medium": 1,
         "critical": 1,
+        "medium": 1,
         "high": 1
       },
       "issues_by_rule": {
-        "system_calls": 1,
         "process_injection": 1,
-        "dangerous_deserialize": 1
+        "dangerous_deserialize": 1,
+        "system_calls": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -145,9 +145,9 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "ssh_key_injection": 1,
-        "reverse_shell": 5,
         "process_injection": 1,
+        "reverse_shell": 5,
+        "ssh_key_injection": 1,
         "cron_injection": 2
       },
       "total_time_seconds": 0.0,
@@ -162,10 +162,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "reverse_shell": 5,
         "process_injection": 1,
-        "cron_injection": 2,
-        "ssh_key_injection": 1
+        "ssh_key_injection": 1,
+        "reverse_shell": 5,
+        "cron_injection": 2
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -179,10 +179,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "process_injection": 1,
+        "reverse_shell": 5,
         "cron_injection": 2,
-        "ssh_key_injection": 1,
-        "reverse_shell": 5
+        "process_injection": 1,
+        "ssh_key_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -196,10 +196,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "reverse_shell": 5,
-        "ssh_key_injection": 1,
         "process_injection": 1,
-        "cron_injection": 2
+        "ssh_key_injection": 1,
+        "cron_injection": 2,
+        "reverse_shell": 5
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -213,9 +213,9 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "ssh_key_injection": 1,
-        "cron_injection": 2,
         "process_injection": 1,
+        "cron_injection": 2,
+        "ssh_key_injection": 1,
         "reverse_shell": 5
       },
       "total_time_seconds": 0.0,
@@ -230,10 +230,10 @@
         "critical": 9
       },
       "issues_by_rule": {
-        "reverse_shell": 5,
-        "process_injection": 1,
+        "ssh_key_injection": 1,
         "cron_injection": 2,
-        "ssh_key_injection": 1
+        "reverse_shell": 5,
+        "process_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -272,16 +272,16 @@
       "total_issues": 7,
       "avg_score": 0,
       "issues_by_severity": {
-        "critical": 3,
-        "high": 4
+        "high": 4,
+        "critical": 3
       },
       "issues_by_rule": {
         "sudo_nopasswd": 1,
-        "shell_weak_crypto": 1,
         "shell_backticks_injection": 1,
         "shell_hardcoded_secrets": 1,
-        "reverse_shell": 2,
-        "insecure_telnet": 1
+        "insecure_telnet": 1,
+        "shell_weak_crypto": 1,
+        "reverse_shell": 2
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -292,19 +292,19 @@
       "total_issues": 10,
       "avg_score": 0,
       "issues_by_severity": {
-        "critical": 3,
-        "high": 7
+        "high": 7,
+        "critical": 3
       },
       "issues_by_rule": {
-        "shell_weak_crypto": 1,
-        "shell_unsafe_reflection": 1,
-        "sudo_nopasswd": 1,
-        "shell_path_traversal": 1,
-        "shell_ssrf": 1,
-        "reverse_shell": 2,
+        "shell_backticks_injection": 1,
         "shell_hardcoded_secrets": 1,
+        "sudo_nopasswd": 1,
+        "shell_ssrf": 1,
+        "shell_unsafe_reflection": 1,
+        "shell_path_traversal": 1,
+        "reverse_shell": 2,
         "insecure_telnet": 1,
-        "shell_backticks_injection": 1
+        "shell_weak_crypto": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -315,20 +315,20 @@
       "total_issues": 13,
       "avg_score": 0,
       "issues_by_severity": {
-        "high": 10,
-        "critical": 3
+        "critical": 3,
+        "high": 10
       },
       "issues_by_rule": {
-        "shell_ssrf": 1,
-        "shell_eval_injection": 3,
-        "sudo_nopasswd": 1,
-        "shell_backticks_injection": 1,
-        "shell_hardcoded_secrets": 1,
         "shell_unsafe_reflection": 1,
-        "reverse_shell": 2,
-        "shell_weak_crypto": 1,
+        "shell_hardcoded_secrets": 1,
         "shell_path_traversal": 1,
-        "insecure_telnet": 1
+        "sudo_nopasswd": 1,
+        "shell_weak_crypto": 1,
+        "shell_ssrf": 1,
+        "insecure_telnet": 1,
+        "reverse_shell": 2,
+        "shell_eval_injection": 3,
+        "shell_backticks_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -340,21 +340,21 @@
       "avg_score": 0,
       "issues_by_severity": {
         "high": 10,
-        "medium": 1,
-        "critical": 3
+        "critical": 3,
+        "medium": 1
       },
       "issues_by_rule": {
         "shell_unsafe_reflection": 1,
         "shell_hardcoded_secrets": 1,
-        "reverse_shell": 2,
-        "sudo_nopasswd": 1,
         "shell_missing_rate_limit": 1,
+        "shell_eval_injection": 3,
+        "shell_ssrf": 1,
+        "sudo_nopasswd": 1,
+        "reverse_shell": 2,
         "insecure_telnet": 1,
         "shell_backticks_injection": 1,
         "shell_weak_crypto": 1,
-        "shell_ssrf": 1,
-        "shell_path_traversal": 1,
-        "shell_eval_injection": 3
+        "shell_path_traversal": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -365,39 +365,39 @@
       "total_issues": 40,
       "avg_score": 0,
       "issues_by_severity": {
+        "medium": 5,
         "high": 26,
-        "critical": 9,
-        "medium": 5
+        "critical": 9
       },
       "issues_by_rule": {
-        "js_command_injection_exec": 2,
-        "rm_rf": 1,
-        "js_xss_document_write": 1,
-        "ts_express_path_traversal_fs": 2,
-        "js_nextjs_path_traversal": 2,
-        "js_setTimeout_string": 1,
-        "js_sql_injection_concat": 1,
-        "process_injection": 2,
-        "js_ssrf_axios": 1,
-        "eval_usage": 1,
         "exec_usage": 1,
-        "js_xss_innerHTML": 3,
+        "rust_hardcoded_secrets": 2,
+        "js_ssrf_axios": 1,
+        "rm_rf": 1,
+        "js_nextjs_server_component_exec": 3,
+        "js_command_injection_template": 1,
+        "js_nextjs_path_traversal": 2,
+        "js_ssrf_fetch": 1,
+        "js_xss_document_write": 1,
+        "system_calls": 1,
         "insecure_http": 1,
+        "api_keys": 2,
+        "js_sql_injection_concat": 1,
+        "js_setInterval_string": 1,
+        "js_command_injection_exec": 2,
+        "process_injection": 2,
+        "js_path_traversal": 1,
         "dangerous_deserialize": 2,
         "js_hardcoded_api_key": 2,
-        "js_path_traversal": 1,
-        "js_setInterval_string": 1,
-        "js_xss_dangerously_set_inner_html": 1,
-        "js_nextjs_server_component_exec": 3,
         "js_functionConstructor": 1,
         "js_insecure_random": 1,
-        "rust_hardcoded_secrets": 2,
+        "js_xss_innerHTML": 3,
+        "js_setTimeout_string": 1,
+        "ts_express_path_traversal_fs": 2,
+        "js_xss_dangerously_set_inner_html": 1,
         "js_eval": 1,
-        "js_sql_injection_template": 1,
-        "js_command_injection_template": 1,
-        "js_ssrf_fetch": 1,
-        "system_calls": 1,
-        "api_keys": 2
+        "eval_usage": 1,
+        "js_sql_injection_template": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -408,23 +408,23 @@
       "total_issues": 21,
       "avg_score": 0,
       "issues_by_severity": {
+        "critical": 1,
         "high": 10,
-        "medium": 10,
-        "critical": 1
+        "medium": 10
       },
       "issues_by_rule": {
         "ts_express_prototype_pollution_bracket": 1,
         "ts_express_idor_params_id": 2,
-        "js_dynamic_method_call": 2,
-        "js_csrf_missing_token": 2,
-        "dangerous_deserialize": 1,
-        "js_no_rate_limit": 4,
-        "js_eval": 1,
         "process_injection": 1,
-        "js_unsafe_reflection": 2,
-        "ts_express_idor_findbyid": 2,
+        "js_no_rate_limit": 4,
+        "js_dynamic_method_call": 2,
+        "dangerous_deserialize": 1,
+        "js_csrf_missing_token": 2,
         "js_idor_params_access": 2,
-        "eval_usage": 1
+        "eval_usage": 1,
+        "js_unsafe_reflection": 2,
+        "js_eval": 1,
+        "ts_express_idor_findbyid": 2
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -435,19 +435,19 @@
       "total_issues": 11,
       "avg_score": 0,
       "issues_by_severity": {
-        "high": 5,
         "medium": 5,
-        "low": 1
+        "low": 1,
+        "high": 5
       },
       "issues_by_rule": {
-        "ts_express_weak_crypto_md5": 1,
-        "js_no_rate_limit": 1,
-        "js_csrf_missing_token": 1,
-        "js_insecure_random": 2,
-        "js_weak_crypto_des": 1,
-        "ts_express_insecure_random_reverse": 2,
         "ts_express_no_rate_limit_login": 1,
         "js_weak_crypto_md5": 1,
+        "ts_express_weak_crypto_md5": 1,
+        "js_insecure_random": 2,
+        "js_no_rate_limit": 1,
+        "ts_express_insecure_random_reverse": 2,
+        "js_csrf_missing_token": 1,
+        "js_weak_crypto_des": 1,
         "js_missing_csp": 1
       },
       "total_time_seconds": 0.0,
@@ -460,25 +460,25 @@
       "avg_score": 0,
       "issues_by_severity": {
         "critical": 2,
-        "low": 1,
+        "high": 7,
         "medium": 8,
-        "high": 7
+        "low": 1
       },
       "issues_by_rule": {
-        "js_missing_csp": 1,
-        "js_csrf_missing_token": 2,
-        "js_no_rate_limit": 3,
         "ts_express_idor_params_id": 1,
-        "ts_express_no_rate_limit_login": 1,
-        "js_dynamic_method_call": 1,
-        "dangerous_deserialize": 1,
-        "js_prototype_pollution": 1,
         "ts_express_idor_findbyid": 1,
-        "js_idor_params_access": 1,
-        "process_injection": 1,
+        "dangerous_deserialize": 1,
+        "js_dynamic_method_call": 1,
+        "js_prototype_pollution": 1,
         "js_eval": 1,
         "eval_usage": 1,
-        "js_unsafe_reflection": 2
+        "js_unsafe_reflection": 2,
+        "js_idor_params_access": 1,
+        "js_missing_csp": 1,
+        "ts_express_no_rate_limit_login": 1,
+        "js_csrf_missing_token": 2,
+        "js_no_rate_limit": 3,
+        "process_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -493,12 +493,12 @@
         "medium": 1
       },
       "issues_by_rule": {
-        "rust_axum_redirect": 1,
         "rust_sql_injection_format": 2,
         "rust_sqlx_injection": 1,
-        "rust_path_traversal_format": 1,
-        "rust_command_format": 1,
         "rust_xss_format_html": 1,
+        "rust_command_format": 1,
+        "rust_path_traversal_format": 1,
+        "rust_axum_redirect": 1,
         "rust_reqwest_ssrf": 1
       },
       "total_time_seconds": 0.0,
@@ -513,10 +513,10 @@
         "high": 4
       },
       "issues_by_rule": {
-        "rust_sqlx_injection": 1,
+        "rust_reqwest_ssrf": 1,
         "rust_sql_injection_format": 1,
         "rust_command_format": 1,
-        "rust_reqwest_ssrf": 1
+        "rust_sqlx_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -527,21 +527,21 @@
       "total_issues": 10,
       "avg_score": 0,
       "issues_by_severity": {
-        "medium": 3,
+        "critical": 2,
         "high": 5,
-        "critical": 2
+        "medium": 3
       },
       "issues_by_rule": {
-        "js_idor_params_access": 1,
-        "js_prototype_pollution": 1,
-        "ts_express_idor_params_id": 1,
-        "process_injection": 1,
         "js_unsafe_reflection": 1,
-        "js_no_rate_limit": 1,
-        "dangerous_deserialize": 1,
         "js_eval": 1,
+        "process_injection": 1,
+        "js_no_rate_limit": 1,
+        "eval_usage": 1,
+        "dangerous_deserialize": 1,
+        "js_prototype_pollution": 1,
+        "js_idor_params_access": 1,
         "ts_express_idor_findbyid": 1,
-        "eval_usage": 1
+        "ts_express_idor_params_id": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -552,17 +552,17 @@
       "total_issues": 8,
       "avg_score": 1,
       "issues_by_severity": {
-        "high": 5,
-        "medium": 3
+        "medium": 3,
+        "high": 5
       },
       "issues_by_rule": {
+        "go_unsafe_deserialization": 1,
         "go_template_injection": 1,
         "go_xss_fprintf": 1,
         "go_ssrf_http_get": 1,
-        "go_unsafe_deserialization": 1,
         "base64_instructions": 1,
-        "go_insecure_random": 1,
         "go_buffer_overflow": 1,
+        "go_insecure_random": 1,
         "go_unsafe_reflection": 1
       },
       "total_time_seconds": 0.0,
@@ -578,10 +578,10 @@
         "critical": 3
       },
       "issues_by_rule": {
-        "ruby_xss_erb": 1,
-        "ruby_insecure_deserialization": 1,
         "ruby_yaml_load": 1,
         "ruby_path_traversal": 1,
+        "ruby_xss_erb": 1,
+        "ruby_insecure_deserialization": 1,
         "ruby_template_injection": 1
       },
       "total_time_seconds": 0.0,
@@ -597,11 +597,11 @@
         "critical": 3
       },
       "issues_by_rule": {
-        "ruby_yaml_load": 1,
+        "ruby_template_injection": 1,
         "ruby_path_traversal": 1,
-        "ruby_insecure_deserialization": 1,
         "ruby_xss_erb": 1,
-        "ruby_template_injection": 1
+        "ruby_yaml_load": 1,
+        "ruby_insecure_deserialization": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -619,8 +619,8 @@
         "ruby_path_traversal": 1,
         "ruby_insecure_deserialization": 1,
         "ruby_xss_erb": 1,
-        "ruby_yaml_load": 1,
-        "ruby_template_injection": 1
+        "ruby_template_injection": 1,
+        "ruby_yaml_load": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -635,11 +635,11 @@
         "critical": 3
       },
       "issues_by_rule": {
-        "ruby_template_injection": 1,
-        "ruby_insecure_deserialization": 1,
-        "ruby_path_traversal": 1,
         "ruby_yaml_load": 1,
-        "ruby_xss_erb": 1
+        "ruby_template_injection": 1,
+        "ruby_xss_erb": 1,
+        "ruby_insecure_deserialization": 1,
+        "ruby_path_traversal": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -670,16 +670,16 @@
       "total_issues": 6,
       "avg_score": 17,
       "issues_by_severity": {
-        "medium": 1,
-        "high": 5
+        "high": 5,
+        "medium": 1
       },
       "issues_by_rule": {
-        "js_fastify_xml_injection": 1,
-        "js_fastify_ldap_injection": 1,
-        "js_fastify_zip_slip": 1,
-        "js_fastify_unsafe_redirect": 1,
         "js_fastify_redos": 1,
-        "js_fastify_header_injection": 1
+        "js_fastify_unsafe_redirect": 1,
+        "js_fastify_header_injection": 1,
+        "js_fastify_xml_injection": 1,
+        "js_fastify_zip_slip": 1,
+        "js_fastify_ldap_injection": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -694,11 +694,11 @@
         "high": 3
       },
       "issues_by_rule": {
-        "ruby_open_redirect": 1,
-        "ruby_unsafe_upload": 1,
-        "ruby_redos": 1,
+        "ruby_mass_assignment": 1,
         "ruby_header_injection": 1,
-        "ruby_mass_assignment": 1
+        "ruby_unsafe_upload": 1,
+        "ruby_open_redirect": 1,
+        "ruby_redos": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -714,16 +714,16 @@
         "medium": 3
       },
       "issues_by_rule": {
-        "python_xpath_injection": 1,
-        "python_ssrf": 1,
-        "python_template_injection": 1,
-        "python_flask_redirect": 1,
         "python_xxe": 1,
         "python_flask_xss": 2,
-        "python_format_string": 2,
-        "python_xml_injection": 1,
+        "python_path_traversal": 1,
+        "python_template_injection": 1,
         "nonexistent_method": 1,
-        "python_path_traversal": 1
+        "python_xml_injection": 1,
+        "python_xpath_injection": 1,
+        "python_ssrf": 1,
+        "python_format_string": 2,
+        "python_flask_redirect": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -734,18 +734,18 @@
       "total_issues": 21,
       "avg_score": 0,
       "issues_by_severity": {
-        "medium": 3,
-        "high": 18
+        "high": 18,
+        "medium": 3
       },
       "issues_by_rule": {
-        "dart_xss": 1,
-        "dart_uncontrolled_recursion": 1,
+        "dart_command_injection": 3,
+        "dart_path_traversal": 4,
         "dart_mass_assignment": 1,
+        "dart_xss": 1,
+        "dart_unsafe_deserialization": 1,
+        "dart_uncontrolled_recursion": 1,
         "dart_null_pointer": 1,
         "dart_sql_injection": 7,
-        "dart_path_traversal": 4,
-        "dart_command_injection": 3,
-        "dart_unsafe_deserialization": 1,
         "dart_ssrf": 2
       },
       "total_time_seconds": 0.0,
@@ -774,8 +774,8 @@
         "high": 5
       },
       "issues_by_rule": {
-        "base64_instructions": 2,
         "swift_xxe": 2,
+        "base64_instructions": 2,
         "swift_path_traversal": 1
       },
       "total_time_seconds": 0.0,
@@ -787,23 +787,23 @@
       "total_issues": 16,
       "avg_score": 0,
       "issues_by_severity": {
-        "critical": 3,
         "high": 11,
+        "critical": 3,
         "medium": 2
       },
       "issues_by_rule": {
-        "dart_insecure_asset": 1,
-        "dart_hardcoded_secrets": 2,
-        "rust_hardcoded_secrets": 1,
-        "dart_ssrf": 1,
         "dart_redos": 1,
-        "dart_unsafe_reflection": 2,
-        "dart_buffer_overflow": 2,
-        "dart_dynamic_code": 1,
-        "dart_unvalidated_redirect": 1,
+        "rust_hardcoded_secrets": 1,
         "dart_unvalidated_intent": 1,
+        "dart_ssrf": 1,
+        "dart_buffer_overflow": 2,
+        "dart_unsafe_reflection": 2,
+        "dart_insecure_asset": 1,
+        "api_keys": 1,
         "dart_unsafe_uri": 2,
-        "api_keys": 1
+        "dart_dynamic_code": 1,
+        "dart_hardcoded_secrets": 2,
+        "dart_unvalidated_redirect": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -842,25 +842,25 @@
       "total_issues": 14,
       "avg_score": 0,
       "issues_by_severity": {
+        "medium": 1,
         "high": 10,
-        "critical": 3,
-        "medium": 1
+        "critical": 3
       },
       "issues_by_rule": {
-        "system_calls": 1,
-        "ts_express_path_traversal_join": 1,
-        "js_command_injection_template": 1,
+        "exec_usage": 1,
+        "ts_express_ldap_injection": 1,
+        "js_nextjs_path_traversal": 1,
+        "process_injection": 1,
+        "js_prototype_pollution": 1,
+        "ts_express_ssrf_axios": 1,
         "js_sql_injection_template": 1,
         "ts_express_mass_assignment_assign": 1,
-        "exec_usage": 1,
-        "dangerous_deserialize": 1,
-        "js_prototype_pollution": 1,
+        "js_command_injection_template": 1,
         "ts_express_ldap_injection_filter": 1,
-        "process_injection": 1,
-        "js_nextjs_path_traversal": 1,
-        "ts_express_ssrf_axios": 1,
-        "ts_express_ldap_injection": 1,
-        "js_nextjs_server_component_exec": 1
+        "ts_express_path_traversal_join": 1,
+        "dangerous_deserialize": 1,
+        "js_nextjs_server_component_exec": 1,
+        "system_calls": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -871,25 +871,25 @@
       "total_issues": 14,
       "avg_score": 0,
       "issues_by_severity": {
-        "medium": 1,
         "critical": 3,
-        "high": 10
+        "high": 10,
+        "medium": 1
       },
       "issues_by_rule": {
-        "js_prototype_pollution": 1,
-        "ts_express_mass_assignment_assign": 1,
-        "js_nextjs_server_component_exec": 1,
-        "ts_express_ssrf_axios": 1,
-        "js_command_injection_template": 1,
         "ts_express_path_traversal_join": 1,
-        "js_nextjs_path_traversal": 1,
-        "system_calls": 1,
-        "ts_express_ldap_injection": 1,
-        "dangerous_deserialize": 1,
-        "process_injection": 1,
-        "exec_usage": 1,
+        "ts_express_ssrf_axios": 1,
         "ts_express_ldap_injection_filter": 1,
-        "js_sql_injection_template": 1
+        "system_calls": 1,
+        "ts_express_mass_assignment_assign": 1,
+        "ts_express_ldap_injection": 1,
+        "process_injection": 1,
+        "js_nextjs_path_traversal": 1,
+        "js_sql_injection_template": 1,
+        "exec_usage": 1,
+        "js_nextjs_server_component_exec": 1,
+        "js_prototype_pollution": 1,
+        "js_command_injection_template": 1,
+        "dangerous_deserialize": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -900,12 +900,12 @@
       "total_issues": 2,
       "avg_score": 77,
       "issues_by_severity": {
-        "medium": 1,
-        "high": 1
+        "high": 1,
+        "medium": 1
       },
       "issues_by_rule": {
-        "swift_weak_crypto": 1,
-        "swift_insecure_random": 1
+        "swift_insecure_random": 1,
+        "swift_weak_crypto": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0
@@ -919,8 +919,41 @@
         "high": 2
       },
       "issues_by_rule": {
-        "js_nuxt_sql_injection": 1,
-        "nonexistent_method": 1
+        "nonexistent_method": 1,
+        "js_nuxt_sql_injection": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-03-23T09:24:56.793643348Z",
+      "total_files": 1,
+      "total_issues": 3,
+      "avg_score": 55,
+      "issues_by_severity": {
+        "high": 3
+      },
+      "issues_by_rule": {
+        "python_fastapi_path_traversal": 1,
+        "python_fastapi_xss": 1,
+        "python_path_traversal": 1
+      },
+      "total_time_seconds": 0.0,
+      "files_skipped": 0
+    },
+    {
+      "timestamp": "2026-03-23T09:26:10.814850972Z",
+      "total_files": 1,
+      "total_issues": 4,
+      "avg_score": 40,
+      "issues_by_severity": {
+        "high": 4
+      },
+      "issues_by_rule": {
+        "python_path_traversal": 1,
+        "python_sql_injection_fstring": 1,
+        "python_fastapi_xss": 1,
+        "python_fastapi_path_traversal": 1
       },
       "total_time_seconds": 0.0,
       "files_skipped": 0

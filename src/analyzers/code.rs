@@ -1598,6 +1598,12 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::High,
         message: "Unsafe deserialization in Go - gob.Decode or binary.Read with untrusted data",
     },
+    SecurityPattern {
+        name: "go_yaml_unsafe",
+        regex: Regex::new(r#"yaml\.Unmarshal\([^)]*request\.|(?:yaml\.Decoder|yaml\.NewDecoder)\([^)]*request\."#).unwrap(),
+        severity: Severity::High,
+        message: "Unsafe YAML parsing in Go - yaml.Unmarshal with user input without safe loader",
+    },
 
     // #584: Unsafe reflection
     SecurityPattern {

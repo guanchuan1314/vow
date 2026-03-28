@@ -1157,6 +1157,27 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         severity: Severity::Critical,
         message: "Insecure deserialization in Java - ObjectInputStream reading from user-controlled input stream",
     },
+    // Issue #1108: JNDI injection
+    SecurityPattern {
+        name: "java_jndi_injection",
+        regex: Regex::new(r#"(?i)new\s+InitialContext\(\)[^}]*\.lookup\s*\([^)]*(?:request|param|body|query)"#).unwrap(),
+        severity: Severity::High,
+        message: "JNDI injection in Java - InitialContext.lookup with user-controlled name",
+    },
+    // Issue #1109: SpEL expression injection
+    SecurityPattern {
+        name: "java_spel_injection",
+        regex: Regex::new(r#"(?i)(?:SpelExpressionParser|MethodExecutor|StandardContext)\.parseExpression\s*\([^)]*(?:request|param|body)"#).unwrap(),
+        severity: Severity::Critical,
+        message: "SpEL injection in Java - parseExpression with user-controlled input",
+    },
+    // Issue #1110: Groovy expression injection
+    SecurityPattern {
+        name: "java_groovy_injection",
+        regex: Regex::new(r#"(?i)(?:GroovyShell|GroovyClassLoader)\.(?:evaluate|parseClass)\s*\([^)]*(?:request|param|body)"#).unwrap(),
+        severity: Severity::High,
+        message: "Groovy expression injection - evaluate with user-controlled input",
+    },
     // #475: CSRF
     SecurityPattern {
         name: "java_servlet_csrf_dopost",

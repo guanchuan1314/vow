@@ -886,6 +886,22 @@ static SECURITY_PATTERNS: Lazy<Vec<SecurityPattern>> = Lazy::new(|| vec![
         message: "Potential timing side-channel attack in Rust - non-constant time comparison of secrets",
     },
     
+    // Issue #1104: ReDoS in Rust
+    SecurityPattern {
+        name: "rust_redos",
+        regex: Regex::new(r#"(?i)Regex::new\([^)]*\+[^)]*request\.|Regex::new\([^)]*\.to_string\(\)"#).unwrap(),
+        severity: Severity::High,
+        message: "Potential ReDoS in Rust - user-controlled regex pattern",
+    },
+    
+    // Issue #1105: Unbounded allocation in Rust
+    SecurityPattern {
+        name: "rust_unbounded_allocation",
+        regex: Regex::new(r#"(?i)(?:vec!|String::from|repeat|collect::<Vec)[^)]*(?:\+|\.to_string\(\))[a-zA-Z_][a-zA-Z0-9_]*request\.|(?i)0\.\.[a-zA-Z_][a-zA-Z0-9_]*\.len\(\)"#).unwrap(),
+        severity: Severity::Medium,
+        message: "Potential unbounded allocation in Rust - user-controlled loop bounds",
+    },
+    
     // Issue #308: Insecure file permissions in Dart/Flutter
     SecurityPattern {
         name: "dart_insecure_filemode_0777",
